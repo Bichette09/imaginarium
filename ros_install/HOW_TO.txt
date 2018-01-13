@@ -1,0 +1,45 @@
+this file regroup informations on how to build/install ros on raspbian
+	https://answers.ros.org/question/229788/how-to-building-pcl-laser_scan_matcher-on-raspberry-pi-2/
+	http://wiki.ros.org/ROSberryPi/Installing%20ROS%20Kinetic%20on%20the%20Raspberry%20Pi
+	http://www.ros.org/reps/rep-0142.html
+
+increase swap size => /etc/dphys-swapfile CONF_SWAPSIZE=1024
+reboot
+
+install ros dependencies
+	sudo apt install dirmngr
+	sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+	sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+	sudo apt-get update
+	sudo apt-get upgrade
+	sudo apt-get install -y python-rosdep python-rosinstall-generator python-wstool python-rosinstall build-essential cmake 
+	sudo rosdep init
+	rosdep update
+
+build ros (or use a prebuild release)
+	mkdir -p ~/ros_catkin_ws
+	cd ~/ros_catkin_ws
+	
+	rosinstall_generator desktop perception robot viz rosauth rosbridge_suite mongodb_store --rosdistro kinetic --deps --wet-only --exclude perception_pcl pcl_conversions pcl_msgs collada_parser collada_urdf rviz dynpick_driver ensenso grid_map_rviz_plugin librviz_tutorial moveit_ros_visualiza mrpt_ekf_slam_2d mrpt_ekf_slam_3d mrpt_icp_slam_2d mrpt_rbpf_slam osm_cartography rqt_rviz rtabmap_ros rviz_imu_plugin rviz_plugin_tutorial rviz_python_tutorial rviz_visual_tools urdf_sim_tutorial urdf_tutorial viz rviz_plugin_tutorials visualization_marker_tutorials visualization_tutorials interactive_marker_tutorials actionlib_tutorials nodelet_tutorial_math pluginlib_tutorials --tar > kinetic-wet.rosinstall
+	
+	wstool init src kinetic-wet.rosinstall -j2
+	rosdep install -y --from-paths src --ignore-src --rosdistro kinetic -r --os=debian:jessie
+	sudo apt-get install libgtk2.0-dev
+	sudo ./src/catkin/bin/catkin_make_isolated --install -DCMAKE_BUILD_TYPE=Release --install-space /opt/ros/kinetic -j2
+	echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
+
+pack result 
+	cd /opt/ros
+	tar czpvf ros_kinetic.tar.gz kinetic
+
+install from gzip
+	sudo tar -xzvf ros_kinetic.tar.gz -C /opt/ros
+	echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
+
+
+other dependencies
+	apt-get install mongodb-server lighttpd
+
+edit following file to setup webserver /etc/lighttpd/lighttpd.conf
+
+
