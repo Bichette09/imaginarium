@@ -1,0 +1,81 @@
+html, body {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+}
+
+
+#legendroot {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	flex-wrap:wrap;
+}
+
+#waiterroot {
+	flex-grow: 1;
+	text-align:center;
+	position:relative;
+	
+}
+
+#waiter {
+	width:4em;
+	height:4em;
+	top:45%;
+	position:absolute;
+}
+
+
+.legendentry {
+	display: flex;
+	flex-direction: row;
+	margin:0.2em;
+}
+
+.legendtext {
+	font-size:0.8em;
+	text-align:center;
+	margin:0.2em;
+	margin-top:0.6em;
+}
+
+#graphcontainer{
+	flex-grow: 1;
+	/*background-color:red;*/
+	width:100%;
+	height:1px;
+}
+
+.node {
+	text-align:center;
+	border-radius:50%;
+	background-color: rgb(30, 190, 190);
+	height:1.5em;
+	width:1.5em;
+}
+
+.topic {
+	border-radius:15%;
+	height:1.5em;
+	width:2em;
+}
+
+.topicok {
+	background-color: rgb(10, 200, 90);
+}
+
+.topicwarn {
+	background-color: rgb(200, 150, 50);
+}
+
+.topicerror {
+	background-color: rgb(250, 20, 20);
+}
+
+.service {
+	background-color: rgb(142, 197, 255);
+}

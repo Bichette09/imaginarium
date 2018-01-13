@@ -39,6 +39,8 @@ install from gzip
 
 other dependencies
 	apt-get install mongodb-server lighttpd
+	sudo pip install pymongo 
+	sudo pip install twisted 
 
 edit following file to setup webserver /etc/lighttpd/lighttpd.conf
 

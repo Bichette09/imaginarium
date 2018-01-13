@@ -1,0 +1,54 @@
+
+.graphctrl {
+	text-align:center;
+	margin:0.1em;
+}
+
+.graphbutton {
+	font-family: 'Material Icons';
+	font-weight: normal;
+	font-style: normal;
+	font-size: 1.4em;
+	
+	text-transform: none;
+	display: inline-block;
+	white-space: nowrap;
+	word-wrap: normal;
+	direction: ltr;
+
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	
+	margin-right:0.2em;
+	vertical-align:middle;
+}
+
+.graphbutton:hover {
+	color:#2F4F4F;
+}
+.graphbutton:active {
+	color:#A9A9A9;
+}
+
+.graphspinbox {
+	width:3em;
+	display: inline-block;
+	vertical-align:middle;
+	text-align:right;
+	font-size: 1em;
+	margin-right:0.1em;
+	
+	/*-moz-appearance:textfield;*/
+	/*-webkit-appearance: none;*/
+}
+
+.graphroot{
+	background:red;
+}
+
+.graph{
+	float:left;
+	/*background:green;*/
+	/*display: inline-block;
+	text-align:center;*/
+}

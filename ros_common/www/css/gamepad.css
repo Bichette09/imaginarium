@@ -1,0 +1,64 @@
+#gamepadid {
+	text-align:center;
+}
+
+#gamepadbuttoncontainer{
+	display:flex;
+	flex-wrap:wrap;
+	justify-content: center;
+}
+
+.gamepad_button {
+	min-width:2.5em;
+	max-width:2.5em;
+	min-height:2.5em;
+	max-height:2.5em;
+	text-align:center;
+	border-radius:50%;
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	margin:0.2em;
+}
+
+.gamepad_buttontext{
+	font-size:0.8em;
+	vertical-align:middle;
+}
+
+.gamepad_buttonnotpressed{
+	background-color:rgba(0,0,255,0.2);
+}
+
+.gamepad_buttonpressed{
+	background-color:rgba(0,0,255,0.4);
+}
+
+#gamepadaxescontainer{
+	display:flex;
+	flex-wrap:wrap;
+	justify-content: center;
+}
+
+.gamepad_axesroot{
+	background-color:rgba(0,255,0,0.2);
+	min-width:6em;
+	max-width:6em;
+	min-height:6em;
+	max-height:6em;
+	margin:0.5em;
+	border-radius:50%;
+	position:relative;
+}
+
+.gamepad_axes{
+	background-color:rgba(255,0,0,0.6);
+	min-width:10%;
+	max-width:10%;
+	min-height:10%;
+	max-height:10%;
+	border-radius:50%;
+	position:absolute;
+	top:45%;
+	left:45%;
+}

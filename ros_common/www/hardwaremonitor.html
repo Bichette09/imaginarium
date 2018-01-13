@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset = "UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes"> 
+		<title>Raspberry Pi Hardware Monitor</title>
+		
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"></link>
+		<link rel="icon" href="favicon.ico" type="image/x-icon"></link>
+		
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:600,400,300" rel="stylesheet" type="text/css"/>
+		<link rel="stylesheet" type="text/css" href="thirdparty/google-material-icons.css"></link>
+		
+		<script type="text/javascript" src="thirdparty/jquery-3.2.1.min.js"></script>
+		<script type="text/javascript" src="thirdparty/plotly-basic-1.31.2.min.js"></script>
+		<script type="text/javascript" src="thirdparty/roslib-0.19.0.min.js"></script>
+		
+		
+		
+		<link rel="stylesheet" type="text/css" href="css/hardwaremonitor.css"></link>
+		<link rel="stylesheet" type="text/css" href="css/style.css"></link>
+		<link rel="stylesheet" type="text/css" href="css/graph.css"></link>
+		<script type="text/javascript" src="js/rosmgr.js"></script>
+		<script type="text/javascript" src="js/graph.js"></script>
+		<script type="text/javascript" src="js/hardwaremonitor.js"></script>
+
+		
+		<!-- <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> -->
+	</head>
+	<body onload="onload()">
+		<div class="titleroot"> 
+			<a class="link" href="index.html"><div class="titlehome">home</div></a>
+			<div class="title">Hardware Monitor</div>
+		</div>
+		<div class="separator"></div>
+		<div id="roserror" class="warning"><div class="linkicon">warning</div>Ros not connected</div>
+		<div class="hw_scalarroot">
+			<div class="hw_scalarentry"><div class="hw_scalarlabel">CPU Load</div><div id="scalar_cpuload" class="hw_scalarvalue">n/a</div></div>
+			<div class="hw_scalarentry"><div class="hw_scalarlabel">CPU Temp</div><div id="scalar_cputemp" class="hw_scalarvalue">n/a</div></div>
+			<div class="hw_scalarentry"><div class="hw_scalarlabel">Mem Load</div><div id="scalar_memload" class="hw_scalarvalue">n/a</div></div>
+			<div class="hw_scalarentry"><div class="hw_scalarlabel">Wifi Strength</div><div id="scalar_wifistrength" class="hw_scalarvalue">n/a</div></div>
+			<div class="hw_scalarentry"><div class="hw_scalarlabel">Wifi</div><div id="scalar_wifi" class="hw_scalarvalue">n/a</div></div>
+			<div class="hw_scalarentry"><div class="hw_scalarlabel">Ethernet</div><div id="scalar_eth" class="hw_scalarvalue">n/a</div></div>
+			<div class="hw_scalarentry"><div class="hw_scalarlabel">Loopback</div><div id="scalar_lo" class="hw_scalarvalue">n/a</div></div>
+		</div>
+		<div class="separator"></div>
+		<div id="graphs"></div>
+	</body>
+</html>
