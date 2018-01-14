@@ -1,2 +1,3 @@
 #!/bin/bash
-catkin_make --pkg ros_common
+cd ..
+catkin_make --pkg hardware_monitor settings_store

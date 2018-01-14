@@ -1,3 +1,3 @@
 #!/bin/bash
 source ../devel/setup.sh
-roslaunch test.launch   
+roslaunch imaginarium.launch   

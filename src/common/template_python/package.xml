@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>settings_store</name>
+  <name>template_python</name>
   <version>1.0.0</version>
-  <description>The settings_store package</description>
+  <description>A python package template </description>
 
   <maintainer email="bichette@pi.pi">bichette</maintainer>
 
