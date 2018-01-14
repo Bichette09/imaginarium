@@ -1,0 +1,11 @@
+# this service is used to retrieve multiple settings
+# list of settings requested if empty all settings will be returned
+string[] requestednames
+# if true requested settings will be tagged as used
+bool setinuse
+---
+string[] names
+string[] values
+string[] types
+# is this setting used by a node during this session ?
+bool[] inuse

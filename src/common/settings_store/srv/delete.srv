@@ -1,0 +1,5 @@
+# name of the setting to delete
+string name
+---
+# true if an error occurs (setting in use)
+bool error

@@ -1,0 +1,12 @@
+# declare and/or retrieve value of a setting
+# name of the setting to delete
+string name
+# type
+string type
+# new value
+string defaultvalue
+# should we force default value
+bool overwritewithdefault
+---
+# actual value in the store
+string value

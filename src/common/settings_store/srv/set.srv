@@ -1,0 +1,10 @@
+# use this service to set a new value
+# name of the setting
+string name
+# type
+string type
+# new value
+string newvalue
+---
+# true if an error occurs (setting missing or type missmatch)
+bool error
