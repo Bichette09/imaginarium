@@ -1,0 +1,6 @@
+<launch>
+	<arg name="settingsfilename" default="settings_store.json"/>
+	<node name="settings_store" pkg="settings_store" type="settings_store_server.py">
+		<param name="settingsfilename" value="$(arg settingsfilename)"/>
+	</node>
+</launch>
