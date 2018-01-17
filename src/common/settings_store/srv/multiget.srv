@@ -6,6 +6,5 @@ bool setinuse
 ---
 string[] names
 string[] values
-string[] types
 # is this setting used by a node during this session ?
 bool[] inuse

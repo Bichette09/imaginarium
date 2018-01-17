@@ -10,11 +10,18 @@
 	<include file="$(find settings_store)/launch/settings_store_server.launch" > 
 		<arg name="settingsfilename" value="$(env PWD)/settings.json"/>
 	</include>
+	
 	<!-- rosbridge interface to web front-end -->	
 	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" > 
 		<arg name="port" value="9090"/>
 	</include>
-	<!--<node name="settings_store" pkg="settings_store" type="settings_store_server.py" args="~/settings_store.json"/>-->
+	
 	<!-- hardware_monitor -->
 	<node name="hardware_monitor" pkg="hardware_monitor" type="hardware_monitor" />
+	
+	<!-- grading_machine_test -->
+	<include file="$(find grading_machine)/launch/grading_machine_test.launch" > 
+	
+	</include>
+	
 </launch> 

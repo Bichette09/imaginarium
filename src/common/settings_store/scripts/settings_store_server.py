@@ -38,24 +38,19 @@ def saveSettings(pFileName,pSettings):
 
 def emitChange(pField):
 	lName = ''
-	lType = ''
 	lValue = ''
 	lInUse = False
 
 	if pField in sSettings:
 		lName = pField
-		lType = sSettings[pField]['type']
 		lValue = sSettings[pField]['value']
 		lInUse = sSettings[pField]['inuse']
-	sRosPublisher.publish(settings_store.msg.change(lName,lType,lValue,lInUse))
+	sRosPublisher.publish(settings_store.msg.change(lName,lValue,lInUse))
 
 def handle_declareandget(req):
 	lNeedToWrite = False
 	if not req.name in sSettings:
-		print('settings_store add new entry ' + req.name + '/' + req.type)
-		lNeedToWrite = True
-	elif sSettings[req.name]['type'] != req.type:
-		print('settings_store type missmatch ' + req.name + ' got ' + req.type + ' was expecting ' + sSettings[req.name]['type'])
+		rospy.loginfo('settings_store add new entry %' % req.name)
 		lNeedToWrite = True
 	elif req.overwritewithdefault and sSettings[req.name]['value'] != req.defaultvalue:
 		lNeedToWrite = True
@@ -63,7 +58,6 @@ def handle_declareandget(req):
 	if lNeedToWrite:
 		sSettings[req.name] = {
 			'value':req.defaultvalue,
-			'type':req.type,
 			'inuse':True
 		}
 		emitChange(req.name)
@@ -75,7 +69,6 @@ def handle_declareandget(req):
 def handle_multiget(req):
 	lNames = []
 	lVals = []
-	lTypes = []
 	lInUses = []
 	
 	lRequestedNames = req.requestednames
@@ -89,24 +82,19 @@ def handle_multiget(req):
 				sSettings[lName]['inuse'] = True
 				emitChange(lName)
 			lVals.append(sSettings[lName]['value'])
-			lTypes.append(sSettings[lName]['type'])
 			lInUses.append(sSettings[lName]['inuse'])
 		else:
 			lVals.append('')
-			lTypes.append('')
 			lInUses.append(False)
 	
-	return settings_store.srv.multigetResponse(lNames,lVals,lTypes,lInUses)
+	return settings_store.srv.multigetResponse(lNames,lVals,lInUses)
 	
 def handle_set(req):
 	lError = False
 	
 	if not req.name in sSettings:
 		lError = True
-		print('settings_store could not set ' + req.name + ' entry missing')
-	elif sSettings[req.name]['type'] != req.type :
-		lError = True
-		print('settings_store could not set ' + req.name + ' type missmatch got ' + req.type + ' expect ' + sSettings[req.name]['type'])
+		rospy.logwarn('settings_store could not set ''%'' entry missing' % req.name)
 	elif sSettings[req.name]['value'] != req.newvalue:
 		sSettings[req.name]['value'] = req.newvalue
 		emitChange(req.name)
@@ -117,7 +105,7 @@ def handle_delete(req):
 	
 	if req.name in sSettings and sSettings[req.name]['inuse']:
 		lError = True
-		print('settings_store could not delete ' + req.name + ' it is used by a node')
+		rospy.logwarn('settings_store could not delete ''%'' it is used by a node' % req.name)
 	elif req.name in sSettings:
 		del sSettings[req.name]
 		# advertise that a setting was deleted

@@ -1,0 +1,4 @@
+<launch>
+	<node name="grading_machine" pkg="grading_machine" type="grading_machine_test.py">
+	</node>
+</launch>
