@@ -20,8 +20,8 @@
 	<node name="hardware_monitor" pkg="hardware_monitor" type="hardware_monitor" />
 	
 	<!-- grading_machine_test -->
-	<include file="$(find grading_machine)/launch/grading_machine_test.launch" > 
+	<!-- <include file="$(find grading_machine)/launch/grading_machine_test.launch" > 
 	
-	</include>
+	</include>-->
 	
 </launch> 

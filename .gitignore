@@ -3,5 +3,5 @@ build
 install
 .catkin_workspace
 src/CMakeLists.txt
-
+*.pyc
 

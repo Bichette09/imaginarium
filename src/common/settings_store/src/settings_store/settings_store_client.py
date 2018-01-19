@@ -10,7 +10,7 @@ class SettingsBase:
 	def __init__(self):
 		rospy.Subscriber('settings_store/change',settings_store.msg.change,self)
 		
-	def __call__(self, params):
+	# def __call__(self, params):
 		
 
 	
