@@ -10,15 +10,28 @@ import codecs
 import json
 import os
 
+class GradingSettings(settings_store_client.SettingsBase):
+	
+	def __init__(self):
+		settings_store_client.SettingsBase.__init__(self)
+		self.mUpdatePeriod = 1.
+		self.mMessage = 'yopyop'
+		
+		self.registerAttributes([
+			('mUpdatePeriod','GradingSettings/UpdatePeriod'),
+			('mMessage','GradingSettings/Message'),
+			])
+		
 
 
 if __name__ == "__main__":
 	rospy.init_node('grading_machine_test')
 	
 	
-	lSettings = settings_store_client.SettingsBase()
+	lSettings = GradingSettings()
 	
 	while not rospy.core.is_shutdown():
-		rospy.rostime.wallsleep(1.)
-		rospy.logwarn('coucou')
+		rospy.rostime.wallsleep(lSettings.mUpdatePeriod)
+		rospy.logwarn(lSettings.mMessage)
+		pass
 	

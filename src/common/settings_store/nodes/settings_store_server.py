@@ -48,23 +48,24 @@ def emitChange(pField):
 	sRosPublisher.publish(settings_store.msg.change(lName,lValue,lInUse))
 
 def handle_declareandget(req):
-	lNeedToWrite = False
-	if not req.name in sSettings:
-		rospy.loginfo('settings_store add new entry %' % req.name)
-		lNeedToWrite = True
-	elif req.overwritewithdefault and sSettings[req.name]['value'] != req.defaultvalue:
-		lNeedToWrite = True
-		
-	if lNeedToWrite:
-		sSettings[req.name] = {
-			'value':req.defaultvalue,
-			'inuse':True
-		}
-		emitChange(req.name)
-	elif not sSettings[req.name]['inuse']:
-		sSettings[req.name]['inuse'] = True
-		emitChange(req.name)
-	return settings_store.srv.declareandgetResponse(sSettings[req.name]['value'])
+	if len(req.names) != len(req.defaultvalues):
+		rospy.logfatal('names and defaultvalues should have same length')
+		return None
+	lVals = []
+	lChanges = []
+	for (name, defaultval) in zip(req.names, req.defaultvalues):
+		if not name in sSettings:
+			sSettings[name] = {'value':defaultval,'inuse':True}
+			lChanges.append(name)
+		elif not sSettings[name]['inuse']:
+			sSettings[name]['inuse'] = True
+			lChanges.append
+		lVals.append(str(sSettings[name]['value']))
+
+	for name in lChanges:
+		self.emitChange(name)
+
+	return settings_store.srv.declareandgetResponse(lVals)
 
 def handle_multiget(req):
 	lNames = []
@@ -78,9 +79,6 @@ def handle_multiget(req):
 	for lName in lRequestedNames:
 		lNames.append(lName)
 		if lName in sSettings:
-			if req.setinuse and not sSettings[lName]['inuse']:
-				sSettings[lName]['inuse'] = True
-				emitChange(lName)
 			lVals.append(sSettings[lName]['value'])
 			lInUses.append(sSettings[lName]['inuse'])
 		else:

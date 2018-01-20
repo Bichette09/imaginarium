@@ -1,1 +1,10 @@
-{}
+{
+    "GradingSettings/Message": {
+        "inuse": true, 
+        "value": "coucou2"
+    }, 
+    "GradingSettings/UpdatePeriod": {
+        "inuse": true, 
+        "value": "1.0"
+    }
+}

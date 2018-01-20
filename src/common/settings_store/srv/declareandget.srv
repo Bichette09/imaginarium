@@ -1,10 +1,7 @@
-# declare and/or retrieve value of a setting
-# name of the setting to delete
-string name
-# new value
-string defaultvalue
-# should we force default value
-bool overwritewithdefault
+# declare and/or retrieve value of settings
+string[] names
+# default values
+string[] defaultvalues
 ---
 # actual value in the store
-string value
+string[] values
