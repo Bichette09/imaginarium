@@ -72,6 +72,8 @@ function Graph( pParams) {
 	// init layout
 	let lLayout = {
 			"title":this.mParams.title,
+			paper_bgcolor: 'rgba(0,0,0,0)',
+			plot_bgcolor: 'rgba(0,0,0,0)',
 			xaxis:{
 				showline:lShowGrid,
 				showgrid: lShowGrid,

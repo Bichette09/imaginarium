@@ -25,21 +25,28 @@
 	</head>
 	<body onload="onload()"> 
 		<div class="titleroot">
-			<a class="link" href="index.html"><div class="titlehome">home</div></a>
+			<a class="link" href="../index.html"><div class="titlehome">home</div></a>
 			<div class="title">Settings</div>
 		</div>
 		<div class="separator"></div>
+		<div id="roserror" class="warning"><div class="linkicon">warning</div>Ros not connected</div>
 		<div id="filterroot">
 			<div id="filtericon">search</div>
-			<input type="text" id="filterinput" onkeyup="onfilter()" placeholder="Filter settings..." value="" title="Type in settings name">
-			<div id="savebutton" onclick="savesettings()">save</div>
+			<input type="text" id="filterinput" onkeyup="onfilter()" placeholder="Syntax : 'websocket -glob'" value="" title="Type in settings name" autofocus>
+			<div id="savebutton" class="settingsbutton" onclick="savesettings()">save</div>
 		</div>
-		<div id="roserror" class="warning"><div class="linkicon">warning</div>Ros not connected</div>
-		<div id="waiterroot">
-			<img src="img/spinning-circles.svg" id="waiter">
-		</div>
-		<div id="settingscontainer">
-		
+		<div>
+			<div id="waiterroot">
+				<img src="img/spinning-circles.svg" id="waiter">
+			</div>
+			<div class="settingseparator">settings</div>
+			<div id="settingscontainer">
+			
+			</div>
+			<div class="settingseparator">ros parameters</div>
+			<div id="paramscontainer">
+			
+			</div>
 		</div>
 	</body>
 </html>

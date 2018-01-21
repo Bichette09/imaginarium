@@ -63,7 +63,7 @@ def handle_declareandget(req):
 		lVals.append(str(sSettings[name]['value']))
 
 	for name in lChanges:
-		self.emitChange(name)
+		emitChange(name)
 
 	return settings_store.srv.declareandgetResponse(lVals)
 
