@@ -125,12 +125,13 @@ if __name__ == "__main__":
 		rospy.loginfo('settings_store will be saved on ' + lSettingsFile)
 	sSettings = loadSettings(lSettingsFile)
 	
-	sRosPublisher = rospy.Publisher('settings_store/change', settings_store.msg.change, queue_size=100)
+	sRosPublisher = rospy.Publisher('settings_store/Change', settings_store.msg.change, queue_size=100)
 	
-	lServiceGet = rospy.Service('settings_store/declareandget', settings_store.srv.declareandget, handle_declareandget)
 	lServiceGet = rospy.Service('settings_store/set', settings_store.srv.set, handle_set)
 	lServiceGet = rospy.Service('settings_store/multiget', settings_store.srv.multiget, handle_multiget)
 	lServiceGet = rospy.Service('settings_store/delete', settings_store.srv.delete, handle_delete)
+	# declare this one last, so nodes that wait for settings_store will block until this node is fully initialized
+	lServiceGet = rospy.Service('settings_store/declareandget', settings_store.srv.declareandget, handle_declareandget)
 	
 	# advertise that settings were loaded and are ready
 	emitChange(None)

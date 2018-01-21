@@ -7,16 +7,12 @@
         "inuse": false, 
         "value": "1.0"
     }, 
-    "toto3": {
-        "inuse": true, 
-        "value": "yop"
-    }, 
     "toto4": {
         "inuse": true, 
         "value": "yop"
     }, 
     "toto5": {
-        "inuse": true, 
+        "inuse": false, 
         "value": "yop"
     }
 }

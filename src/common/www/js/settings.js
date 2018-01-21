@@ -254,6 +254,6 @@ function onload()
 		onParamRetrieved();
 	})
 	
-	sRosCtx.startListeningTopic('settings_store/change','settings_store/change',onSettingChanged);
+	sRosCtx.startListeningTopic('settings_store/Change','settings_store/Change',onSettingChanged);
 }
 
