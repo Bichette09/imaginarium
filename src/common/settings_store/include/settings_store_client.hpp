@@ -28,7 +28,7 @@ namespace settings_store
 		void declareAndRetrieveValues();
 	private:
 		void onChange(const settings_store::Change::ConstPtr& pMsg);
-		
+		void setValue(const std::string & pName, const std::string & pValue);
 		enum Type
 		{
 			T_Unknown,
@@ -46,6 +46,11 @@ namespace settings_store
 		struct SettingInfo
 		{
 			SettingInfo();
+			
+			void setValueFromString(const std::string & pValue);
+			std::string getValueAsString() const;
+			
+			
 			
 			std::string		mDistantName;
 			Type			mType;
