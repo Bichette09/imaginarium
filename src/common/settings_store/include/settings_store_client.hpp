@@ -23,7 +23,7 @@ namespace settings_store
 		*	@param pAttribute is the attribute that should be mapped to the setting
 		*/
 		template <typename T>
-		void addSetting(const std::string & pSettingName, T & pAttribute);
+		void addSetting(const std::string & pSettingName, T & pAttribute, const T & pMin, const T & pMax);
 		
 		void declareAndRetrieveValues();
 	private:
@@ -43,6 +43,8 @@ namespace settings_store
 			T_Double,
 			T_String
 		};
+		
+		
 		struct SettingInfo
 		{
 			SettingInfo();
@@ -55,6 +57,9 @@ namespace settings_store
 			std::string		mDistantName;
 			Type			mType;
 			void *			mPtr;
+			char			mMin[8];
+			char			mMax[8];
+			std::string		mDefault;
 			bool 			mIsDeclared;
 		};
 		
