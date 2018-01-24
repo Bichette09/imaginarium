@@ -1,4 +1,4 @@
-#include <settings_store_client.hpp>
+#include <settings_store/settings_store_client.h>
 
 // ros
 #include "std_msgs/String.h"
@@ -12,6 +12,14 @@ using namespace settings_store;
 SettingsBase::SettingsBase(ros::NodeHandle & pNodeHandle)
 	: mNodeHandle(pNodeHandle)
 {
+	// int32_t lA = GetType<SettingsBase>();;
+	// registerAttribute<int32_t>("toto",lA,3,4);
+	
+	// std::string lB;
+	// registerAttribute("titi",lB);
+	
+	 
+	
 	mChangeTopic = mNodeHandle.subscribe("settings_store/Change", 1000, &SettingsBase::onChange,this);
 }
 
@@ -37,7 +45,7 @@ void SettingsBase::setValue(const std::string & pName, const std::string & pValu
 	lInfo.setValueFromString(pValue);
 }
 
-void SettingsBase::declareAndRetrieveValues()
+void SettingsBase::declareAndRetrieveSettings()
 {
 	std::vector<std::string> lNames;
 	std::vector<std::string> lValues;

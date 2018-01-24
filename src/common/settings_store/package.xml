@@ -25,7 +25,7 @@
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
-	<cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lsettings_store_client"/>
+	<cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lsettings_store"/>
   </export>
   
 </package>

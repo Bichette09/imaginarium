@@ -33,9 +33,9 @@ generate_messages(
 )
 
 catkin_package(
-   CATKIN_DEPENDS 
-   message_runtime 
-   std_msgs
+   INCLUDE_DIRS include
+    LIBRARIES settings_store
+   CATKIN_DEPENDS message_runtime std_msgs
 )
 
 ###########
@@ -52,7 +52,7 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(settings_store_client
+add_library(settings_store
    src/settings_store_client.cpp
 )
 
@@ -104,11 +104,11 @@ add_library(settings_store_client
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/${PROJECT_NAME}/
+   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+   FILES_MATCHING PATTERN "*.h"
+   PATTERN ".svn" EXCLUDE
+ )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

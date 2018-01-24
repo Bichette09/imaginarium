@@ -3,6 +3,7 @@
 // std
 #include <map>
 #include <string>
+#include <limits>
 
 // ros
 #include "ros/ros.h"
@@ -11,11 +12,17 @@
 
 namespace settings_store
 {
+	
+	
+
+	
 	class SettingsBase
 	{
 	public:
 		SettingsBase(ros::NodeHandle & pNodeHandle);
 		~SettingsBase();
+		
+		
 		
 	protected:
 		/** call this method to add an attribute once all attribute were added call declareAndRetrieveValues
@@ -23,12 +30,15 @@ namespace settings_store
 		*	@param pAttribute is the attribute that should be mapped to the setting
 		*/
 		template <typename T>
-		void addSetting(const std::string & pSettingName, T & pAttribute, const T & pMin, const T & pMax);
+		void registerAttribute(const std::string & pSettingName, T & pAttribute);
+		template <typename T>
+		void registerAttribute(const std::string & pSettingName, T & pAttribute,T pMin, T pMax);
 		
-		void declareAndRetrieveValues();
+		void declareAndRetrieveSettings();
 	private:
 		void onChange(const settings_store::Change::ConstPtr& pMsg);
 		void setValue(const std::string & pName, const std::string & pValue);
+		
 		enum Type
 		{
 			T_Unknown,
@@ -44,6 +54,8 @@ namespace settings_store
 			T_String
 		};
 		
+		template <typename T>
+		static Type GetTypeOf();
 		
 		struct SettingInfo
 		{
@@ -70,4 +82,4 @@ namespace settings_store
 	};
 }
 
-#include <settings_store_client.inl>
+#include <settings_store/settings_store_client.inl>

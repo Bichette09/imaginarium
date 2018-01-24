@@ -8,6 +8,9 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 
+// settings_store
+#include <settings_store/settings_store_client.h>
+
 // hardware_monitor
 #include <hardware_monitor/msg.h>
 
@@ -169,6 +172,25 @@ private:
 
 const std::string HwMonitor::sNetworkInterfaceName[HwMonitor::NI_Count] = {"lo","eth0","wlan0"};
 
+class HardwareMonitorSettings : public settings_store::SettingsBase
+{
+public:
+	HardwareMonitorSettings(ros::NodeHandle & pNodeHandle)
+		: settings_store::SettingsBase(pNodeHandle)
+		, mUpdateIntervalSec(1.)
+	{
+		registerAttribute<float>("hardware_monitor/update_period",mUpdateIntervalSec,0.5,10);
+		
+		declareAndRetrieveSettings();
+	}
+	
+	virtual ~HardwareMonitorSettings()
+	{
+	}
+	
+	float mUpdateIntervalSec;
+};
+
 int main(int argc, char ** argv)
 {
 	ros::init(argc,argv,"hardware_monitor");
@@ -186,6 +208,9 @@ int main(int argc, char ** argv)
 		
 		//std::cout<<"Starting hardware_monitor..."<<std::endl;
 		HwMonitor lHwMonitor;
+		
+		
+		HardwareMonitorSettings lSettings(n);
 		
 		std::chrono::time_point<std::chrono::system_clock> lTs = std::chrono::system_clock::now();
 		

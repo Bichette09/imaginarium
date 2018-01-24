@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   message_generation
+  settings_store
 )
 
 ## System dependencies are found with CMake's conventions
@@ -104,7 +105,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES pimonitor
-  CATKIN_DEPENDS message_runtime #roscpp std_msgs
+  CATKIN_DEPENDS message_runtime settings_store #roscpp std_msgs
 #  DEPENDS system_lib
 )
 
@@ -118,6 +119,8 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
 )
+
+# message(FATAL_ERROR "TEST ${catkin_INCLUDE_DIRS}")
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
