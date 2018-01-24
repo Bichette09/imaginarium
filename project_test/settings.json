@@ -5,10 +5,10 @@
     }, 
     "GradingSettings/UpdatePeriod": {
         "inuse": false, 
-        "value": "1.0"
+        "value": "2.0"
     }, 
     "toto4": {
-        "inuse": true, 
+        "inuse": false, 
         "value": "yop"
     }, 
     "toto5": {

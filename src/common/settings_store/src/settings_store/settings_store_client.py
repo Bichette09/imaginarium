@@ -5,13 +5,17 @@ import rospy
 import settings_store.msg
 import settings_store.srv
 
+
+
+
 ## base class that should be derived to declare/synchronize settings with settings_store server
 # 
 class SettingsBase:
 
+		
 	def __init__(self):
 		self.__mAttributes = {}
-		rospy.Subscriber('settings_store/Change',settings_store.msg.change,self)
+		rospy.Subscriber('settings_store/Change',settings_store.msg.change,self.__onSettingChangeCallback)
 		rospy.wait_for_service('/settings_store/declareandget',2.)
 		self.__mServiceDeclareAndGet = rospy.ServiceProxy('/settings_store/declareandget', settings_store.srv.declareandget)
 	
@@ -31,33 +35,40 @@ class SettingsBase:
 		lNames = []
 		lDefaultValues = []
 		
-		for (local, distant, min, max) in pAttributes:
+		for lAttr in pAttributes:
+			local = lAttr[0]
+			distant = lAttr[1]
+			min = lAttr[2] if len(lAttr) == 4 else None
+			max = lAttr[3] if len(lAttr) == 4 else None
+			
 			if distant in self.__mAttributes:
 				raise Exception('setting ' + distant + ' is already associated to attribute ' + self.__mAttributes[distant].mAttributeName)
 			# ensure that pLocalName exists and retrieve default value
 			lDefaultValues.append(str(getattr(self,local)));
-			self.__mAttributes[distant] = SettingInfo(local,getattr(self,local), min, max)
+			self.__mAttributes[distant] = SettingsBase.SettingInfo(local,getattr(self,local), min, max)
 			
 			lNames.append(distant)
 		lServiceReq = settings_store.srv.declareandgetRequest(lNames, lDefaultValues)
 		lResponse = self.__mServiceDeclareAndGet(lServiceReq)
 		
-		for ((local,distant),val) in zip(pAttributes,lResponse.values):
+		for (lAttr,val) in zip(pAttributes,lResponse.values):
+			local = lAttr[0]
+			distant = lAttr[1]
 			self.__setAttrValFromStr(distant,val)
 	
 	def __setNumericAttr(self, pSettingInfo, pVal):
-		if pSettingInfo.mMin is None or (pSettingInfo.mMin <= lVal and lVal <= pSettingInfo.mMax):
-			setattr(self,pName,lVal)
-		else
-			rospy.logwarn('Setting out of range % % % %',pSettingInfo.mAttributeName,pStrVal,pSettingInfo.mMin,pSettingInfo.mMax)
-			setattr(self,pName,pSettingInfo.mDefault)
+		if pSettingInfo.mMin is None or (pSettingInfo.mMin <= pVal and pVal <= pSettingInfo.mMax):
+			setattr(self,pSettingInfo.mAttributeName,pVal)
+		else:
+			rospy.logwarn('Setting out of range %s %s [%s %s], default to %s' % (pSettingInfo.mAttributeName , str(pVal),str(pSettingInfo.mMin),str(pSettingInfo.mMax),pSettingInfo.mDefault))
+			setattr(self,pSettingInfo.mAttributeName,pSettingInfo.mDefault)
 	
 	def __setAttrValFromStr(self, pDistant, pStrVal):
 		lSettingInfo = self.__mAttributes[pDistant]
 		lCurrentValue = getattr(self,lSettingInfo.mAttributeName)
 		
 		if isinstance(lCurrentValue,str):
-			setattr(self,pName,str(pStrVal))
+			setattr(self,lSettingInfo.mAttributeName,str(pStrVal))
 		elif isinstance(lCurrentValue,int):
 			self.__setNumericAttr(lSettingInfo,int(pStrVal))
 		elif isinstance(lCurrentValue,long):
@@ -65,12 +76,12 @@ class SettingsBase:
 		elif isinstance(lCurrentValue,float):
 			self.__setNumericAttr(lSettingInfo,float(pStrVal))
 		elif isinstance(lCurrentValue,bool):
-			setattr(self,pName,bool(pStrVal))
+			setattr(self,lSettingInfo.mAttributeName,bool(pStrVal))
 		else:
-			rospy.logfatal('type of ' + pName + ' is not handled')
+			rospy.logfatal('type of ' + lSettingInfo.mAttributeName + ' is not handled')
 	
-	def __call__(self,pParam):
+	def __onSettingChangeCallback(self,pParam):
 		if not pParam.name in self.__mAttributes:
 			return
-		lLocalName = self.__mAttributes[pParam.name]
-		self.__setAttrValFromStr(lLocalName,pParam.value)
+		self.__setAttrValFromStr(pParam.name,pParam.value)
+	

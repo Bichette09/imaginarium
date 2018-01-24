@@ -18,7 +18,7 @@ class GradingSettings(settings_store_client.SettingsBase):
 		self.mMessage = 'yopyop'
 		
 		self.registerAttributes([
-			('mUpdatePeriod','GradingSettings/UpdatePeriod'),
+			('mUpdatePeriod','GradingSettings/UpdatePeriod',0.5,10),
 			('mMessage','GradingSettings/Message'),
 			])
 		

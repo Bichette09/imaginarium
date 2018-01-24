@@ -129,8 +129,17 @@ function onfilter()
 function onsettinginputloosefocus(pEvent)
 {
 	var lElem = $(pEvent.target);
-	console.log('Update field');
-	// sRosCtx.callService('/rosapi/set_param','rosapi/GetParam',{name:lElem.parent().attr('paramname'),value:lElem.val()}, undefined);
+	sRosCtx.callService('/settings_store/set','settings_store/set',{name:lElem.parent().attr('paramname'),newvalue:lElem.val()}, undefined);
+	//sRosCtx.callService('/rosapi/set_param','rosapi/GetParam',{name:lElem.parent().attr('paramname'),value:lElem.val()}, undefined);
+}
+
+function onsettinginput(pEvent)
+{
+	if (e.keyCode == 13) {
+		var tb = document.getElementById("scriptBox");
+		onsettinginputloosefocus(pEvent);
+		return false;
+	}
 }
 
 var entityMap = {
@@ -163,7 +172,7 @@ function addOrUpdateSetting(pName,pValue,pInUse)
 		$( "#settingscontainer" ).append( 
 		"<div class=\"settingentry\" id=\"" + lId + "\" paramname=\"" + escapeHtml(pName) + "\">"+
 			"<div class=\"settingname\">" + escapeHtml(pName) + "<div id=\"deletebutton\" class=\"settingsbutton\" onclick=\"deletesetting(event)\">delete</div></div>"+
-			"<input type=\"text\" onchange=\"onsettinginputloosefocus(event)\" class=\"settingvalue\" originalvalue=\"\" value=\"\"></input>"+
+			"<input type=\"text\" onkeypress=\"onsettinginput(event)\" onchange=\"onsettinginputloosefocus(event)\" class=\"settingvalue\" originalvalue=\"\" value=\"\"></input>"+
 		"</div>");
 		lIsNew = true;
 	}

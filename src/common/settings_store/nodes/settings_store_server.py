@@ -89,7 +89,6 @@ def handle_multiget(req):
 	
 def handle_set(req):
 	lError = False
-	
 	if not req.name in sSettings:
 		lError = True
 		rospy.logwarn('settings_store could not set ''%'' entry missing' % req.name)
