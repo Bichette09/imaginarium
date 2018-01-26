@@ -124,7 +124,7 @@ if __name__ == "__main__":
 		rospy.loginfo('settings_store will be saved on ' + lSettingsFile)
 	sSettings = loadSettings(lSettingsFile)
 	
-	sRosPublisher = rospy.Publisher('settings_store/Change', settings_store.msg.change, queue_size=100)
+	sRosPublisher = rospy.Publisher('settings_store/Change', settings_store.msg.change, queue_size=1000)
 	
 	lServiceGet = rospy.Service('settings_store/set', settings_store.srv.set, handle_set)
 	lServiceGet = rospy.Service('settings_store/multiget', settings_store.srv.multiget, handle_multiget)

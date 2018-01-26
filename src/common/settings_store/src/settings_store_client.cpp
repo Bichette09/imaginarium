@@ -12,20 +12,13 @@ using namespace settings_store;
 SettingsBase::SettingsBase(ros::NodeHandle & pNodeHandle)
 	: mNodeHandle(pNodeHandle)
 {
-	// int32_t lA = GetType<SettingsBase>();;
-	// registerAttribute<int32_t>("toto",lA,3,4);
-	
-	// std::string lB;
-	// registerAttribute("titi",lB);
-	
-	 
-	
-	mChangeTopic = mNodeHandle.subscribe("settings_store/Change", 1000, &SettingsBase::onChange,this);
+	ros::service::waitForService("/settings_store/declareandget",5000);
+	mDeclareAndGetService = mNodeHandle.serviceClient<settings_store::declareandget>("/settings_store/declareandget");
+	mChangeTopic = mNodeHandle.subscribe("/settings_store/Change", 1000, &SettingsBase::onChange, this);
 }
 
 SettingsBase::~SettingsBase()
 {
-	
 }
 
 
@@ -47,8 +40,7 @@ void SettingsBase::setValue(const std::string & pName, const std::string & pValu
 
 void SettingsBase::declareAndRetrieveSettings()
 {
-	std::vector<std::string> lNames;
-	std::vector<std::string> lValues;
+	settings_store::declareandget lParam;
 	
 	tSettings::iterator lIt = mSettings.begin();
 	const tSettings::iterator lItEnd = mSettings.end();
@@ -56,13 +48,31 @@ void SettingsBase::declareAndRetrieveSettings()
 	{
 		if(!lIt->second.mIsDeclared)
 		{
-			lNames.push_back(lIt->first);
-			lValues.push_back(lIt->second.getValueAsString());
+			lParam.request.names.push_back(lIt->first);
+			lParam.request.defaultvalues.push_back(lIt->second.getValueAsString());
 		}
 	}
 	
+	if(lParam.request.names.empty())
+		return;
+	if(!mDeclareAndGetService.call(lParam))
+	{
+		ROS_ERROR_STREAM("fail to call declareandget service");
+		return;
+	}
 	
-	
+	settings_store::declareandget::Request::_names_type::const_iterator lItName = lParam.request.names.begin();
+	const settings_store::declareandget::Request::_names_type::const_iterator lItNameEnd = lParam.request.names.end();
+	settings_store::declareandget::Response::_values_type::const_iterator lItValue = lParam.response.values.begin();
+	const settings_store::declareandget::Response::_values_type::const_iterator lItValueEnd = lParam.response.values.end();
+	for( ; lItName != lItNameEnd && lItValue != lItValueEnd; ++lItName,++lItValue)
+	{
+		tSettings::iterator lFindIt = mSettings.find(*lItName);
+		if(lFindIt == mSettings.end())
+			continue;
+		lFindIt->second.mIsDeclared = true;
+		setValue(*lItName,*lItValue);
+	}
 }
 
 SettingsBase::SettingInfo::SettingInfo()
@@ -72,7 +82,7 @@ SettingsBase::SettingInfo::SettingInfo()
 {
 }
 
-void SettingsBase::SettingInfo::setValueFromString(const std::string & pValue)
+void SettingsBase::SettingInfo::setValueFromString(const std::string & pValue,bool pDisableRangeCheck)
 {
 	switch(mType)
 	{
@@ -86,50 +96,42 @@ void SettingsBase::SettingInfo::setValueFromString(const std::string & pValue)
 		}
 		case T_Int16:
 		{
-			int16_t & lDst = *reinterpret_cast<int16_t*>(mPtr);
-			lDst = static_cast<int16_t>(atoi(pValue.c_str()));
+			setNumericValue(static_cast<int16_t>(atoi(pValue.c_str())),pDisableRangeCheck);
 			return;
 		}
 		case T_UInt16:
 		{
-			uint16_t & lDst = *reinterpret_cast<uint16_t*>(mPtr);
-			lDst = static_cast<uint16_t>(atoi(pValue.c_str()));
+			setNumericValue(static_cast<uint16_t>(atoi(pValue.c_str())),pDisableRangeCheck);
 			return;
 		}
 		case T_Int32:
 		{
-			int32_t & lDst = *reinterpret_cast<int32_t*>(mPtr);
-			lDst = static_cast<int32_t>(atoi(pValue.c_str()));
+			setNumericValue(static_cast<int32_t>(atoi(pValue.c_str())),pDisableRangeCheck);
 			return;
 		}
 		case T_UInt32:
 		{
-			uint32_t & lDst = *reinterpret_cast<uint32_t*>(mPtr);
-			lDst = static_cast<uint32_t>(atoi(pValue.c_str()));
+			setNumericValue(static_cast<uint32_t>(atoi(pValue.c_str())),pDisableRangeCheck);
 			return;
 		}
 		case T_Int64:
 		{
-			int64_t & lDst = *reinterpret_cast<int64_t*>(mPtr);
-			lDst = static_cast<int16_t>(atoll(pValue.c_str()));
+			setNumericValue(static_cast<int64_t>(atoll(pValue.c_str())),pDisableRangeCheck);
 			return;
 		}
 		case T_UInt64:
 		{
-			uint64_t & lDst = *reinterpret_cast<uint64_t*>(mPtr);
-			lDst = static_cast<uint64_t>(atoll(pValue.c_str()));
+			setNumericValue(static_cast<uint64_t>(atoll(pValue.c_str())),pDisableRangeCheck);
 			return;
 		}
 		case T_Float:
 		{
-			float & lDst = *reinterpret_cast<float*>(mPtr);
-			lDst = static_cast<float>(atof(pValue.c_str()));
+			setNumericValue(static_cast<float>(atof(pValue.c_str())),pDisableRangeCheck);
 			return;
 		}
 		case T_Double:
 		{
-			double & lDst = *reinterpret_cast<double*>(mPtr);
-			lDst = static_cast<double>(atof(pValue.c_str()));
+			setNumericValue(static_cast<double>(atof(pValue.c_str())),pDisableRangeCheck);
 			return;
 		}
 		case T_String:

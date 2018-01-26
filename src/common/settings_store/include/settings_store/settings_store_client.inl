@@ -1,7 +1,4 @@
 
-/*template <typename T>
-Type GetTypeOf() {ROS_FATAL_STREAM("GetType called with unknown type"); return T_Unknown; }
-*/
 
 namespace settings_store
 {
@@ -78,9 +75,28 @@ namespace settings_store
 		lSettingInfo.mType = GetTypeOf<T>();
 		lSettingInfo.mPtr = &pAttribute;
 		lSettingInfo.mDefault = lSettingInfo.getValueAsString();
-		*reinterpret_cast<T*>(lSettingInfo.mMin) = pMin;
-		*reinterpret_cast<T*>(lSettingInfo.mMax) = pMax;
+		memcpy(&lSettingInfo.mMin,&pMin,sizeof(T));
+		memcpy(&lSettingInfo.mMax,&pMax,sizeof(T));
 	}
 
 #undef GET_SETTING_INFO
+
+	template <typename T>
+	void SettingsBase::SettingInfo::setNumericValue(T pVal, bool pDisableRangeCheck)
+	{
+		T lMin, lMax;
+		memcpy(&lMin,mMin,sizeof(T));
+		memcpy(&lMax,mMax,sizeof(T));
+		if((!pDisableRangeCheck) && (lMin > pVal || lMax < pVal))
+		{
+			ROS_WARN_STREAM(mDistantName<<" value "<<pVal<<" is out of range ["<<lMin<<";"<<lMax<<"], default to "<<mDefault);
+			// disable range check to avoid infinite loop if default is not in range
+			setValueFromString(mDefault,true);
+		}
+		else
+		{
+			memcpy(mPtr,&pVal,sizeof(T));
+		}
+	}
+	
 }

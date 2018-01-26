@@ -61,7 +61,9 @@ namespace settings_store
 		{
 			SettingInfo();
 			
-			void setValueFromString(const std::string & pValue);
+			void setValueFromString(const std::string & pValue, bool pDisableRangeCheck = false);
+			template <typename T>
+			void setNumericValue(T pVal,bool pDisableRangeCheck);
 			std::string getValueAsString() const;
 			
 			
@@ -79,6 +81,7 @@ namespace settings_store
 		tSettings			mSettings;
 		ros::NodeHandle & 	mNodeHandle;
 		ros::Subscriber		mChangeTopic;
+		ros::ServiceClient	mDeclareAndGetService;
 	};
 }
 

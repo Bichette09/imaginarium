@@ -7,12 +7,8 @@
         "inuse": false, 
         "value": "2.0"
     }, 
-    "toto4": {
-        "inuse": false, 
-        "value": "yop"
-    }, 
-    "toto5": {
-        "inuse": false, 
-        "value": "yop"
+    "hardware_monitor/update_period": {
+        "inuse": true, 
+        "value": "0100"
     }
 }

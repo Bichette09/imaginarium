@@ -204,7 +204,7 @@ int main(int argc, char ** argv)
 		lMsg.header.seq = 0;
 		ros::message_operations::Printer<hardware_monitor::msg> lMsgPrinter;
 		
-		ros::Rate lLoopRate(5);//1Hz
+		ros::Rate lLoopRate(4);
 		
 		//std::cout<<"Starting hardware_monitor..."<<std::endl;
 		HwMonitor lHwMonitor;
@@ -217,9 +217,9 @@ int main(int argc, char ** argv)
 		std::cout<<"hardware_monitor ready !"<<std::endl;
 		while(ros::ok())
 		{
-			// do work every 2s
+			ros::spinOnce();
 			std::chrono::time_point<std::chrono::system_clock> lNewTs = std::chrono::system_clock::now();
-			if (std::chrono::duration<float>(lNewTs - lTs).count() >= 1.)
+			if (std::chrono::duration<float>(lNewTs - lTs).count() >= lSettings.mUpdateIntervalSec)
 			{
 				lTs = lNewTs;
 				++lMsg.header.seq;
