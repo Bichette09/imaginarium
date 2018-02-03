@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import gyro.msg
+import imaginarium_core.msg
 import rospy
 import os
 import smbus
@@ -64,13 +64,10 @@ if __name__ == "__main__":
 	
 	os.getcwd()
 	rospy.init_node('gyro')
+
 	
-	if lSettingsFile is None:
-		rospy.logfatal('Need /settings_store/settingsfilename parameter, to disable persistent storage give an empty filename')
-		raise Exception()
-		
-	sRosPublisher = rospy.Publisher('gyro/Measures', gyro.msg.measures, queue_size=5)
-	lGyroReader = Gyro(rospy.get_param('i2cPort'))
+	sRosPublisher = rospy.Publisher('imaginarium_core/Measures', imaginarium_core.msg.Measures, queue_size=5)
+	lGyroReader = Gyro(rospy.get_param('/gyro/i2cPort'))
 
 	while not rospy.core.is_shutdown():
 	
@@ -78,5 +75,5 @@ if __name__ == "__main__":
 		lGyro = lGyroReader.readAngularSpeed()
 	
 		# Message publication
-		sRosPublisher.publish(settings_store.msg.measures(lAccel,lGyro))
+		sRosPublisher.publish(imaginarium_core.msg.Measures(lAccel,lGyro))
 

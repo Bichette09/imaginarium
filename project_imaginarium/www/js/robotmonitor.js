@@ -11,16 +11,36 @@ function onload()
 	sGraphs.init('graphs');
 	sGraphs.addGraph(
 		{
-			"title":"cpu",
+			"title":"gyro",
 			"y1":{
-				"unit":"%",
-				"range":[-0.1,100.1],
+				"unit":"°/sec",
+				"range":[-10,10],
 				"rostraces":[
 					{
-						"name":"cpu",
-						"topicname":"/hardware_monitor",
-						"messagetype":"/hardware_monitor/msg",
-						"messagefield":"cpuload"
+						"name":"angular rot",
+						"topicname":"/imaginarium_core/Measures",
+						"messagetype":"/imaginarium_core/Measures",
+						"messagefield":"angular_speed",
+						"fieldindex":2
+					}
+				]
+			},
+			"y2":{
+				"unit":"m/s-2",
+				"range":[-5,5],
+				"rostraces":[
+					{
+						"name":"accel X",
+						"topicname":"/imaginarium_core/Measures",
+						"messagetype":"/imaginarium_core/Measures",
+						"messagefield":"acceleration",
+						"fieldindex":1
+					},{
+						"name":"accel Y",
+						"topicname":"/imaginarium_core/Measures",
+						"messagetype":"/imaginarium_core/Measures",
+						"messagefield":"acceleration",
+						"fieldindex":2
 					}
 				]
 			}
