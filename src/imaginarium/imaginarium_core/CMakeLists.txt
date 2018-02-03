@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(template_python)
+project(imaginarium_core)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   rospy
   std_msgs
+  settings_store
 )
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -17,11 +18,10 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
    FILES
-   msg.msg
+   Measures.msg
 )
 add_service_files(
    FILES
-   service.srv
 )
 
 generate_messages(
@@ -33,6 +33,7 @@ catkin_package(
    CATKIN_DEPENDS 
    message_runtime 
    std_msgs
+   settings_store
 )
 
 ###########
