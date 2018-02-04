@@ -66,17 +66,18 @@ class SettingsBase:
 	def __setAttrValFromStr(self, pDistant, pStrVal):
 		lSettingInfo = self.__mAttributes[pDistant]
 		lCurrentValue = getattr(self,lSettingInfo.mAttributeName)
-		
 		if isinstance(lCurrentValue,str):
 			setattr(self,lSettingInfo.mAttributeName,str(pStrVal))
+		elif isinstance(lCurrentValue,bool):
+			lStrLower = pStrVal.lower()
+			lNewVal = not (len(lStrLower) == 0 or lStrLower[0] == 'f' or lStrLower[0] == '0')
+			setattr(self,lSettingInfo.mAttributeName, lNewVal)
 		elif isinstance(lCurrentValue,int):
 			self.__setNumericAttr(lSettingInfo,int(pStrVal))
 		elif isinstance(lCurrentValue,long):
 			self.__setNumericAttr(lSettingInfo,long(pStrVal))
 		elif isinstance(lCurrentValue,float):
 			self.__setNumericAttr(lSettingInfo,float(pStrVal))
-		elif isinstance(lCurrentValue,bool):
-			setattr(self,lSettingInfo.mAttributeName,bool(pStrVal))
 		else:
 			rospy.logfatal('type of ' + lSettingInfo.mAttributeName + ' is not handled')
 	

@@ -10,7 +10,7 @@
 	box-shadow: 1px 2px 4px rgba(0, 0, 0, .5);
 	display: inline-block;
 	border: 1px solid #999;
-	width:9em;
+	min-width:8em;
 }
 
 .hw_scalarlabel{
@@ -20,7 +20,7 @@
 
 .hw_scalarvalue{
 	float:right;
-	margin-left:0.2em;
+	margin-left:0.4em;
 	margin-right:0.2em;
 }
 

@@ -1,14 +1,38 @@
 {
     "GradingSettings/Message": {
-        "inuse": false, 
+        "inuse": true, 
         "value": "coucou2"
     }, 
     "GradingSettings/UpdatePeriod": {
-        "inuse": false, 
-        "value": "2.0"
+        "inuse": true, 
+        "value": "0.1"
+    }, 
+    "PiCamera/HighQuality": {
+        "inuse": true, 
+        "value": "t"
+    }, 
+    "PiCamera/UpdatePeriod": {
+        "inuse": true, 
+        "value": "1.5"
     }, 
     "hardware_monitor/update_period": {
         "inuse": true, 
         "value": "1"
+    }, 
+    "picamera_capture/HFlip": {
+        "inuse": true, 
+        "value": "f"
+    }, 
+    "picamera_capture/HighQuality": {
+        "inuse": true, 
+        "value": "f"
+    }, 
+    "picamera_capture/UpdatePeriod": {
+        "inuse": true, 
+        "value": ".2"
+    }, 
+    "picamera_capture/VFlip": {
+        "inuse": true, 
+        "value": "t"
     }
 }

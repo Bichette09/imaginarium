@@ -20,9 +20,9 @@ add_message_files(
    FILES
    Measures.msg
 )
-add_service_files(
-   FILES
-)
+#add_service_files(
+#   FILES
+#)
 
 generate_messages(
    DEPENDENCIES
