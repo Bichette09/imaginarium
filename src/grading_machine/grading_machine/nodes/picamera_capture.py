@@ -37,6 +37,7 @@ if __name__ == "__main__":
 		lCamera.resolution[0] =  lNewRes[0]
 	if lNewRes[1] > 0 :
 		lCamera.resolution[1] =  lNewRes[1]
+	lCamera.framerate = 25
 
 	while not rospy.core.is_shutdown():
 		lStart = time.time()

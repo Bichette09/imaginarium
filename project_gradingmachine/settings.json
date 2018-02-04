@@ -1,19 +1,11 @@
 {
     "GradingSettings/Message": {
-        "inuse": true, 
+        "inuse": false, 
         "value": "coucou2"
     }, 
     "GradingSettings/UpdatePeriod": {
-        "inuse": true, 
+        "inuse": false, 
         "value": "0.1"
-    }, 
-    "PiCamera/HighQuality": {
-        "inuse": true, 
-        "value": "t"
-    }, 
-    "PiCamera/UpdatePeriod": {
-        "inuse": true, 
-        "value": "1.5"
     }, 
     "hardware_monitor/update_period": {
         "inuse": true, 

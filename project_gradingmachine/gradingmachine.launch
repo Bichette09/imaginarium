@@ -13,10 +13,11 @@
 	<!-- hardware_monitor, a node to monitor cpu, memory and network -->
 	<node name="hardware_monitor" pkg="hardware_monitor" type="hardware_monitor" />
 	
-	<!-- grading_machine_test -->
-	<!-- <include file="$(find grading_machine)/launch/grading_machine_test.launch" > 
+	<!-- camera capture -->
+	<include file="$(find grading_machine)/launch/picamera_capture.launch" > 
 	
-	</include>-->
+	</include>
+	
 	<!-- web_video_server, a node to stream image topic to web client -->	
 	<node name="web_video_server" pkg="web_video_server" type="web_video_server">
 		<param name="port" value="8080"></param>
