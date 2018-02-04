@@ -1,12 +1,6 @@
 ﻿<launch>
-	<!-- mongodb_store -->
-<!--
-	<include file="$(find mongodb_store)/launch/mongodb_store.launch" >
-       		<arg name="use_daemon" value="true"/>
-		<arg name="port" value="27017"/> 
-	</include>
--->
-	<!-- settings server -->
+	<remap from="/raspicam_node/image/compressed" to="/raspicam_node/compressed"/>
+	<!-- settings server, a node to store dynamic settings -->
 	<include file="$(find settings_store)/launch/settings_store_server.launch" > 
 		<arg name="settingsfilename" value="$(env PWD)/settings.json"/>
 	</include>
@@ -16,12 +10,16 @@
 		<arg name="port" value="9090"/>
 	</include>
 	
-	<!-- hardware_monitor -->
+	<!-- hardware_monitor, a node to monitor cpu, memory and network -->
 	<node name="hardware_monitor" pkg="hardware_monitor" type="hardware_monitor" />
 	
 	<!-- grading_machine_test -->
 	<!-- <include file="$(find grading_machine)/launch/grading_machine_test.launch" > 
 	
 	</include>-->
-	
+	<!-- web_video_server, a node to stream image topic to web client -->	
+	<node name="web_video_server" pkg="web_video_server" type="web_video_server">
+		<param name="port" value="8080"></param>
+		<param name="ros_threads" value="2"></param>	
+	</node>	
 </launch> 

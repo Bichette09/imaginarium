@@ -241,6 +241,16 @@ function onload()
 	});
 	
 	++sSettingsCtx.waitcptr;
+	sRosCtx.callService('/settings_store/multiget','settingsstore/multiget',{requestednames:[]}, function(pResult) {
+		for(var i = 0 ; i < pResult.names.length ; ++i)
+		{
+			addOrUpdateSetting(pResult.names[i],pResult.values[i],pResult.inuse[i])
+		}
+		onParamRetrieved();
+	})
+	
+	
+	++sSettingsCtx.waitcptr;
 	sRosCtx.callService('/rosapi/get_param_names','rosapi/GetParamNames',{}, function(pResult) {
 		for(var i = 0 ; i < pResult.names.length ; ++i)
 		{
@@ -254,14 +264,6 @@ function onload()
 	})
 	
 		
-	++sSettingsCtx.waitcptr;
-	sRosCtx.callService('/settings_store/multiget','settingsstore/multiget',{requestednames:[]}, function(pResult) {
-		for(var i = 0 ; i < pResult.names.length ; ++i)
-		{
-			addOrUpdateSetting(pResult.names[i],pResult.values[i],pResult.inuse[i])
-		}
-		onParamRetrieved();
-	})
 	
 	sRosCtx.startListeningTopic('settings_store/Change','settings_store/Change',onSettingChanged);
 }

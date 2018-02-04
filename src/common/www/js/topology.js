@@ -386,11 +386,11 @@ function onTopologyRetrieved()
 			randomSeed:2,
 			improvedLayout:true//,
 			// randomSeed:10,
-			 ,hierarchical:{
+			/* ,hierarchical:{
 				 edgeMinimization: false,
 				 nodeSpacing:250
 				// sortMethod: "directed"
-			 }
+			 }*/
 		},
 		physics:{
 			barnesHut:{

@@ -9,6 +9,6 @@
     }, 
     "hardware_monitor/update_period": {
         "inuse": true, 
-        "value": "0100"
+        "value": "1"
     }
 }
