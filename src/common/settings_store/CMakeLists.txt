@@ -5,9 +5,9 @@ project(settings_store)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  message_generation
-  rospy
-  std_msgs
+	message_generation
+	rospy
+	std_msgs
 )
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -16,26 +16,26 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_python_setup()
 
 add_message_files(
-   FILES
-   Change.msg
+	FILES
+	Change.msg
 )
 add_service_files(
-   FILES
-   declareandget.srv
-   delete.srv
-   multiget.srv
-   set.srv
+	FILES
+	declareandget.srv
+	delete.srv
+	multiget.srv
+	set.srv
 )
 
 generate_messages(
-   DEPENDENCIES
-   std_msgs
+	DEPENDENCIES
+	std_msgs
 )
 
 catkin_package(
-   INCLUDE_DIRS include
-    LIBRARIES settings_store
-   CATKIN_DEPENDS message_runtime std_msgs
+	INCLUDE_DIRS include
+	LIBRARIES settings_store
+	CATKIN_DEPENDS message_runtime std_msgs
 )
 
 ###########
@@ -46,14 +46,12 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
 	include
-  ${catkin_INCLUDE_DIRS}
-
-  
+	${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 add_library(settings_store
-   src/settings_store_client.cpp
+	src/settings_store_client.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -105,10 +103,10 @@ add_library(settings_store
 
 ## Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-   FILES_MATCHING PATTERN "*.h"
-   PATTERN ".svn" EXCLUDE
- )
+	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+	FILES_MATCHING PATTERN "*.h"
+	PATTERN ".svn" EXCLUDE
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

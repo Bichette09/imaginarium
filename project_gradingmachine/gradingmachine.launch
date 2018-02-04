@@ -13,14 +13,19 @@
 	<!-- hardware_monitor, a node to monitor cpu, memory and network -->
 	<node name="hardware_monitor" pkg="hardware_monitor" type="hardware_monitor" />
 	
+	<!-- oled display -->
+	<node name="oled_display" pkg="grading_machine" type="oled_display.py" />
+	
+	
 	<!-- camera capture -->
 	<include file="$(find grading_machine)/launch/picamera_capture.launch" > 
 	
 	</include>
 	
+	
 	<!-- web_video_server, a node to stream image topic to web client -->	
 	<node name="web_video_server" pkg="web_video_server" type="web_video_server">
 		<param name="port" value="8080"></param>
-		<param name="ros_threads" value="2"></param>	
+		<param name="ros_threads" value="2"></param>
 	</node>	
 </launch> 

@@ -14,27 +14,27 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+catkin_python_setup()
 
-# add_message_files(
-   # FILES
-   # msg.msg
-# )
+add_message_files(
+   FILES
+   DisplayDrawText.msg
+   DisplayDrawRect.msg
+)
 # add_service_files(
    # FILES
    # service.srv
 # )
 
-# generate_messages(
-   # DEPENDENCIES
-   # std_msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   std_msgs
+)
 
 catkin_package(
    CATKIN_DEPENDS 
-   message_runtime 
-   std_msgs
-   settings_store
+   LIBRARIES grading_machine
+   CATKIN_DEPENDS message_runtime std_msgs
 )
 
 ###########
