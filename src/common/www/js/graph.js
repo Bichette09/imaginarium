@@ -205,14 +205,27 @@ function Graph( pParams) {
 			pGraph.mTraces.push(pTrace);
 			pTrace.mMainAxis = pMainAxis;
 			sRosCtx.startListeningTopic(pTrace.topicname,pTrace.messagetype,function(message){
-					let lXMsec = Math.floor(message.header.stamp.nsecs * 1e-6);
-					let lX = message.header.stamp.secs + lXMsec * 1e-3;
+					let lX = 0.;
+					if( message.header !== undefined)
+					{
+						let lXMsec = Math.floor(message.header.stamp.nsecs * 1e-6);
+						lX = message.header.stamp.secs + lXMsec * 1e-3;
+					}
+					else
+					{
+						lX = new Date().getTime() / 1000.;
+					}
+					
 					if(sGraphs.mTimeReference == undefined)
 					{
 						sGraphs.mTimeReference = lX;
 					}
 					lX -= sGraphs.mTimeReference;
 					let lY = message[pTrace.messagefield];
+					if(pTrace.fieldindex !== undefined )
+					{
+						lY = lY[pTrace.fieldindex];
+					}
 					
 					if(lX !== undefined && lY !== undefined)
 					{

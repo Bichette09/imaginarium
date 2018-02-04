@@ -45,7 +45,7 @@ def emitChange(pField):
 		lName = pField
 		lValue = sSettings[pField]['value']
 		lInUse = sSettings[pField]['inuse']
-	sRosPublisher.publish(settings_store.msg.change(lName,lValue,lInUse))
+	sRosPublisher.publish(settings_store.msg.Change(lName,lValue,lInUse))
 
 def handle_declareandget(req):
 	if len(req.names) != len(req.defaultvalues):
@@ -124,7 +124,7 @@ if __name__ == "__main__":
 		rospy.loginfo('settings_store will be saved on ' + lSettingsFile)
 	sSettings = loadSettings(lSettingsFile)
 	
-	sRosPublisher = rospy.Publisher('settings_store/Change', settings_store.msg.change, queue_size=1000)
+	sRosPublisher = rospy.Publisher('settings_store/Change', settings_store.msg.Change, queue_size=1000)
 	
 	lServiceGet = rospy.Service('settings_store/set', settings_store.srv.set, handle_set)
 	lServiceGet = rospy.Service('settings_store/multiget', settings_store.srv.multiget, handle_multiget)

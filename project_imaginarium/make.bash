@@ -1,3 +1,3 @@
 #!/bin/bash
 cd ..
-catkin_make --pkg hardware_monitor
+catkin_make --pkg settings_store hardware_monitor imaginarium_core
