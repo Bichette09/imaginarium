@@ -9,6 +9,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 import grading_machine.msg
 import rospy
+import textwrap
+import math
 
 class OledDisplaySettings(settings_store_client.SettingsBase):
 	
@@ -66,7 +68,13 @@ class Display():
 		lHeight = pMaxHeight if pMaxHeight > 0 else self.__mBuffer.size[1]
 		lDraw.rectangle([0, 0, lWidth,lHeight],fill='black')
 		# draw text
-		lDraw.multiline_text((0,0),pText, fill='white', font=lFont)
+		lCharWidth = lDraw.textsize(pText)[0] / float(len(pText))
+		lWrapSize = int(math.floor(lWidth/lCharWidth))
+		lYOffset = 0
+		for line in textwrap.wrap(pText, width=lWrapSize):
+			lDraw.text((0,lYOffset),line, fill='white', font=lFont)
+			lYOffset += lDraw.textsize(line)[1]
+		
 		# copy target area to output buffer
 		self.__mBuffer.paste(self.__mBufferTmp.crop(box = (0,0,lWidth,lHeight)),[pX, pY])
 		self.__mHasPendingChanges = True
