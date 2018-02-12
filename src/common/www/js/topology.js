@@ -236,7 +236,7 @@ function onTopologyRetrieved()
 		return;
 	$('#waiterroot').hide();
 	$('#graphcontainer').show();
-	console.log(sTopologyData.services);
+	// console.log(sTopologyData.services);
 	var lNodes = [];
 	var lEdges = [];
 	var lCreatedNodes = {};

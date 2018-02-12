@@ -29,6 +29,6 @@
     }, 
     "picamera_capture/VFlip": {
         "inuse": true, 
-        "value": "t"
+        "value": "f"
     }
 }

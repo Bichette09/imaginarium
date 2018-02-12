@@ -30,15 +30,14 @@ if __name__ == "__main__":
 	
 	lSettings = PiCameraSettings()
 	
-	lImgPub = image_pub = rospy.Publisher('/picamera_capture/image_raw/compressed',CompressedImage, queue_size = 1)
-	lCamera = picamera.PiCamera()
+	lImgPub = rospy.Publisher('/picamera_capture/image_raw/compressed',CompressedImage, queue_size = 1)
+	
 	lNewRes = (int(rospy.get_param('/picamera_capture/width')),int(rospy.get_param('/picamera_capture/height')))
-	if lNewRes[0] > 0 :
-		lCamera.resolution[0] =  lNewRes[0]
-	if lNewRes[1] > 0 :
-		lCamera.resolution[1] =  lNewRes[1]
-	lCamera.framerate = 25
-
+	if lNewRes[0] <= 0 and lNewRes[1] <= 0 :
+		lNewRes = None
+	
+	lCamera = picamera.PiCamera(resolution=lNewRes, framerate=25) 
+	
 	while not rospy.core.is_shutdown():
 		lStart = time.time()
 
