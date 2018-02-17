@@ -6,10 +6,26 @@ project(grading_machine)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   message_generation
+  roscpp
   rospy
   std_msgs
   settings_store
+  cv_bridge
+  image_transport
 )
+
+find_package( OpenCV REQUIRED )
+
+if(EXISTS "/usr/local/lib/libraspicam.so")
+	set(USE_RASPICAM_LIB ON)
+	set(RASPICAM_LIBS "-lraspicam" "-lmmal" "-lmmal_core")
+	add_definitions("-DUSE_RASPICAM_LIB")
+	link_directories("/opt/vc/lib/")
+else()
+	set(USE_RASPICAM_LIB OFF)
+	set(RASPICAM_LIBS )
+endif()
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -34,8 +50,9 @@ generate_messages(
 catkin_package(
    CATKIN_DEPENDS 
    LIBRARIES grading_machine
-   CATKIN_DEPENDS message_runtime std_msgs
+   CATKIN_DEPENDS message_runtime std_msgs settings_store cv_bridge image_transport
 )
+
 
 ###########
 ## Build ##
@@ -46,6 +63,7 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -62,6 +80,10 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/settingsstore_node.cpp)
+file(GLOB_RECURSE IMG_PROCESSOR_FILES nodes/img_processor *.h *.inl *.cpp)
+add_executable(img_processor ${IMG_PROCESSOR_FILES})
+target_link_libraries(img_processor ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${RASPICAM_LIBS} )
+add_dependencies(img_processor grading_machine_generate_messages_cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

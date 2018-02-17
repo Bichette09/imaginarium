@@ -28,7 +28,8 @@ if __name__ == "__main__":
 	
 	img = cv2.imread('/home/pi/image.jpg')
 	img = cv2.resize(img, (0,0), fx=0.1, fy=0.1) 
-	# img = cv2.resize(img, (1280,1024)) 
+	# img = cv2.resize(img, (1920,1080)) 
+	img = cv2.resize(img, (960,540)) 
 	lImgPub = rospy.Publisher('/test/image_raw/compressed',CompressedImage, queue_size = 1)
 	
 	

@@ -1,11 +1,15 @@
 {
     "GradingSettings/Message": {
-        "inuse": true, 
+        "inuse": false, 
         "value": ""
     }, 
     "GradingSettings/UpdatePeriod": {
         "inuse": false, 
         "value": "0.1"
+    }, 
+    "grading_machine/update_period": {
+        "inuse": true, 
+        "value": "1"
     }, 
     "hardware_monitor/update_period": {
         "inuse": true, 
@@ -16,19 +20,19 @@
         "value": "1"
     }, 
     "picamera_capture/HFlip": {
-        "inuse": true, 
+        "inuse": false, 
         "value": "f"
     }, 
     "picamera_capture/HighQuality": {
-        "inuse": true, 
+        "inuse": false, 
         "value": "f"
     }, 
     "picamera_capture/UpdatePeriod": {
-        "inuse": true, 
+        "inuse": false, 
         "value": ".1"
     }, 
     "picamera_capture/VFlip": {
-        "inuse": true, 
+        "inuse": false, 
         "value": "f"
     }
 }

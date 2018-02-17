@@ -18,10 +18,10 @@
 	
 	
 	<!-- camera capture -->
-	<include file="$(find grading_machine)/launch/picamera_capture.launch" > 
+	<!--<include file="$(find grading_machine)/launch/picamera_capture.launch" > 
 		<arg name="width" value="0"/>
 		<arg name="height" value="0"/>
-	</include>
+	</include>-->
 	
 	
 	<!-- web_video_server, a node to stream image topic to web client -->	
