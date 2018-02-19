@@ -1,11 +1,31 @@
 {
-    "GradingSettings/Message": {
-        "inuse": false, 
-        "value": ""
+    "grading_machine/filter_dilate": {
+        "inuse": true, 
+        "value": "t"
     }, 
-    "GradingSettings/UpdatePeriod": {
-        "inuse": false, 
-        "value": "0.1"
+    "grading_machine/filter_erode": {
+        "inuse": true, 
+        "value": "f"
+    }, 
+    "grading_machine/filter_gaussian": {
+        "inuse": true, 
+        "value": "f"
+    }, 
+    "grading_machine/filter_th_U": {
+        "inuse": true, 
+        "value": "-1"
+    }, 
+    "grading_machine/filter_th_V": {
+        "inuse": true, 
+        "value": "-1"
+    }, 
+    "grading_machine/th_U": {
+        "inuse": true, 
+        "value": "0"
+    }, 
+    "grading_machine/th_V": {
+        "inuse": true, 
+        "value": "0"
     }, 
     "grading_machine/update_period": {
         "inuse": true, 

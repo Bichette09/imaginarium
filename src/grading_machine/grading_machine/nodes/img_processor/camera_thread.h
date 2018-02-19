@@ -5,11 +5,9 @@
 
 // std
 #include <mutex>
+#include <condition_variable>
 
-namespace cv
-{
-	class Mat;
-}
+#include "grabbed_frame.h"
 
 class CameraThread : public ThreadInterface
 {
@@ -44,24 +42,21 @@ public:
 	/** return last capture data 
 	*	pY is full res, pU and pV will be a quarter of the resolution
 	*/
-	void getFrame(cv::Mat & pY, cv::Mat & pU, cv::Mat & pV);
+	bool getNextFrame(GrabbedFrame & pFrame,int pTimeoutMs = 50);
 	
 	bool isCapturing() const;
 	bool isOk() const;
-	bool hasNewFrame() const;
 	
-	static void EnsureMatSizeAndType(cv::Mat & pY, cv::Mat & pU, cv::Mat & pV, const Parameters & pParams);
+	static void EnsureMatSizeAndType(GrabbedFrame & pFrame, const Parameters & pParams);
 	
 	const Parameters	mParameters;
-	
-	
-	
+
 protected:
 	virtual void run();
 private:
-	std::mutex	mMutex;
-	
-	cv::Mat*	mInterThreadData[3];
+	std::mutex					mMutex;
+	std::condition_variable		mWaitCondition;
+	GrabbedFrame	mFrame;
 	bool		mGotNewFrame;
 	
 	bool		mIsCapturing;

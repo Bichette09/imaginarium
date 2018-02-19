@@ -31,36 +31,33 @@ CameraThread::CameraThread(Parameters pParams)
 	, mIsError(false)
 	, mGotNewFrame(false)
 {
-	
-	mInterThreadData[0] = new cv::Mat();
-	mInterThreadData[1] = new cv::Mat();
-	mInterThreadData[2] = new cv::Mat();
-	EnsureMatSizeAndType(*mInterThreadData[0],*mInterThreadData[1],*mInterThreadData[2],mParameters);
+	EnsureMatSizeAndType(mFrame,mParameters);
 	startThread();
 }
 
 CameraThread::~CameraThread()
 {
-	mMutex.lock();
-	mQuit = true;
-	mMutex.unlock();
-	waitThread();
-	
-	for(int i = 0 ; i < 3 ; ++i)
 	{
-		delete mInterThreadData[i];
-		mInterThreadData[i] = NULL;
+		std::unique_lock<std::mutex> lLock(mMutex);
+		mQuit = true;
+		mWaitCondition.notify_all();
 	}
+	waitThread();
 }
 
-void CameraThread::getFrame(cv::Mat & pY, cv::Mat & pU, cv::Mat & pV)
+bool CameraThread::getNextFrame(GrabbedFrame & pFrame,int pTimeoutMs)
 {
-	mMutex.lock();
-	cv::swap(pY,*mInterThreadData[0]);
-	cv::swap(pU,*mInterThreadData[1]);
-	cv::swap(pV,*mInterThreadData[2]);
+	std::unique_lock<std::mutex> lLock(mMutex);
+	if(!mGotNewFrame)
+	{
+		mWaitCondition.wait_until(lLock,std::chrono::system_clock::now() + std::chrono::milliseconds(pTimeoutMs));
+	}
+	if(!mGotNewFrame)
+		return false;
+	mFrame.swap(pFrame);
 	mGotNewFrame = false;
-	mMutex.unlock();
+	mWaitCondition.notify_all();
+	return true;
 }
 
 bool CameraThread::isCapturing() const
@@ -73,11 +70,6 @@ bool CameraThread::isOk() const
 	return !mIsError;
 }
 
-bool CameraThread::hasNewFrame() const
-{
-	return mGotNewFrame;
-}
-
 bool CameraThread::waitForCapture() const
 {
 	while(!mIsCapturing && !mIsError)
@@ -87,28 +79,27 @@ bool CameraThread::waitForCapture() const
 	return mIsCapturing && !mIsError;
 }
 
-void CameraThread::EnsureMatSizeAndType(cv::Mat & pY, cv::Mat & pU, cv::Mat & pV, const Parameters & pParams)
+
+void CameraThread::EnsureMatSizeAndType(GrabbedFrame & pFrame, const Parameters & pParams)
 {
 	// ensure that mat have the right format
-	if(pY.type() != CV_8UC1 || pY.size[1] != pParams.mWidth || pY.size[0] != pParams.mHeight)
+	if(pFrame[GrabbedFrame::Y].type() != CV_8UC1 || pFrame[GrabbedFrame::Y].size[1] != pParams.mWidth || pFrame[GrabbedFrame::Y].size[0] != pParams.mHeight)
 	{
-		pY = cv::Mat(pParams.mHeight,pParams.mWidth,CV_8UC1);
+		pFrame[GrabbedFrame::Y] = cv::Mat(pParams.mHeight,pParams.mWidth,CV_8UC1);
 	}
-	if(pU.type() != CV_8UC1 || pU.size[1] != pParams.mHalfWidth || pU.size[0] != pParams.mHalfHeight)
+	if(pFrame[GrabbedFrame::U].type() != CV_8UC1 || pFrame[GrabbedFrame::U].size[1] != pParams.mHalfWidth || pFrame[GrabbedFrame::U].size[0] != pParams.mHalfHeight)
 	{
-		pU = cv::Mat(pParams.mHalfHeight,pParams.mHalfWidth,CV_8UC1);
+		pFrame[GrabbedFrame::U] = cv::Mat(pParams.mHalfHeight,pParams.mHalfWidth,CV_8UC1);
 	}
-	if(pV.type() != CV_8UC1 || pV.size[1] != pParams.mHalfWidth || pV.size[0] != pParams.mHalfHeight)
+	if(pFrame[GrabbedFrame::V].type() != CV_8UC1 || pFrame[GrabbedFrame::V].size[1] != pParams.mHalfWidth || pFrame[GrabbedFrame::V].size[0] != pParams.mHalfHeight)
 	{
-		pV = cv::Mat(pParams.mHalfHeight,pParams.mHalfWidth,CV_8UC1);
+		pFrame[GrabbedFrame::V] = cv::Mat(pParams.mHalfHeight,pParams.mHalfWidth,CV_8UC1);
 	}
 }
 
 void CameraThread::run()
 {
-	cv::Mat lY;
-	cv::Mat lU;
-	cv::Mat lV;
+	GrabbedFrame lFrame;
 	
 	raspicam::RaspiCam lCameraHandle;
 	// we capture in YUV to achieve max speed
@@ -137,24 +128,28 @@ void CameraThread::run()
 	
 	while(!mQuit && !mIsError)
 	{
-		EnsureMatSizeAndType(lY,lU,lV,mParameters);
+
+		EnsureMatSizeAndType(lFrame,mParameters);
 
 		lCameraHandle.grab();
 		lCameraHandle.retrieve ( lBuffer);
-
-		memcpy(lY.data,lBuffer,mParameters.mPixelCount);
-		memcpy(lU.data,lBuffer + mParameters.mPixelCount, mParameters.mQuarterPixelCount);
-		memcpy(lV.data,lBuffer + mParameters.mPixelCount +  mParameters.mQuarterPixelCount, mParameters.mQuarterPixelCount);
+		lFrame.setTimestamp();
+		memcpy(lFrame[GrabbedFrame::Y].data,lBuffer,mParameters.mPixelCount);
+		memcpy(lFrame[GrabbedFrame::U].data,lBuffer + mParameters.mPixelCount, mParameters.mQuarterPixelCount);
+		memcpy(lFrame[GrabbedFrame::V].data,lBuffer + mParameters.mPixelCount +  mParameters.mQuarterPixelCount, mParameters.mQuarterPixelCount);
 	
-		mMutex.lock();
-		cv::swap(lY,*mInterThreadData[0]);
-		cv::swap(lU,*mInterThreadData[1]);
-		cv::swap(lV,*mInterThreadData[2]);
-		mGotNewFrame = true;
-		mMutex.unlock();
+		{
+			std::unique_lock<std::mutex> lLock(mMutex);
+			if(mQuit)
+				continue;
+			mFrame.swap(lFrame);
+			mGotNewFrame = true;
+			mWaitCondition.notify_all();
+			// and wait until frame is consumed
+			mWaitCondition.wait(lLock);
+		}
 	
 	}
-	
 	delete lBuffer;
 	lBuffer = NULL;
 }
