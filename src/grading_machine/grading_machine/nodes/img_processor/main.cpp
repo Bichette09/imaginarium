@@ -33,7 +33,8 @@ public:
 		registerAttribute<bool>("grading_machine/filter_gaussian",mFilterParameters.mGaussian);
 		registerAttribute<bool>("grading_machine/filter_dilate",mFilterParameters.mDilate);
 		registerAttribute<bool>("grading_machine/filter_erode",mFilterParameters.mErode);
-		
+		registerAttribute<float>("grading_machine/exclusion_percent_top",mFilterParameters.mExclusionZoneTopPercent,0.,0.25);
+		registerAttribute<float>("grading_machine/exclusion_percent_bottom",mFilterParameters.mExclusionZoneBottomPercent,0.,0.25);
 		
 		declareAndRetrieveSettings();
 	}

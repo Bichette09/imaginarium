@@ -6,6 +6,8 @@ FilterThread::Parameters::Parameters()
 	, mGaussian(false)
 	, mDilate(false)
 	, mErode(false)
+	, mExclusionZoneTopPercent(0.01)
+	, mExclusionZoneBottomPercent(0.01)
 	
 {
 }
@@ -143,10 +145,6 @@ void FilterThread::run()
 	
 	const cv::Mat lMorphoKernel5x5 = cv::getStructuringElement(cv::MORPH_RECT,cv::Size(5,5));
 	
-	const cv::Point lTopEdgeRectA = cv::Point(0,0);
-	const cv::Point lTopEdgeRectB = cv::Point(mCameraThread.mParameters.mHalfWidth,(int)(mCameraThread.mParameters.mHalfHeight * 0.06));
-	const cv::Point lBottomEdgeRectA = cv::Point(0,mCameraThread.mParameters.mHalfHeight - 1 - (int)(mCameraThread.mParameters.mHalfHeight * 0.025));
-	const cv::Point lBottomEdgeRectB = cv::Point(mCameraThread.mParameters.mHalfWidth,mCameraThread.mParameters.mHalfHeight - 1);
 	
 	cv::Mat lTmpA(mCameraThread.mParameters.mHalfHeight,mCameraThread.mParameters.mHalfWidth,CV_8UC1);
 	cv::Mat lTmpB(mCameraThread.mParameters.mHalfHeight,mCameraThread.mParameters.mHalfWidth,CV_8UC1);
@@ -174,9 +172,18 @@ void FilterThread::run()
 		}
 		
 		// clear top and bottom (we capture border of camera support)
-		cv::rectangle(lFrame[GrabbedFrame::BackgroundMask],lTopEdgeRectA,lTopEdgeRectB,0,CV_FILLED);
-		cv::rectangle(lFrame[GrabbedFrame::BackgroundMask],lBottomEdgeRectA,lBottomEdgeRectB,0,CV_FILLED);
-		
+		if(mParameters.mExclusionZoneTopPercent)
+		{
+			const cv::Point lTopEdgeRectA = cv::Point(0,0);
+			const cv::Point lTopEdgeRectB = cv::Point(mCameraThread.mParameters.mHalfWidth,(int)(mCameraThread.mParameters.mHalfHeight * mParameters.mExclusionZoneTopPercent));
+			cv::rectangle(lFrame[GrabbedFrame::BackgroundMask],lTopEdgeRectA,lTopEdgeRectB,0,CV_FILLED);
+		}
+		if(mParameters.mExclusionZoneBottomPercent)
+		{
+			const cv::Point lBottomEdgeRectA = cv::Point(0,mCameraThread.mParameters.mHalfHeight - 1 - (int)(mCameraThread.mParameters.mHalfHeight * mParameters.mExclusionZoneBottomPercent));
+			const cv::Point lBottomEdgeRectB = cv::Point(mCameraThread.mParameters.mHalfWidth,mCameraThread.mParameters.mHalfHeight - 1);
+			cv::rectangle(lFrame[GrabbedFrame::BackgroundMask],lBottomEdgeRectA,lBottomEdgeRectB,0,CV_FILLED);
+		}
 		
 		{
 			std::unique_lock<std::mutex> lLock(mMutex);

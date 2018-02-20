@@ -15,6 +15,8 @@ public:
 		
 		int 	mThresholdU;
 		int 	mThresholdV;
+		float	mExclusionZoneTopPercent;
+		float	mExclusionZoneBottomPercent;
 		bool	mGaussian;
 		bool	mDilate;
 		bool	mErode;

@@ -27,6 +27,14 @@ public:
 	void swap(GrabbedFrame & pOther);
 	
 	cv::Mat & operator[](Layer pLayer);
+	
+	// enum Fence
+	// {
+		// F_GrabDone,
+		// F_FilterDone,
+		// F_AreaExtractionDone
+	// }
+	
 	void setTimestamp();
 	tTimestamp getTimestamp() const;
 	static void ComputeLatencyAndFps(const tTimestamp & pPreviousTs, const tTimestamp & pNewTs, float & pLatency, float & pFps);
