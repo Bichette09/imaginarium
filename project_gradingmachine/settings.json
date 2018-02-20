@@ -1,4 +1,16 @@
 {
+    "grading_machine/debug_img_channels": {
+        "inuse": true, 
+        "value": "m"
+    }, 
+    "grading_machine/exclusion_percent_bottom": {
+        "inuse": true, 
+        "value": "0.01"
+    }, 
+    "grading_machine/exclusion_percent_top": {
+        "inuse": true, 
+        "value": "0.06"
+    }, 
     "grading_machine/filter_dilate": {
         "inuse": true, 
         "value": "t"
@@ -20,7 +32,7 @@
         "value": "-1"
     }, 
     "grading_machine/update_period": {
-        "inuse": true, 
+        "inuse": false, 
         "value": "1"
     }, 
     "hardware_monitor/update_period": {

@@ -29,9 +29,12 @@ function retrieveTopics()
 		for(var i = 0 ; i < pResult.topics.length ; ++i)
 		{
 			var lTopic = pResult.topics[i];
-			if(lTopic.indexOf('/compressed') < 0)
+			if(lTopic.indexOf('/compressed') < 0 || lTopic.indexOf('/compressedDepth') >= 0 || lTopic.indexOf('Depth/compressed') >= 0)
+			{
 				continue;
-			 
+			}
+			 console.log(lTopic);
+				
 			++sImageTopicData.waitcptr;
 			sRosCtx.callService('/rosapi/topic_type','rosapi/TopicType',{topic:lTopic}, createTopicTypeCallback(lTopic));
 		}

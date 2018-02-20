@@ -155,7 +155,7 @@ void FilterThread::run()
 	{
 		if(!mCameraThread.getNextFrame(lFrame))
 			continue;
-		
+		lFrame.setTimestamp(GrabbedFrame::F_FilterStart);
 		lCompanion.setChannelToFilter(lFrame[GrabbedFrame::V],mParameters.mThresholdV);
 		processChannel(lFrame[GrabbedFrame::U], lMorphoKernel5x5,lTmpA,lFrame[GrabbedFrame::BackgroundMask],mParameters.mThresholdU,mParameters);
 		lCompanion.getResult(lTmpB);
@@ -184,6 +184,7 @@ void FilterThread::run()
 			const cv::Point lBottomEdgeRectB = cv::Point(mCameraThread.mParameters.mHalfWidth,mCameraThread.mParameters.mHalfHeight - 1);
 			cv::rectangle(lFrame[GrabbedFrame::BackgroundMask],lBottomEdgeRectA,lBottomEdgeRectB,0,CV_FILLED);
 		}
+		lFrame.setTimestamp(GrabbedFrame::F_FilterDone);
 		
 		{
 			std::unique_lock<std::mutex> lLock(mMutex);

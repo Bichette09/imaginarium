@@ -10,11 +10,8 @@ GrabbedFrame::~GrabbedFrame()
 
 void GrabbedFrame::swap(GrabbedFrame & pOther)
 {
-	tTimestamp lTs = mGrabTs;
-	mGrabTs = pOther.mGrabTs;
-	pOther.mGrabTs = lTs;
 	mLayers.swap(pOther.mLayers);
-	
+	mTimestamps.swap(pOther.mTimestamps);
 }
 
 cv::Mat & GrabbedFrame::operator[](Layer pLayer)
@@ -22,14 +19,14 @@ cv::Mat & GrabbedFrame::operator[](Layer pLayer)
 	return mLayers[pLayer];
 }
 
-void GrabbedFrame::setTimestamp()
+void GrabbedFrame::setTimestamp(TimeStampFence pFence)
 {
-	mGrabTs = std::chrono::system_clock::now();
+	mTimestamps[pFence] = std::chrono::system_clock::now();
 }
 
-GrabbedFrame::tTimestamp GrabbedFrame::getTimestamp() const
+GrabbedFrame::tTimestamp GrabbedFrame::operator[](TimeStampFence pFence)
 {
-	return mGrabTs;
+	return mTimestamps[pFence];
 }
 
 void GrabbedFrame::ComputeLatencyAndFps(const tTimestamp & pPreviousTs, const tTimestamp & pNewTs, float & pLatency, float & pFps)

@@ -133,7 +133,7 @@ void CameraThread::run()
 
 		lCameraHandle.grab();
 		lCameraHandle.retrieve ( lBuffer);
-		lFrame.setTimestamp();
+		lFrame.setTimestamp(GrabbedFrame::F_GrabDone);
 		memcpy(lFrame[GrabbedFrame::Y].data,lBuffer,mParameters.mPixelCount);
 		memcpy(lFrame[GrabbedFrame::U].data,lBuffer + mParameters.mPixelCount, mParameters.mQuarterPixelCount);
 		memcpy(lFrame[GrabbedFrame::V].data,lBuffer + mParameters.mPixelCount +  mParameters.mQuarterPixelCount, mParameters.mQuarterPixelCount);

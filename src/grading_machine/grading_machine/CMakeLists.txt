@@ -36,6 +36,7 @@ add_message_files(
    FILES
    DisplayDrawText.msg
    DisplayDrawRect.msg
+   ImgProcessorStat.msg
 )
 # add_service_files(
    # FILES

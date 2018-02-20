@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset = "UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes"> 
+		<title>Monitor</title>
+		
+		<link rel="shortcut icon" href="common/favicon.ico" type="image/x-icon"></link>
+		<link rel="icon" href="common/favicon.ico" type="image/x-icon"></link>
+		
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:600,400,300" rel="stylesheet" type="text/css"/>
+		<link rel="stylesheet" type="text/css" href="common/thirdparty/google-material-icons.css"></link>
+		
+		<script type="text/javascript" src="common/thirdparty/jquery-3.2.1.min.js"></script>
+		<script type="text/javascript" src="common/thirdparty/plotly-basic-1.31.2.min.js"></script>
+		<script type="text/javascript" src="common/thirdparty/roslib-0.19.0.min.js"></script>
+		
+		
+		
+		<link rel="stylesheet" type="text/css" href="css/monitor.css"></link>
+		<link rel="stylesheet" type="text/css" href="common/css/style.css"></link>
+		<link rel="stylesheet" type="text/css" href="common/css/graph.css"></link>
+		<script type="text/javascript" src="common/js/rosmgr.js"></script>
+		<script type="text/javascript" src="common/js/graph.js"></script>
+		<script type="text/javascript" src="js/monitor.js"></script>
+
+	</head>
+	<body onload="onload()">
+		<div class="titleroot"> 
+			<a class="link" href="index.html"><div class="titlehome">home</div></a>
+			<div class="title">Monitor</div>
+		</div>
+		<div class="separator"></div>
+		<div id="roserror" class="warning"><div class="linkicon">warning</div>Ros not connected</div>
+		<div id="graphs"></div>
+	</body>
+</html>
