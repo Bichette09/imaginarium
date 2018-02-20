@@ -93,8 +93,8 @@ int main(int argc, char ** argv)
 				GrabbedFrame::tTimestamp lNow = std::chrono::system_clock::now();
 				lNextStat.fps += 1.f/std::chrono::duration<float>(lNow - lPreviousFrameTs).count();
 				lPreviousFrameTs = lNow;
-				lNextStat.latency += std::chrono::duration<float>(lNow - lFrame[GrabbedFrame::F_GrabDone]).count();
-				lNextStat.filter += std::chrono::duration<float>(lFrame[GrabbedFrame::F_FilterDone] - lFrame[GrabbedFrame::F_FilterStart]).count();
+				lNextStat.latency += std::chrono::duration<float,std::milli>(lNow - lFrame[GrabbedFrame::F_GrabDone]).count();
+				lNextStat.filter += std::chrono::duration<float,std::milli>(lFrame[GrabbedFrame::F_FilterDone] - lFrame[GrabbedFrame::F_FilterStart]).count();
 				
 				if(std::chrono::duration<float>(lNow - lStatStart).count() > 1.)
 				{

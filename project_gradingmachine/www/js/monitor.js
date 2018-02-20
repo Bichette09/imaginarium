@@ -26,7 +26,7 @@ function onload()
 			},
 			"y2":{
 				"unit":"ms",
-				"range":[0.,0.6],
+				"range":[0.,600.],
 				"rostraces":[
 					{
 						"name":"latency",
