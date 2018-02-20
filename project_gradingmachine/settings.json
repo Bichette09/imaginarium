@@ -5,11 +5,11 @@
     }, 
     "grading_machine/filter_erode": {
         "inuse": true, 
-        "value": "f"
+        "value": "t"
     }, 
     "grading_machine/filter_gaussian": {
         "inuse": true, 
-        "value": "f"
+        "value": "t"
     }, 
     "grading_machine/filter_th_U": {
         "inuse": true, 
@@ -18,14 +18,6 @@
     "grading_machine/filter_th_V": {
         "inuse": true, 
         "value": "-1"
-    }, 
-    "grading_machine/th_U": {
-        "inuse": true, 
-        "value": "0"
-    }, 
-    "grading_machine/th_V": {
-        "inuse": true, 
-        "value": "0"
     }, 
     "grading_machine/update_period": {
         "inuse": true, 

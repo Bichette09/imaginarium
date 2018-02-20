@@ -18,6 +18,7 @@ public:
 		bool	mGaussian;
 		bool	mDilate;
 		bool	mErode;
+		
 	};
 	
 	FilterThread(CameraThread & pCameraThread, const Parameters & pParameters);

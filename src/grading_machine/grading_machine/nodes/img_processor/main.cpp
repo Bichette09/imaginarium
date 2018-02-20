@@ -32,7 +32,8 @@ public:
 		registerAttribute<int>("grading_machine/filter_th_V",mFilterParameters.mThresholdV,-1,255);
 		registerAttribute<bool>("grading_machine/filter_gaussian",mFilterParameters.mGaussian);
 		registerAttribute<bool>("grading_machine/filter_dilate",mFilterParameters.mDilate);
-		registerAttribute<bool>("grading_machine/filter_erode",mFilterParameters.mDilate);
+		registerAttribute<bool>("grading_machine/filter_erode",mFilterParameters.mErode);
+		
 		
 		declareAndRetrieveSettings();
 	}
@@ -50,6 +51,7 @@ int main(int argc, char ** argv)
 {
 	ros::init(argc,argv,"grading_machine_cpp");
 	{
+		cv::setNumThreads(4);
 		
 		ros::NodeHandle n;
 		image_transport::ImageTransport it(n);
@@ -87,11 +89,11 @@ int main(int argc, char ** argv)
 				// std::cout<<lLatency<<" "<<lFps<<std::endl;
 				lPreviousTs = lFrame.getTimestamp();
 				
-				sensor_msgs::ImagePtr msgU = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[GrabbedFrame::U]).toImageMsg();
-				pubU.publish(msgU);
+				// sensor_msgs::ImagePtr msgU = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[GrabbedFrame::U]).toImageMsg();
+				// pubU.publish(msgU);
 				
-				sensor_msgs::ImagePtr msgV = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[GrabbedFrame::V]).toImageMsg();
-				pubV.publish(msgV);
+				// sensor_msgs::ImagePtr msgV = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[GrabbedFrame::V]).toImageMsg();
+				// pubV.publish(msgV);
 				
 				sensor_msgs::ImagePtr msgY = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[GrabbedFrame::BackgroundMask]).toImageMsg();
 				pubY.publish(msgY);

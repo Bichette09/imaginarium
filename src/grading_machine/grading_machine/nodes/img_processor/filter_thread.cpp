@@ -6,6 +6,7 @@ FilterThread::Parameters::Parameters()
 	, mGaussian(false)
 	, mDilate(false)
 	, mErode(false)
+	
 {
 }
 
@@ -43,16 +44,16 @@ bool FilterThread::getNextFrame(GrabbedFrame & pFrame,int pTimeoutMs)
 	return true;
 }
 
-void processChannel(const cv::Mat & pIn, const cv::Mat & pMorphoKernel, cv::Mat & pOut, cv::Mat & pTmp, float pTh, bool pBlur, bool pDilate)
+void processChannel(const cv::Mat & pIn, const cv::Mat & pMorphoKernel, cv::Mat & pOut, cv::Mat & pTmp, float pTh, const FilterThread::Parameters & pParameters)
 {
 	cv::Mat const * lThIn = &pIn;
-	if(pBlur)
+	if(pParameters.mGaussian)
 	{
 		cv::GaussianBlur(pIn,pTmp,cv::Size(5,5),0);
 		lThIn = &pTmp;
 	}
 	cv::threshold(*lThIn,pOut,pTh,255,cv::THRESH_BINARY_INV + (pTh < 0 ? cv::THRESH_OTSU : 0));
-	if(pDilate)
+	if(pParameters.mDilate)
 	{
 		// because here mask is inverted we should do erode
 		cv::morphologyEx(pOut,pTmp,cv::MORPH_ERODE,pMorphoKernel);
@@ -60,11 +61,88 @@ void processChannel(const cv::Mat & pIn, const cv::Mat & pMorphoKernel, cv::Mat 
 	}
 }
 
+class FilterThreadCompanion : public ThreadInterface
+{
+public:
+	FilterThreadCompanion(const FilterThread::Parameters & pParameters, const cv::Mat & pMorphoKernel)
+		: mQuit(false)
+		, mInput(NULL)
+		, mParameters(pParameters)
+		, mMorphoKernel(pMorphoKernel)
+		, mThreshold(0)
+	{
+		startThread();
+	}
+	
+	virtual ~FilterThreadCompanion()
+	{
+		{
+			std::unique_lock<std::mutex> lLock(mMutex);
+			mQuit = true;
+			mWaitCondition.notify_all();
+			mWaitConditionResult.notify_all();
+		}
+		waitThread();
+	}
+	
+	void setChannelToFilter(const cv::Mat & pMat, int pThreshold)
+	{
+		std::unique_lock<std::mutex> lLock(mMutex);
+		mInput = &pMat;
+		mThreshold = pThreshold;
+		mWaitCondition.notify_all();
+	}
+	
+	void getResult(cv::Mat & pRes)
+	{
+		std::unique_lock<std::mutex> lLock(mMutex);
+		if(mQuit)
+			return;
+		if(mInput)
+		{
+			// job was not take by the worker !!!
+			mWaitConditionResult.wait(lLock);
+		}
+		cv::swap(pRes,mResult);
+	}
+	
+protected:
+	virtual void run()
+	{
+		cv::Mat lTmp;
+		std::unique_lock<std::mutex> lLock(mMutex);
+		while(!mQuit)
+		{
+			if(!mInput)
+			{
+				mWaitCondition.wait(lLock);
+				continue;
+			}
+			
+			processChannel(*mInput,mMorphoKernel,lTmp,mResult,mParameters.mThresholdV,mParameters);
+
+			mInput = NULL;
+			mWaitConditionResult.notify_all();
+		}
+	}
+private:
+	const FilterThread::Parameters &		mParameters;
+	const cv::Mat & 			mMorphoKernel;
+	std::mutex					mMutex;
+	std::condition_variable		mWaitCondition;
+	std::condition_variable		mWaitConditionResult;
+	cv::Mat const *				mInput;
+	int							mThreshold;
+	cv::Mat						mResult;
+	bool						mQuit;
+};
+
 void FilterThread::run()
 {
 	GrabbedFrame lFrame;
 	
-	const cv::Mat lMorphoKernel = cv::getStructuringElement(cv::MORPH_RECT,cv::Size(5,5));
+	const cv::Mat lMorphoKernel5x5 = cv::getStructuringElement(cv::MORPH_RECT,cv::Size(5,5));
+	
 	const cv::Point lTopEdgeRectA = cv::Point(0,0);
 	const cv::Point lTopEdgeRectB = cv::Point(mCameraThread.mParameters.mHalfWidth,(int)(mCameraThread.mParameters.mHalfHeight * 0.06));
 	const cv::Point lBottomEdgeRectA = cv::Point(0,mCameraThread.mParameters.mHalfHeight - 1 - (int)(mCameraThread.mParameters.mHalfHeight * 0.025));
@@ -73,19 +151,22 @@ void FilterThread::run()
 	cv::Mat lTmpA(mCameraThread.mParameters.mHalfHeight,mCameraThread.mParameters.mHalfWidth,CV_8UC1);
 	cv::Mat lTmpB(mCameraThread.mParameters.mHalfHeight,mCameraThread.mParameters.mHalfWidth,CV_8UC1);
 	
+	FilterThreadCompanion lCompanion(mParameters,lMorphoKernel5x5);
+	
 	while(!mQuit)
 	{
 		if(!mCameraThread.getNextFrame(lFrame))
 			continue;
 		
-		processChannel(lFrame[GrabbedFrame::U],lMorphoKernel,lTmpA,lFrame[GrabbedFrame::BackgroundMask],mParameters.mThresholdU,mParameters.mGaussian,mParameters.mDilate);
-		processChannel(lFrame[GrabbedFrame::V],lMorphoKernel,lTmpB,lFrame[GrabbedFrame::BackgroundMask],mParameters.mThresholdV,mParameters.mGaussian,mParameters.mDilate);
+		lCompanion.setChannelToFilter(lFrame[GrabbedFrame::V],mParameters.mThresholdV);
+		processChannel(lFrame[GrabbedFrame::U], lMorphoKernel5x5,lTmpA,lFrame[GrabbedFrame::BackgroundMask],mParameters.mThresholdU,mParameters);
+		lCompanion.getResult(lTmpB);
 		
 		cv::bitwise_and(lTmpB,lTmpA,lFrame[GrabbedFrame::BackgroundMask]);
 		cv::bitwise_not(lFrame[GrabbedFrame::BackgroundMask],lTmpA);
 		if(mParameters.mErode)
 		{
-			cv::morphologyEx(lTmpA,lFrame[GrabbedFrame::BackgroundMask],cv::MORPH_ERODE,lMorphoKernel);
+			cv::morphologyEx(lTmpA,lFrame[GrabbedFrame::BackgroundMask],cv::MORPH_ERODE,lMorphoKernel5x5);
 		}
 		else
 		{
