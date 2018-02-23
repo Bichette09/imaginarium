@@ -121,7 +121,7 @@ protected:
 				continue;
 			}
 			
-			processChannel(*mInput,mMorphoKernel,lTmp,mResult,mParameters.mThresholdV,mParameters);
+			processChannel(*mInput,mMorphoKernel,mResult,lTmp,mParameters.mThresholdV,mParameters);
 
 			mInput = NULL;
 			mWaitConditionResult.notify_all();
@@ -159,7 +159,6 @@ void FilterThread::run()
 		lCompanion.setChannelToFilter(lFrame[GrabbedFrame::V],mParameters.mThresholdV);
 		processChannel(lFrame[GrabbedFrame::U], lMorphoKernel5x5,lTmpA,lFrame[GrabbedFrame::BackgroundMask],mParameters.mThresholdU,mParameters);
 		lCompanion.getResult(lTmpB);
-		
 		cv::bitwise_and(lTmpB,lTmpA,lFrame[GrabbedFrame::BackgroundMask]);
 		cv::bitwise_not(lFrame[GrabbedFrame::BackgroundMask],lTmpA);
 		if(mParameters.mErode)

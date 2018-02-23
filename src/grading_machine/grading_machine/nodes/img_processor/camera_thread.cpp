@@ -123,6 +123,7 @@ void CameraThread::run()
 		size_t lBufferSize = lCameraHandle.getImageTypeSize ( lCameraHandle.getFormat() );
 		
 		lBuffer = new unsigned char[ lBufferSize];
+		ROS_INFO_STREAM("OpenCV version "<<CV_MAJOR_VERSION<<"."<<CV_MINOR_VERSION);
 		ROS_INFO_STREAM("CameraThread capture Y["<<mParameters.mWidth<<"x"<<mParameters.mHeight<<"] UV["<<mParameters.mHalfWidth<<"x"<<mParameters.mHalfHeight<<"] @"<<mParameters.mFps<<"fps");
 	}
 	

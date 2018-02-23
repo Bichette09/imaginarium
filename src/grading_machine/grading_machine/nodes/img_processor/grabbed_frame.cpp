@@ -1,5 +1,19 @@
 #include "grabbed_frame.h"
 
+AreaOfInterest::AreaOfInterest()
+	: mPixelCount(0)
+	, mAABBMax(0,0)
+	, mAABBMin(0,0)
+	, mOverlapBorder(false)
+	, mIsHorizontalySeparated(false)
+{
+}
+
+bool AreaOfInterest::operator<(const AreaOfInterest & pOther) const
+{
+	return mAABBMax.y > pOther.mAABBMax.y;
+}
+
 GrabbedFrame::GrabbedFrame()
 {
 }
@@ -12,11 +26,17 @@ void GrabbedFrame::swap(GrabbedFrame & pOther)
 {
 	mLayers.swap(pOther.mLayers);
 	mTimestamps.swap(pOther.mTimestamps);
+	mAreas.swap(pOther.mAreas);
 }
 
 cv::Mat & GrabbedFrame::operator[](Layer pLayer)
 {
 	return mLayers[pLayer];
+}
+
+tAreas & GrabbedFrame::editAreas()
+{
+	return mAreas;
 }
 
 void GrabbedFrame::setTimestamp(TimeStampFence pFence)

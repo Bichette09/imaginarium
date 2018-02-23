@@ -19,6 +19,7 @@
 #include "grading_machine/ImgProcessorStat.h"
 #include "camera_thread.h"
 #include "filter_thread.h"
+#include "extract_thread.h"
 
 class GradingMachineCppSettings : public settings_store::SettingsBase
 {
@@ -34,6 +35,12 @@ public:
 		registerAttribute<bool>("grading_machine/filter_erode",mFilterParameters.mErode);
 		registerAttribute<float>("grading_machine/exclusion_percent_top",mFilterParameters.mExclusionZoneTopPercent,0.,0.25);
 		registerAttribute<float>("grading_machine/exclusion_percent_bottom",mFilterParameters.mExclusionZoneBottomPercent,0.,0.25);
+		
+		registerAttribute<bool>("grading_machine/extract_connectivity_full",mExtractParameters.mConnectivityFullWay);
+		registerAttribute<int32_t>("grading_machine/extract_min_pixel_per_area",mExtractParameters.mMinimumPixelsPerGroup,0,1024);
+		
+		
+		
 		registerAttribute<std::string>("grading_machine/debug_img_channels",mDebugImgChannels);
 		
 		declareAndRetrieveSettings();
@@ -44,6 +51,7 @@ public:
 	}
 	
 	FilterThread::Parameters	mFilterParameters;
+	ExtractThread::Parameters	mExtractParameters;
 	std::string					mDebugImgChannels;
 };
 
@@ -60,7 +68,10 @@ int main(int argc, char ** argv)
 		image_transport::Publisher lPubU = it.advertise("U_image", 1);
 		image_transport::Publisher lPubV = it.advertise("V_image", 1);
 		image_transport::Publisher lPubM = it.advertise("M_image", 1);
+		image_transport::Publisher lPubA = it.advertise("A_image", 1);
 		ros::Publisher lPubStat = n.advertise<grading_machine::ImgProcessorStat>("grading_machine/ImgProcessorStat",10);
+		
+		cv::Mat lYDownsized, lTmp;
 		
 		ros::Rate lLoopRate(1);
 		
@@ -70,6 +81,7 @@ int main(int argc, char ** argv)
 		
 		CameraThread lCameraThread(CameraThread::Parameters(1600,1680,25));
 		FilterThread lFilterThread(lCameraThread,lSettings.mFilterParameters);
+		ExtractThread lExtractThread(lFilterThread,lSettings.mExtractParameters);
 		lCameraThread.waitForCapture();
 
 		GrabbedFrame lFrame;
@@ -81,7 +93,7 @@ int main(int argc, char ** argv)
 		
 		while(ros::ok())
 		{
-			if(lFilterThread.getNextFrame(lFrame))
+			if(lExtractThread.getNextFrame(lFrame))
 			{
 				if(lStatCptr == 0)
 				{
@@ -95,6 +107,7 @@ int main(int argc, char ** argv)
 				lPreviousFrameTs = lNow;
 				lNextStat.latency += std::chrono::duration<float,std::milli>(lNow - lFrame[GrabbedFrame::F_GrabDone]).count();
 				lNextStat.filter += std::chrono::duration<float,std::milli>(lFrame[GrabbedFrame::F_FilterDone] - lFrame[GrabbedFrame::F_FilterStart]).count();
+				lNextStat.areaextraction += std::chrono::duration<float,std::milli>(lFrame[GrabbedFrame::F_AreaExtractionDone] - lFrame[GrabbedFrame::F_AreaExtractionStart]).count();
 				
 				if(std::chrono::duration<float>(lNow - lStatStart).count() > 1.)
 				{
@@ -126,6 +139,28 @@ int main(int argc, char ** argv)
 				{
 					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[GrabbedFrame::BackgroundMask]).toImageMsg();
 					lPubM.publish(lMsg);
+				}
+				if( lSettings.mDebugImgChannels.find("a") != std::string::npos)
+				{
+					// downsize y
+					cv::resize(lFrame[GrabbedFrame::Y],lTmp,cv::Size(lFrame[GrabbedFrame::BackgroundMask].size[1],lFrame[GrabbedFrame::BackgroundMask].size[0]));
+					cv::bitwise_and(lTmp,lFrame[GrabbedFrame::BackgroundMask],lYDownsized);
+					tAreas::iterator lIt = lFrame.editAreas().begin();
+					const tAreas::iterator lItEnd = lFrame.editAreas().end();
+					for( ; lIt != lItEnd ; ++lIt)
+					{
+						AreaOfInterest & lArea = *lIt;
+						// cv::rectangle(lYDownsized,lArea.mAABBMin,lArea.mAABBMax,255);
+						
+						// rotated rectangle
+						cv::Point2f rect_points[4]; 
+						lArea.mOBB.points( rect_points );
+						for( int j = 0; j < 4; j++ )
+							cv::line( lYDownsized, rect_points[j], rect_points[(j+1)%4], 220, 1, 8 );
+					}
+					
+					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lYDownsized).toImageMsg();
+					lPubA.publish(lMsg);
 				}
 				
 			}
