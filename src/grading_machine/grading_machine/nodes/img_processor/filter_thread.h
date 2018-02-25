@@ -35,6 +35,7 @@ public:
 	virtual ~FilterThread();
 	
 	bool getNextFrame(GrabbedFrame & pFrame,int pTimeoutMs = 50);
+	const Parameters &			mParameters;
 	
 protected:
 	virtual void run();
@@ -43,7 +44,6 @@ private:
 	std::condition_variable		mWaitCondition;
 	CameraThread & 				mCameraThread;
 	GrabbedFrame				mFrame;
-	const Parameters &			mParameters;
 	bool						mGotNewFrame;
 	
 	bool						mQuit;

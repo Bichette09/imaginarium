@@ -160,6 +160,9 @@ void FilterThread::run()
 	{
 		if(!mCameraThread.getNextFrame(lFrame))
 			continue;
+		const int lWidth = lFrame[GrabbedFrame::BackgroundMask].cols;
+		const int lHeight = lFrame[GrabbedFrame::BackgroundMask].rows;
+		
 		lFrame.setTimestamp(GrabbedFrame::F_FilterStart);
 		lVCompanion.setChannelToFilter(lFrame[GrabbedFrame::V]);
 		lUCompanion.setChannelToFilter(lFrame[GrabbedFrame::U]);
@@ -179,13 +182,13 @@ void FilterThread::run()
 		if(mParameters.mExclusionZoneTopPercent)
 		{
 			const cv::Point lTopEdgeRectA = cv::Point(0,0);
-			const cv::Point lTopEdgeRectB = cv::Point(mCameraThread.mParameters.mHalfWidth,(int)(mCameraThread.mParameters.mHalfHeight * mParameters.mExclusionZoneTopPercent));
+			const cv::Point lTopEdgeRectB = cv::Point(lWidth,(int)(lHeight * mParameters.mExclusionZoneTopPercent));
 			cv::rectangle(lFrame[GrabbedFrame::BackgroundMask],lTopEdgeRectA,lTopEdgeRectB,0,CV_FILLED);
 		}
 		if(mParameters.mExclusionZoneBottomPercent)
 		{
-			const cv::Point lBottomEdgeRectA = cv::Point(0,mCameraThread.mParameters.mHalfHeight - 1 - (int)(mCameraThread.mParameters.mHalfHeight * mParameters.mExclusionZoneBottomPercent));
-			const cv::Point lBottomEdgeRectB = cv::Point(mCameraThread.mParameters.mHalfWidth,mCameraThread.mParameters.mHalfHeight - 1);
+			const cv::Point lBottomEdgeRectA = cv::Point(0,lHeight - 1 - (int)(lHeight * mParameters.mExclusionZoneBottomPercent));
+			const cv::Point lBottomEdgeRectB = cv::Point(lWidth,lHeight - 1);
 			cv::rectangle(lFrame[GrabbedFrame::BackgroundMask],lBottomEdgeRectA,lBottomEdgeRectB,0,CV_FILLED);
 		}
 		

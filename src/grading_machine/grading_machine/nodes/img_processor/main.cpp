@@ -38,7 +38,6 @@ public:
 		registerAttribute<float>("grading_machine/exclusion_percent_top",mFilterParameters.mExclusionZoneTopPercent,0.,0.25);
 		registerAttribute<float>("grading_machine/exclusion_percent_bottom",mFilterParameters.mExclusionZoneBottomPercent,0.,0.25);
 		
-		registerAttribute<bool>("grading_machine/extract_connectivity_full",mExtractParameters.mConnectivityFullWay);
 		
 		
 		
@@ -47,6 +46,8 @@ public:
 		
 		registerAttribute<int32_t>("grading_machine/extract_min_pixel_per_area",mExtractParameters.mMinimumPixelsPerGroup,0,1024);
 		registerAttribute<float>("grading_machine/extract_min_background_percent",mExtractParameters.mMinimumBackgroundPercent,0.,1.);
+		registerAttribute<float>("grading_machine/extract_min_area_dist_percent",mExtractParameters.mMinimumSpaceBetweenAreaPercent,0.,1.);
+		registerAttribute<bool>("grading_machine/extract_connectivity_full",mExtractParameters.mConnectivityFullWay);
 		
 		registerAttribute<std::string>("grading_machine/debug_img_channels",mDebugImgChannels);
 		
@@ -102,7 +103,7 @@ int main(int argc, char ** argv)
 		image_transport::Publisher lPubA = it.advertise("A_image", 1);
 		ros::Publisher lPubStat = n.advertise<grading_machine::ImgProcessorStat>("grading_machine/ImgProcessorStat",10);
 		
-		cv::Mat lYDownsized, lTmp, lRGB, lYUV;
+		cv::Mat lTmp, lRGB, lYUV;
 		
 		ros::Rate lLoopRate(1);
 		
@@ -174,11 +175,8 @@ int main(int argc, char ** argv)
 				}
 				if( lSettings.mDebugImgChannels.find("a") != std::string::npos)
 				{
-					// downsize y
-					cv::resize(lFrame[GrabbedFrame::Y],lYDownsized,cv::Size(lFrame[GrabbedFrame::BackgroundMask].size[1],lFrame[GrabbedFrame::BackgroundMask].size[0]));
 					
-					cv::bitwise_and(lYDownsized,lFrame[GrabbedFrame::BackgroundMask],lTmp);
-					cv::swap(lYDownsized,lTmp);
+					cv::bitwise_and(lFrame[GrabbedFrame::Y],lFrame[GrabbedFrame::BackgroundMask],lTmp);
 					tAreas::iterator lIt = lFrame.editAreas().begin();
 					const tAreas::iterator lItEnd = lFrame.editAreas().end();
 					for( ; lIt != lItEnd ; ++lIt)
@@ -190,21 +188,16 @@ int main(int argc, char ** argv)
 						cv::Point2f rect_points[4]; 
 						lArea.mOBB.points( rect_points );
 						for( int j = 0; j < 4; j++ )
-							cv::line( lYDownsized, rect_points[j], rect_points[(j+1)%4], 220, 1, 8 );
+							cv::line( lTmp, rect_points[j], rect_points[(j+1)%4], 220, 1, 8 );
+						if(!lArea.mIsHorizontalySeparated || lArea.mOverlapBorder)
+						{
+							cv::line( lTmp, rect_points[0], rect_points[2], 220, 1, 8 );
+							cv::line( lTmp, rect_points[1], rect_points[3], 220, 1, 8 );
+						}
 					}
-					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lYDownsized).toImageMsg();
+					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lTmp).toImageMsg();
 					lPubA.publish(lMsg);
-					// std::vector<cv::Mat> ch;
-					// ch.push_back(lYDownsized);
-					// ch.push_back(lFrame[GrabbedFrame::V]);
-					// ch.push_back(lFrame[GrabbedFrame::U]);
-					// cv::merge(ch,lYUV);
 					
-					// cv::cvtColor(lYUV,lRGB,cv::COLOR_YCrCb2RGB);
-					
-		
-					// sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "rgb8", lRGB).toImageMsg();
-					// lPubA.publish(lMsg);
 				}
 				
 			}

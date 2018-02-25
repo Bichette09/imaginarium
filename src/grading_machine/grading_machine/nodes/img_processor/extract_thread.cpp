@@ -6,6 +6,7 @@ ExtractThread::Parameters::Parameters()
 	: mConnectivityFullWay(false)
 	, mMinimumPixelsPerGroup(128)
 	, mMinimumBackgroundPercent(0.5)
+	, mMinimumSpaceBetweenAreaPercent(0.05)
 {
 }
 
@@ -55,11 +56,14 @@ void ExtractThread::run()
 	{
 		if(!mFilterThread.getNextFrame(lFrame))
 			continue;
+		const int lWidth = lFrame[GrabbedFrame::BackgroundMask].cols;
+		const int lHeight = lFrame[GrabbedFrame::BackgroundMask].rows;
+
 		lFrame.setTimestamp(GrabbedFrame::F_AreaExtractionStart);
 		tAreas & lAreas = lFrame.editAreas();
 		lAreas.clear();
 		const int lNonZeroPx = cv::countNonZero(lFrame[GrabbedFrame::BackgroundMask]);
-		const int lTotalPxCount = lFrame[GrabbedFrame::BackgroundMask].size[0] * lFrame[GrabbedFrame::BackgroundMask].size[1];
+		const int lTotalPxCount = lWidth * lHeight;
 		lFrame.mExtractSuccessfull = false;
 		if( (lTotalPxCount - lNonZeroPx) >= (mParameters.mMinimumBackgroundPercent*lTotalPxCount))
 		{
@@ -71,7 +75,6 @@ void ExtractThread::run()
 				mParameters.mConnectivityFullWay ? 8 : 4,
 				CV_16U,
 				cv::CCL_DEFAULT);
-			
 			if(1 < lGroupCount && lGroupCount <= 12)
 			{
 				lAreas.reserve(lGroupCount - 1);
@@ -97,7 +100,31 @@ void ExtractThread::run()
 				}
 				std::sort(lAreas.begin(),lAreas.end());
 				
+				tAreas::iterator lIt = lAreas.begin();
+				const tAreas::iterator lItEnd = lAreas.end();
+				for( ; lIt != lItEnd ; ++lIt)
+				{
+					AreaOfInterest & lArea = *lIt;
+					lArea.mIsHorizontalySeparated = true;
+					if(lIt != lAreas.begin())
+					{
+						AreaOfInterest & lPrevious = *(lIt - 1);
+						int lDeltaX = lArea.mAABBMin.x - lPrevious.mAABBMax.x;
+						if(lDeltaX < (lWidth * mParameters.mMinimumSpaceBetweenAreaPercent))
+						{
+							lArea.mIsHorizontalySeparated = false;
+							lPrevious.mIsHorizontalySeparated = false;
+						}
+					}
+					
+					lArea.mOverlapBorder = (lArea.mAABBMin.x <= 1) 
+											|| (lArea.mAABBMax.x >= (lWidth - 2))
+											|| (lArea.mAABBMin.y <= (int)((lHeight * mFilterThread.mParameters.mExclusionZoneTopPercent) + 1)) 
+											|| (lArea.mAABBMax.y >= (int)(lHeight - 2 - (int)(lHeight * mFilterThread.mParameters.mExclusionZoneBottomPercent)))
+											;
+				}
 				//TODO check border and horizontal overlap
+				
 				
 				lFrame.mExtractSuccessfull = true;
 			}

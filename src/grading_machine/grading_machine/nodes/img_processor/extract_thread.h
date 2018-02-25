@@ -15,6 +15,7 @@ public:
 		
 		int		mMinimumPixelsPerGroup;
 		float	mMinimumBackgroundPercent;
+		float	mMinimumSpaceBetweenAreaPercent;
 		bool	mConnectivityFullWay;
 	};
 	
