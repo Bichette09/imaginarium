@@ -21,6 +21,9 @@ SettingsBase::~SettingsBase()
 {
 }
 
+void SettingsBase::onParameterChanged(const std::string & /*pSettingName*/)
+{
+}
 
 void SettingsBase::onChange(const settings_store::Change::ConstPtr& pMsg)
 {
@@ -36,6 +39,7 @@ void SettingsBase::setValue(const std::string & pName, const std::string & pValu
 	if(!lInfo.mIsDeclared)
 		return;
 	lInfo.setValueFromString(pValue);
+	onParameterChanged(pName);
 }
 
 void SettingsBase::declareAndRetrieveSettings()

@@ -83,9 +83,9 @@ bool CameraThread::waitForCapture() const
 void CameraThread::EnsureMatSizeAndType(GrabbedFrame & pFrame, const Parameters & pParams)
 {
 	// ensure that mat have the right format
-	if(pFrame[GrabbedFrame::Y].type() != CV_8UC1 || pFrame[GrabbedFrame::Y].size[1] != pParams.mWidth || pFrame[GrabbedFrame::Y].size[0] != pParams.mHeight)
+	if(pFrame[GrabbedFrame::Y].type() != CV_8UC1 || pFrame[GrabbedFrame::Y].size[1] != pParams.mHalfWidth || pFrame[GrabbedFrame::Y].size[0] != pParams.mHalfHeight)
 	{
-		pFrame[GrabbedFrame::Y] = cv::Mat(pParams.mHeight,pParams.mWidth,CV_8UC1);
+		pFrame[GrabbedFrame::Y] = cv::Mat(pParams.mHalfHeight,pParams.mHalfWidth,CV_8UC1);
 	}
 	if(pFrame[GrabbedFrame::U].type() != CV_8UC1 || pFrame[GrabbedFrame::U].size[1] != pParams.mHalfWidth || pFrame[GrabbedFrame::U].size[0] != pParams.mHalfHeight)
 	{
@@ -127,6 +127,8 @@ void CameraThread::run()
 		ROS_INFO_STREAM("CameraThread capture Y["<<mParameters.mWidth<<"x"<<mParameters.mHeight<<"] UV["<<mParameters.mHalfWidth<<"x"<<mParameters.mHalfHeight<<"] @"<<mParameters.mFps<<"fps");
 	}
 	
+	cv::Mat lFullY(mParameters.mHeight,mParameters.mWidth,CV_8UC1);
+	
 	while(!mQuit && !mIsError)
 	{
 
@@ -135,10 +137,11 @@ void CameraThread::run()
 		lCameraHandle.grab();
 		lCameraHandle.retrieve ( lBuffer);
 		lFrame.setTimestamp(GrabbedFrame::F_GrabDone);
-		memcpy(lFrame[GrabbedFrame::Y].data,lBuffer,mParameters.mPixelCount);
+		memcpy(lFullY.data,lBuffer,mParameters.mPixelCount);
+		cv::resize(lFullY,lFrame[GrabbedFrame::Y],cv::Size(mParameters.mHalfWidth,mParameters.mHalfHeight));
 		memcpy(lFrame[GrabbedFrame::U].data,lBuffer + mParameters.mPixelCount, mParameters.mQuarterPixelCount);
 		memcpy(lFrame[GrabbedFrame::V].data,lBuffer + mParameters.mPixelCount +  mParameters.mQuarterPixelCount, mParameters.mQuarterPixelCount);
-	
+		
 		{
 			std::unique_lock<std::mutex> lLock(mMutex);
 			if(mQuit)

@@ -35,6 +35,10 @@ namespace settings_store
 		void registerAttribute(const std::string & pSettingName, T & pAttribute,T pMin, T pMax);
 		
 		void declareAndRetrieveSettings();
+		
+		/** this method is called after update of the given parameter
+		*/
+		virtual void onParameterChanged(const std::string & pSettingName);
 	private:
 		void onChange(const settings_store::Change::ConstPtr& pMsg);
 		void setValue(const std::string & pName, const std::string & pValue);

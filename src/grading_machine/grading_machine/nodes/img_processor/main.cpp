@@ -27,19 +27,26 @@ public:
 	GradingMachineCppSettings(ros::NodeHandle & pNodeHandle)
 		: settings_store::SettingsBase(pNodeHandle)
 		, mDebugImgChannels("yuvm")
+		, mParamChanged(true)
+		, mGaussianChannels("uv")
+		, mDilateChannels("yuv")
 	{
-		registerAttribute<int>("grading_machine/filter_th_U",mFilterParameters.mThresholdU,-1,255);
-		registerAttribute<int>("grading_machine/filter_th_V",mFilterParameters.mThresholdV,-1,255);
-		registerAttribute<bool>("grading_machine/filter_gaussian",mFilterParameters.mGaussian);
-		registerAttribute<bool>("grading_machine/filter_dilate",mFilterParameters.mDilate);
+		registerAttribute<int>("grading_machine/filter_th_Y",mFilterParameters.mYParam.mThreshold,-1,255);
+		registerAttribute<int>("grading_machine/filter_th_U",mFilterParameters.mUParam.mThreshold,-1,255);
+		registerAttribute<int>("grading_machine/filter_th_V",mFilterParameters.mVParam.mThreshold,-1,255);
 		registerAttribute<bool>("grading_machine/filter_erode",mFilterParameters.mErode);
 		registerAttribute<float>("grading_machine/exclusion_percent_top",mFilterParameters.mExclusionZoneTopPercent,0.,0.25);
 		registerAttribute<float>("grading_machine/exclusion_percent_bottom",mFilterParameters.mExclusionZoneBottomPercent,0.,0.25);
 		
 		registerAttribute<bool>("grading_machine/extract_connectivity_full",mExtractParameters.mConnectivityFullWay);
+		
+		
+		
+		registerAttribute<std::string>("grading_machine/filter_gaussian_channels",mGaussianChannels);
+		registerAttribute<std::string>("grading_machine/filter_dilate_channels",mDilateChannels);
+		
 		registerAttribute<int32_t>("grading_machine/extract_min_pixel_per_area",mExtractParameters.mMinimumPixelsPerGroup,0,1024);
-		
-		
+		registerAttribute<float>("grading_machine/extract_min_background_percent",mExtractParameters.mMinimumBackgroundPercent,0.,1.);
 		
 		registerAttribute<std::string>("grading_machine/debug_img_channels",mDebugImgChannels);
 		
@@ -50,9 +57,33 @@ public:
 	{
 	}
 	
+	virtual void onParameterChanged(const std::string & pSettingName)
+	{
+		mParamChanged = true;
+	}
+	
+	void updatePrameters()
+	{
+		if(!mParamChanged)
+			return;
+		
+		mFilterParameters.mYParam.mGaussian = mGaussianChannels.find("y") != std::string::npos;
+		mFilterParameters.mUParam.mGaussian = mGaussianChannels.find("u") != std::string::npos;
+		mFilterParameters.mVParam.mGaussian = mGaussianChannels.find("v") != std::string::npos;
+		
+		mFilterParameters.mYParam.mDilate = mDilateChannels.find("y") != std::string::npos;
+		mFilterParameters.mUParam.mDilate = mDilateChannels.find("u") != std::string::npos;
+		mFilterParameters.mVParam.mDilate = mDilateChannels.find("v") != std::string::npos;
+		
+		mParamChanged = false;
+	}
+	
 	FilterThread::Parameters	mFilterParameters;
 	ExtractThread::Parameters	mExtractParameters;
+	std::string 				mGaussianChannels;
+	std::string 				mDilateChannels;
 	std::string					mDebugImgChannels;
+	bool						mParamChanged;
 };
 
 
@@ -71,7 +102,7 @@ int main(int argc, char ** argv)
 		image_transport::Publisher lPubA = it.advertise("A_image", 1);
 		ros::Publisher lPubStat = n.advertise<grading_machine::ImgProcessorStat>("grading_machine/ImgProcessorStat",10);
 		
-		cv::Mat lYDownsized, lTmp;
+		cv::Mat lYDownsized, lTmp, lRGB, lYUV;
 		
 		ros::Rate lLoopRate(1);
 		
@@ -93,6 +124,7 @@ int main(int argc, char ** argv)
 		
 		while(ros::ok())
 		{
+			lSettings.updatePrameters();
 			if(lExtractThread.getNextFrame(lFrame))
 			{
 				if(lStatCptr == 0)
@@ -143,8 +175,10 @@ int main(int argc, char ** argv)
 				if( lSettings.mDebugImgChannels.find("a") != std::string::npos)
 				{
 					// downsize y
-					cv::resize(lFrame[GrabbedFrame::Y],lTmp,cv::Size(lFrame[GrabbedFrame::BackgroundMask].size[1],lFrame[GrabbedFrame::BackgroundMask].size[0]));
-					cv::bitwise_and(lTmp,lFrame[GrabbedFrame::BackgroundMask],lYDownsized);
+					cv::resize(lFrame[GrabbedFrame::Y],lYDownsized,cv::Size(lFrame[GrabbedFrame::BackgroundMask].size[1],lFrame[GrabbedFrame::BackgroundMask].size[0]));
+					
+					cv::bitwise_and(lYDownsized,lFrame[GrabbedFrame::BackgroundMask],lTmp);
+					cv::swap(lYDownsized,lTmp);
 					tAreas::iterator lIt = lFrame.editAreas().begin();
 					const tAreas::iterator lItEnd = lFrame.editAreas().end();
 					for( ; lIt != lItEnd ; ++lIt)
@@ -158,9 +192,19 @@ int main(int argc, char ** argv)
 						for( int j = 0; j < 4; j++ )
 							cv::line( lYDownsized, rect_points[j], rect_points[(j+1)%4], 220, 1, 8 );
 					}
-					
 					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lYDownsized).toImageMsg();
 					lPubA.publish(lMsg);
+					// std::vector<cv::Mat> ch;
+					// ch.push_back(lYDownsized);
+					// ch.push_back(lFrame[GrabbedFrame::V]);
+					// ch.push_back(lFrame[GrabbedFrame::U]);
+					// cv::merge(ch,lYUV);
+					
+					// cv::cvtColor(lYUV,lRGB,cv::COLOR_YCrCb2RGB);
+					
+		
+					// sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "rgb8", lRGB).toImageMsg();
+					// lPubA.publish(lMsg);
 				}
 				
 			}

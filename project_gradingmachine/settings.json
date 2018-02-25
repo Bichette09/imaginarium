@@ -1,7 +1,7 @@
 {
     "grading_machine/debug_img_channels": {
         "inuse": true, 
-        "value": "a"
+        "value": "amyuv"
     }, 
     "grading_machine/exclusion_percent_bottom": {
         "inuse": true, 
@@ -15,6 +15,10 @@
         "inuse": true, 
         "value": "t"
     }, 
+    "grading_machine/extract_min_background_percent": {
+        "inuse": true, 
+        "value": "0.7"
+    }, 
     "grading_machine/extract_min_pixel_per_area": {
         "inuse": true, 
         "value": "128"
@@ -23,13 +27,21 @@
         "inuse": true, 
         "value": "t"
     }, 
+    "grading_machine/filter_dilate_channels": {
+        "inuse": true, 
+        "value": "yuv"
+    }, 
     "grading_machine/filter_erode": {
         "inuse": true, 
-        "value": "f"
+        "value": "t"
     }, 
     "grading_machine/filter_gaussian": {
         "inuse": true, 
         "value": "f"
+    }, 
+    "grading_machine/filter_gaussian_channels": {
+        "inuse": true, 
+        "value": "uv"
     }, 
     "grading_machine/filter_th_U": {
         "inuse": true, 
@@ -38,6 +50,10 @@
     "grading_machine/filter_th_V": {
         "inuse": true, 
         "value": "-1"
+    }, 
+    "grading_machine/filter_th_Y": {
+        "inuse": true, 
+        "value": "220"
     }, 
     "hardware_monitor/update_period": {
         "inuse": true, 

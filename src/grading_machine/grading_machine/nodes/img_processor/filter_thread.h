@@ -8,19 +8,27 @@
 class FilterThread : public ThreadInterface
 {
 public:
+
+	struct ChannelParameters
+	{
+		ChannelParameters();
+		
+		int		mThreshold;
+		bool	mGaussian;
+		bool 	mDilate;
+	};
 	
 	struct Parameters
 	{
 		Parameters();
 		
-		int 	mThresholdU;
-		int 	mThresholdV;
+		ChannelParameters	mYParam;
+		ChannelParameters	mUParam;
+		ChannelParameters	mVParam;
+		
 		float	mExclusionZoneTopPercent;
 		float	mExclusionZoneBottomPercent;
-		bool	mGaussian;
-		bool	mDilate;
 		bool	mErode;
-		
 	};
 	
 	FilterThread(CameraThread & pCameraThread, const Parameters & pParameters);

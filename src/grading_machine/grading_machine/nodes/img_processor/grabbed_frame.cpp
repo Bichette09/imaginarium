@@ -15,6 +15,7 @@ bool AreaOfInterest::operator<(const AreaOfInterest & pOther) const
 }
 
 GrabbedFrame::GrabbedFrame()
+	: mExtractSuccessfull(false)
 {
 }
 

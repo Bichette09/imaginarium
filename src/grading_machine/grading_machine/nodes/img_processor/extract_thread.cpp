@@ -5,6 +5,7 @@
 ExtractThread::Parameters::Parameters()
 	: mConnectivityFullWay(false)
 	, mMinimumPixelsPerGroup(128)
+	, mMinimumBackgroundPercent(0.5)
 {
 }
 
@@ -57,43 +58,49 @@ void ExtractThread::run()
 		lFrame.setTimestamp(GrabbedFrame::F_AreaExtractionStart);
 		tAreas & lAreas = lFrame.editAreas();
 		lAreas.clear();
-
-		int lGroupCount = cv::connectedComponentsWithStats (
-			lFrame[GrabbedFrame::BackgroundMask],
-			lLabels,
-			lStats,
-			lCentroids,
-			mParameters.mConnectivityFullWay ? 8 : 4,
-			CV_16U,
-			cv::CCL_DEFAULT);
-		
-		if(1 < lGroupCount && lGroupCount <= 32)
+		const int lNonZeroPx = cv::countNonZero(lFrame[GrabbedFrame::BackgroundMask]);
+		const int lTotalPxCount = lFrame[GrabbedFrame::BackgroundMask].size[0] * lFrame[GrabbedFrame::BackgroundMask].size[1];
+		lFrame.mExtractSuccessfull = false;
+		if( (lTotalPxCount - lNonZeroPx) >= (mParameters.mMinimumBackgroundPercent*lTotalPxCount))
 		{
-			lAreas.reserve(lGroupCount - 1);
-			for(int i = 1 ; i < lGroupCount ; ++i)
+			int lGroupCount = cv::connectedComponentsWithStats (
+				lFrame[GrabbedFrame::BackgroundMask],
+				lLabels,
+				lStats,
+				lCentroids,
+				mParameters.mConnectivityFullWay ? 8 : 4,
+				CV_16U,
+				cv::CCL_DEFAULT);
+			
+			if(1 < lGroupCount && lGroupCount <= 12)
 			{
-				AreaOfInterest lArea;
-				lArea.mAABBMin.x = lStats.at<int32_t>(i,cv::CC_STAT_LEFT);
-				lArea.mAABBMin.y = lStats.at<int32_t>(i,cv::CC_STAT_TOP);
-				lArea.mAABBMax.x = lArea.mAABBMin.x + lStats.at<int32_t>(i,cv::CC_STAT_WIDTH);
-				lArea.mAABBMax.y = lArea.mAABBMin.y + lStats.at<int32_t>(i,cv::CC_STAT_HEIGHT);
-				lArea.mPixelCount = lStats.at<int32_t>(i, cv::CC_STAT_AREA);
+				lAreas.reserve(lGroupCount - 1);
+				for(int i = 1 ; i < lGroupCount ; ++i)
+				{
+					AreaOfInterest lArea;
+					lArea.mAABBMin.x = lStats.at<int32_t>(i,cv::CC_STAT_LEFT);
+					lArea.mAABBMin.y = lStats.at<int32_t>(i,cv::CC_STAT_TOP);
+					lArea.mAABBMax.x = lArea.mAABBMin.x + lStats.at<int32_t>(i,cv::CC_STAT_WIDTH);
+					lArea.mAABBMax.y = lArea.mAABBMin.y + lStats.at<int32_t>(i,cv::CC_STAT_HEIGHT);
+					lArea.mPixelCount = lStats.at<int32_t>(i, cv::CC_STAT_AREA);
+					
+					if(lArea.mPixelCount < mParameters.mMinimumPixelsPerGroup)
+						continue;
+					
+					cv::Mat lSubMat(lFrame[GrabbedFrame::BackgroundMask],cv::Range(lArea.mAABBMin.y,lArea.mAABBMax.y),cv::Range(lArea.mAABBMin.x,lArea.mAABBMax.x));
+					
+					cv::findNonZero(lSubMat, lNonZeroCoordinates);
+					lArea.mOBB = cv::minAreaRect(lNonZeroCoordinates);
+					lArea.mOBB.center.x += lArea.mAABBMin.x;
+					lArea.mOBB.center.y += lArea.mAABBMin.y;
+					lAreas.push_back(lArea);
+				}
+				std::sort(lAreas.begin(),lAreas.end());
 				
-				if(lArea.mPixelCount < mParameters.mMinimumPixelsPerGroup)
-					continue;
+				//TODO check border and horizontal overlap
 				
-				cv::Mat lSubMat(lFrame[GrabbedFrame::BackgroundMask],cv::Range(lArea.mAABBMin.y,lArea.mAABBMax.y),cv::Range(lArea.mAABBMin.x,lArea.mAABBMax.x));
-				
-				cv::findNonZero(lSubMat, lNonZeroCoordinates);
-				lArea.mOBB = cv::minAreaRect(lNonZeroCoordinates);
-				lArea.mOBB.center.x += lArea.mAABBMin.x;
-				lArea.mOBB.center.y += lArea.mAABBMin.y;
-				lAreas.push_back(lArea);
+				lFrame.mExtractSuccessfull = true;
 			}
-			std::sort(lAreas.begin(),lAreas.end());
-			
-			//TODO check border and horizontal overlap
-			
 		}
 
 		

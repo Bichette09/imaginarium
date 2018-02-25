@@ -14,6 +14,7 @@ public:
 		Parameters();
 		
 		int		mMinimumPixelsPerGroup;
+		float	mMinimumBackgroundPercent;
 		bool	mConnectivityFullWay;
 	};
 	

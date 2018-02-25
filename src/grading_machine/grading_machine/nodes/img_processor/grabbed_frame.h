@@ -55,6 +55,7 @@ public:
 	typedef std::map<TimeStampFence,tTimestamp> tTimestamps;
 	
 	
+	
 	void swap(GrabbedFrame & pOther);
 	
 	cv::Mat & operator[](Layer pLayer);
@@ -66,6 +67,8 @@ public:
 	
 	static void ComputeLatencyAndFps(const tTimestamp & pPreviousTs, const tTimestamp & pNewTs, float & pLatency, float & pFps);
 
+	bool mExtractSuccessfull;
+	
 private:
 	
 	tLayers		mLayers;
