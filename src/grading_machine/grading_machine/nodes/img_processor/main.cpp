@@ -17,9 +17,9 @@
 #include "opencv2/opencv.hpp"
 
 #include "grading_machine/ImgProcessorStat.h"
-#include "camera_thread.h"
-#include "filter_thread.h"
-#include "extract_thread.h"
+#include "camera_worker.h"
+#include "filter_worker.h"
+#include "extract_worker.h"
 
 class GradingMachineCppSettings : public settings_store::SettingsBase
 {
@@ -27,7 +27,6 @@ public:
 	GradingMachineCppSettings(ros::NodeHandle & pNodeHandle)
 		: settings_store::SettingsBase(pNodeHandle)
 		, mDebugImgChannels("yuvm")
-		, mParamChanged(true)
 		, mGaussianChannels("uv")
 		, mDilateChannels("yuv")
 	{
@@ -38,9 +37,7 @@ public:
 		registerAttribute<float>("grading_machine/exclusion_percent_top",mFilterParameters.mExclusionZoneTopPercent,0.,0.25);
 		registerAttribute<float>("grading_machine/exclusion_percent_bottom",mFilterParameters.mExclusionZoneBottomPercent,0.,0.25);
 		
-		
-		
-		
+
 		registerAttribute<std::string>("grading_machine/filter_gaussian_channels",mGaussianChannels);
 		registerAttribute<std::string>("grading_machine/filter_dilate_channels",mDilateChannels);
 		
@@ -60,31 +57,25 @@ public:
 	
 	virtual void onParameterChanged(const std::string & pSettingName)
 	{
-		mParamChanged = true;
+		if(pSettingName == "grading_machine/filter_gaussian_channels")
+		{
+			mFilterParameters.mYParam.mGaussian = mGaussianChannels.find("y") != std::string::npos;
+			mFilterParameters.mUParam.mGaussian = mGaussianChannels.find("u") != std::string::npos;
+			mFilterParameters.mVParam.mGaussian = mGaussianChannels.find("v") != std::string::npos;
+		}
+		else if(pSettingName == "grading_machine/filter_dilate_channels")
+		{
+			mFilterParameters.mYParam.mDilate = mDilateChannels.find("y") != std::string::npos;
+			mFilterParameters.mUParam.mDilate = mDilateChannels.find("u") != std::string::npos;
+			mFilterParameters.mVParam.mDilate = mDilateChannels.find("v") != std::string::npos;
+		}
 	}
 	
-	void updatePrameters()
-	{
-		if(!mParamChanged)
-			return;
-		
-		mFilterParameters.mYParam.mGaussian = mGaussianChannels.find("y") != std::string::npos;
-		mFilterParameters.mUParam.mGaussian = mGaussianChannels.find("u") != std::string::npos;
-		mFilterParameters.mVParam.mGaussian = mGaussianChannels.find("v") != std::string::npos;
-		
-		mFilterParameters.mYParam.mDilate = mDilateChannels.find("y") != std::string::npos;
-		mFilterParameters.mUParam.mDilate = mDilateChannels.find("u") != std::string::npos;
-		mFilterParameters.mVParam.mDilate = mDilateChannels.find("v") != std::string::npos;
-		
-		mParamChanged = false;
-	}
-	
-	FilterThread::Parameters	mFilterParameters;
-	ExtractThread::Parameters	mExtractParameters;
+	FilterWorker::Parameters	mFilterParameters;
+	ExtractWorker::Parameters	mExtractParameters;
 	std::string 				mGaussianChannels;
 	std::string 				mDilateChannels;
 	std::string					mDebugImgChannels;
-	bool						mParamChanged;
 };
 
 
@@ -92,7 +83,7 @@ int main(int argc, char ** argv)
 {
 	ros::init(argc,argv,"grading_machine_cpp");
 	{
-		cv::setNumThreads(4);
+		cv::setNumThreads(1);
 		
 		ros::NodeHandle n;
 		image_transport::ImageTransport it(n);
@@ -111,21 +102,21 @@ int main(int argc, char ** argv)
 		
 		
 		
-		CameraThread lCameraThread(CameraThread::Parameters(1600,1680,25));
-		FilterThread lFilterThread(lCameraThread,lSettings.mFilterParameters);
-		ExtractThread lExtractThread(lFilterThread,lSettings.mExtractParameters);
-		lCameraThread.waitForCapture();
-
-		GrabbedFrame lFrame;
+		CameraWorker lCameraWorker(CameraWorker::Parameters(1600,1680,25));
+		FilterWorker lFilterWorker(lCameraWorker,lSettings.mFilterParameters);
+		ExtractWorker lExtractWorker(lFilterWorker,lSettings.mExtractParameters);
 		
-		GrabbedFrame::tTimestamp lPreviousFrameTs = std::chrono::system_clock::now();
-		GrabbedFrame::tTimestamp lStatStart;
+		FrameProcessor lExtractThread(lExtractWorker);
+		
+		Frame lFrame;
+		
+		Frame::tTimestamp lPreviousFrameTs = std::chrono::system_clock::now();
+		Frame::tTimestamp lStatStart;
 		grading_machine::ImgProcessorStat lNextStat;
 		int lStatCptr = 0;
 		
 		while(ros::ok())
 		{
-			lSettings.updatePrameters();
 			if(lExtractThread.getNextFrame(lFrame))
 			{
 				if(lStatCptr == 0)
@@ -135,14 +126,16 @@ int main(int argc, char ** argv)
 				}
 				++lStatCptr;
 				
-				GrabbedFrame::tTimestamp lNow = std::chrono::system_clock::now();
+				Frame::tTimestamp lNow = std::chrono::system_clock::now();
 				lNextStat.fps += 1.f/std::chrono::duration<float>(lNow - lPreviousFrameTs).count();
 				lPreviousFrameTs = lNow;
-				lNextStat.latency += std::chrono::duration<float,std::milli>(lNow - lFrame[GrabbedFrame::F_GrabDone]).count();
-				lNextStat.filter += std::chrono::duration<float,std::milli>(lFrame[GrabbedFrame::F_FilterDone] - lFrame[GrabbedFrame::F_FilterStart]).count();
-				lNextStat.areaextraction += std::chrono::duration<float,std::milli>(lFrame[GrabbedFrame::F_AreaExtractionDone] - lFrame[GrabbedFrame::F_AreaExtractionStart]).count();
+				lNextStat.latency += std::chrono::duration<float,std::milli>(lNow - lFrame[Frame::F_GrabDone]).count();
+				lNextStat.filter += std::chrono::duration<float,std::milli>(lFrame[Frame::F_FilterDone] - lFrame[Frame::F_FilterStart]).count();
+				lNextStat.areaextraction += std::chrono::duration<float,std::milli>(lFrame[Frame::F_AreaExtractionDone] - lFrame[Frame::F_AreaExtractionStart]).count();
 				
-				if(std::chrono::duration<float>(lNow - lStatStart).count() > 1.)
+				//std::cout<<std::chrono::duration<float,std::milli>(lFrame[Frame::F_FilterDone] - lFrame[Frame::F_FilterStart]).count()<<" "<<std::chrono::duration<float,std::milli>(lFrame[Frame::F_AreaExtractionDone] - lFrame[Frame::F_AreaExtractionStart]).count()<<std::endl;
+				
+				if(std::chrono::duration<float>(lNow - lStatStart).count() > 0.25)
 				{
 					lNextStat.fps /= lStatCptr;
 					lNextStat.latency /= lStatCptr;
@@ -155,28 +148,28 @@ int main(int argc, char ** argv)
 				
 				if( lSettings.mDebugImgChannels.find("y") != std::string::npos)
 				{
-					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[GrabbedFrame::Y]).toImageMsg();
+					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[Frame::Y]).toImageMsg();
 					lPubY.publish(lMsg);
 				}
 				if( lSettings.mDebugImgChannels.find("u") != std::string::npos)
 				{
-					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[GrabbedFrame::U]).toImageMsg();
+					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[Frame::U]).toImageMsg();
 					lPubU.publish(lMsg);
 				}
 				if( lSettings.mDebugImgChannels.find("v") != std::string::npos)
 				{
-					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[GrabbedFrame::V]).toImageMsg();
+					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[Frame::V]).toImageMsg();
 					lPubV.publish(lMsg);
 				}
 				if( lSettings.mDebugImgChannels.find("m") != std::string::npos)
 				{
-					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[GrabbedFrame::BackgroundMask]).toImageMsg();
+					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[Frame::BackgroundMask]).toImageMsg();
 					lPubM.publish(lMsg);
 				}
 				if( lSettings.mDebugImgChannels.find("a") != std::string::npos)
 				{
 					
-					cv::bitwise_and(lFrame[GrabbedFrame::Y],lFrame[GrabbedFrame::BackgroundMask],lTmp);
+					cv::bitwise_and(lFrame[Frame::Y],lFrame[Frame::BackgroundMask],lTmp);
 					tAreas::iterator lIt = lFrame.editAreas().begin();
 					const tAreas::iterator lItEnd = lFrame.editAreas().end();
 					for( ; lIt != lItEnd ; ++lIt)

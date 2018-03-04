@@ -28,12 +28,12 @@ struct AreaOfInterest
 typedef std::vector<AreaOfInterest> tAreas;
 
 
-class GrabbedFrame
+class Frame
 {
 public:
 	
-	GrabbedFrame();
-	virtual ~GrabbedFrame();
+	Frame();
+	virtual ~Frame();
 	
 	enum Layer
 	{
@@ -56,7 +56,7 @@ public:
 	
 	
 	
-	void swap(GrabbedFrame & pOther);
+	void swap(Frame & pOther);
 	
 	cv::Mat & operator[](Layer pLayer);
 	

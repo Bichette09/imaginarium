@@ -1,4 +1,4 @@
-#include "grabbed_frame.h"
+#include "frame.h"
 
 AreaOfInterest::AreaOfInterest()
 	: mPixelCount(0)
@@ -14,43 +14,43 @@ bool AreaOfInterest::operator<(const AreaOfInterest & pOther) const
 	return mAABBMax.y > pOther.mAABBMax.y;
 }
 
-GrabbedFrame::GrabbedFrame()
+Frame::Frame()
 	: mExtractSuccessfull(false)
 {
 }
 
-GrabbedFrame::~GrabbedFrame()
+Frame::~Frame()
 {
 }
 
-void GrabbedFrame::swap(GrabbedFrame & pOther)
+void Frame::swap(Frame & pOther)
 {
 	mLayers.swap(pOther.mLayers);
 	mTimestamps.swap(pOther.mTimestamps);
 	mAreas.swap(pOther.mAreas);
 }
 
-cv::Mat & GrabbedFrame::operator[](Layer pLayer)
+cv::Mat & Frame::operator[](Layer pLayer)
 {
 	return mLayers[pLayer];
 }
 
-tAreas & GrabbedFrame::editAreas()
+tAreas & Frame::editAreas()
 {
 	return mAreas;
 }
 
-void GrabbedFrame::setTimestamp(TimeStampFence pFence)
+void Frame::setTimestamp(TimeStampFence pFence)
 {
 	mTimestamps[pFence] = std::chrono::system_clock::now();
 }
 
-GrabbedFrame::tTimestamp GrabbedFrame::operator[](TimeStampFence pFence)
+Frame::tTimestamp Frame::operator[](TimeStampFence pFence)
 {
 	return mTimestamps[pFence];
 }
 
-void GrabbedFrame::ComputeLatencyAndFps(const tTimestamp & pPreviousTs, const tTimestamp & pNewTs, float & pLatency, float & pFps)
+void Frame::ComputeLatencyAndFps(const tTimestamp & pPreviousTs, const tTimestamp & pNewTs, float & pLatency, float & pFps)
 {
 	pLatency = std::chrono::duration<float>(std::chrono::system_clock::now() - pNewTs).count();
 	float lElapsedTime = std::chrono::duration<float>(pNewTs-pPreviousTs).count();
