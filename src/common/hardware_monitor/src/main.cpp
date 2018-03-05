@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <chrono>
+#include <stdio.h>
 
 // ros
 #include "ros/ros.h"
@@ -14,11 +15,26 @@
 // hardware_monitor
 #include <hardware_monitor/msg.h>
 
-
+std::string exec(const char* cmd) 
+{
+	std::array<char, 128> buffer;
+	std::string result;
+	std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
+	if (!pipe)
+		return std::string();
+	while (!feof(pipe.get())) {
+		if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
+			result += buffer.data();
+	}
+	return result;
+}
 
 struct HwMonitor
 {
+	
+	
 	HwMonitor()
+		: mPreviousThrottledFlags(0)
 	{
 		readCpuTicks(mPreviousLoad,mPreviousIdle);
 		for(int i = 0 ; i < NI_Count ; ++i)
@@ -60,6 +76,38 @@ struct HwMonitor
 		if( (lDeltaLoad + lDeltaIdle) <= 0)
 			return -1.f;
 		return std::floor(lDeltaLoad * 1000.f / (float)(lDeltaLoad + lDeltaIdle))/10.f; 
+	}
+	
+	int getCpuFreq()
+	{
+		std::string lFreqStr = exec("vcgencmd measure_clock arm");
+		// remove 'frequency(45)='
+		lFreqStr = lFreqStr.substr(14);
+		return strtol(lFreqStr.c_str(),NULL,10) / 1000000;
+	}
+	
+	
+	void checkThrottledFlags()
+	{
+		std::string lFlags = exec("vcgencmd get_throttled");
+		// remove 'throttled=0x'
+		int lNewFlags = (int)strtol( lFlags.substr(12).c_str(),NULL,16);
+		// get current flags
+		int lToPrint = (lNewFlags & 0xF) & ~mPreviousThrottledFlags;
+		mPreviousThrottledFlags = lNewFlags;
+		
+		if(lToPrint & 0x01)
+		{
+			ROS_ERROR_STREAM("Undervoltage detected");
+		}
+		if(lToPrint & 0x02)
+		{
+			ROS_ERROR_STREAM("ArmFreqCapped detected");
+		}
+		if(lToPrint & 0x04)
+		{
+			ROS_ERROR_STREAM("Throttled detected");
+		}
 	}
 	
 	float getMemLoad()
@@ -168,6 +216,8 @@ private:
 	int64_t		mPreviousNetworkReceivedBytes[NI_Count];
 	int64_t		mPreviousNetworkSendBytes[NI_Count];
 	std::chrono::time_point<std::chrono::system_clock> mPreviousNetworkTs[NI_Count];
+	char		mSPrintfBuffer[64];
+	int			mPreviousThrottledFlags;
 };
 
 const std::string HwMonitor::sNetworkInterfaceName[HwMonitor::NI_Count] = {"lo","eth0","wlan0"};
@@ -221,6 +271,8 @@ int main(int argc, char ** argv)
 			std::chrono::time_point<std::chrono::system_clock> lNewTs = std::chrono::system_clock::now();
 			if (std::chrono::duration<float>(lNewTs - lTs).count() >= lSettings.mUpdateIntervalSec)
 			{
+				lHwMonitor.checkThrottledFlags();
+				
 				lTs = lNewTs;
 				++lMsg.header.seq;
 				lMsg.header.stamp = ros::Time::now();
@@ -231,6 +283,7 @@ int main(int argc, char ** argv)
 				lMsg.eth = lHwMonitor.getNetworkLoad(HwMonitor::NI_Ethernet);
 				lMsg.lo = lHwMonitor.getNetworkLoad(HwMonitor::NI_Loopback);
 				lMsg.wifistrength = lHwMonitor.getWifiStrenght();
+				lMsg.cpufreq = lHwMonitor.getCpuFreq();
 				lMsgPublisher.publish(lMsg);
 				
 				//std::cout<<"####\n";

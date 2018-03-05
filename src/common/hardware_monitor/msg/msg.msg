@@ -13,3 +13,7 @@ float32 eth
 float32 lo
 #wifi strength
 float32 wifistrength
+#cpufreq in MHz
+int32 cpufreq
+
+
