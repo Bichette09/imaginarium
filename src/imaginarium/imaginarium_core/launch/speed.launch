@@ -1,0 +1,5 @@
+<launch>
+	<node name="speed" pkg="imaginarium_core" type="speed.py">
+		
+	</node>
+</launch>

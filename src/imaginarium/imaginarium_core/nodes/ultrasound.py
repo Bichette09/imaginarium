@@ -28,8 +28,32 @@ class Ultrasound(object):
 			
 			return lMeasures
 
-def computeR0FromDist(distance):
-	return (distance,distance) 
+# this class is used 
+class Distance2PointConverter(object):
+
+	def __init__(self, pConfig):
+		self.mSensorPositions = []
+		self.mDirVector = []
+		for i in range(0,10):
+			lAngle = float(i) * np.pi / (10 - 1)
+			lPos = np.array([16 * math.cos(lAngle) , 16 * math.sin(lAngle)])
+			self.mDirVector.append(lPos / np.linalg.norm(lPos))
+			self.mSensorPositions.append(lPos)
+		
+	
+	def computeR0FromDist(self, pDistances):
+		lX = []
+		lY = []
+		for i in range(0,10):
+			if pDistances[i] == 0:
+				lX.append(None)
+				lY.append(None)
+			else:
+				lPoint = self.mSensorPositions[i] + self.mDirVector[i] * pDistances[i]
+				lX.append(lPoint[0])
+				lY.append(lPoint[1])
+			
+		return (lX,lY)
 
 if __name__ == "__main__":
 	
@@ -39,11 +63,12 @@ if __name__ == "__main__":
 	
 	sRosPublisher = rospy.Publisher('imaginarium_core/Ultrasound', imaginarium_core.msg.Ultrasound, queue_size=5)
 	lUltrasoundReader = Ultrasound(rospy.get_param('/ultrasound/serialPort'))
+	lDistToPointConv = Distance2PointConverter()
 
 	while not rospy.core.is_shutdown():
 	
 		lDistance = lUltrasoundReader.readDistance()
-		(lX0,lY0) = computeR0FromDist(lDistance)
+		(lX0,lY0) = lDistToPointConv.(lDistance)
 	
 		# Message publication
 		sRosPublisher.publish(imaginarium_core.msg.Ultrasound(lDistance,lX0,lY0))

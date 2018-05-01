@@ -5,28 +5,32 @@ import imaginarium_core.msg
 import rospy
 import os
 import time
+import imaginariumlib
 
 class Speed(object):
 
-  def __init__(self):
-	self.__mTickCounter = 0
-	self._rotaryEncoder = RotaryEncoder(24,23)
-	self._rotaryEncoder.when_rotated = self.onCountChange
-	self.__mPreviousTimeStamp = None		
-      
-  def readSpeed(self):
-      	lDistance = 0
-	lSpeed = 0
-	lTickCount = self.__mTickCounter
+	def __init__(self):
+		self.__mTickCounter = 0
+		self._rotaryEncoder = imaginariumlib.RotaryEncoder(24,23)
+		self._rotaryEncoder.when_rotated = self.onCountChange
+		self.__mPreviousTimeStamp = None
+
+	def onCountChange(self, pValue):
+		self.__mTickCounter = self.__mTickCounter + pValue
+		
+	def readSpeed(self):
+		lDistance = 0
+		lSpeed = 0
+		lTickCount = self.__mTickCounter
 			
-      	self.__mTickCounter = 0
-      	lDistance = lTickCount * 0.01263
-	lNewTimeStamp = time.time()
-	if self.__mPreviousTimeStamp is not None:
-		lSpeed = lDistance / (lNewTimeStamp - self.__mPreviousTimeStamp)
-	self.__mPreviousTimeStamp = lNewTimeStamp
-      
-      	return lSpeed
+		self.__mTickCounter = 0
+		lDistance = lTickCount * 0.01263
+		lNewTimeStamp = time.time()
+		if self.__mPreviousTimeStamp is not None:
+			lSpeed = lDistance / (lNewTimeStamp - self.__mPreviousTimeStamp)
+		self.__mPreviousTimeStamp = lNewTimeStamp
+		
+		return lSpeed
 			
 if __name__ == "__main__":
 	
@@ -35,11 +39,11 @@ if __name__ == "__main__":
 
 	
 	sRosPublisher = rospy.Publisher('imaginarium_core/Speed', imaginarium_core.msg.Speed, queue_size=5)
-  	lSpeedReader = Speed()
+	lSpeedReader = Speed()
 
 	while not rospy.core.is_shutdown():
 	
-		lDistance = lSpeedReader.readSpeed()
+		lSpeed = lSpeedReader.readSpeed()
 			
 		# Message publication
 		sRosPublisher.publish(imaginarium_core.msg.Speed(lSpeed))
