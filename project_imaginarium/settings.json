@@ -1,1 +1,6 @@
-{}
+{
+    "hardware_monitor/update_period": {
+        "inuse": true, 
+        "value": "1"
+    }
+}
