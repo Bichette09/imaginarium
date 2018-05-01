@@ -40,34 +40,40 @@ class CommandThrust(object):
 		
 		self.mThrust = lError * self.__mKp
 		self.mThrust = max(-1.,min(self.mThrust,1.))
-		setThrust(self, self.mThrust):
+		setThrust(self, self.mThrust)
+		msg = DiagThrust()
+		msg.Kp = self.__mKp
+		msg.mThrust = self.mthrust
+		msg.mGoalSpeed = self.mGoalSpeed
+		msg.thrust = self.thrust
+		pub.Publish(msg)
 		
 	def setThrust(self, pThrust):
 		listThrust = [0,0,0,0]
 		if self.__mIsEnable:
 			if pThrust >= 0:
-				listThrust[0] = 1050+950*pThrust
-				listThrust[1] = 1050
-				listThrust[2] = 1050
-				listThrust[3] = 1050
+				self.thrust[0] = 1050+950*pThrust
+				self.thrust[1] = 1050
+				self.thrust[2] = 1050
+				self.thrust[3] = 1050
 			else:
-				listThrust[0] = 1050
-				listThrust[1] = 1050-950*pThrust
-				listThrust[2] = 1050-950*pThrust
-				listThrust[3] = 1050-950*pThrust
+				self.thrust[0] = 1050
+				self.thrust[1] = 1050-950*pThrust
+				self.thrust[2] = 1050-950*pThrust
+				self.thrust[3] = 1050-950*pThrust
 		# limitation
 		if len(thrust)==4:
 			for i in range(4):
-				if thrust[i]<1000:
-					thrust[i]=1000
-				if thrust[i]>2000:
-					thrust[i]=2000	  
+				if self.thrust[i]<1000:
+					self.thrust[i]=1000
+				if self.thrust[i]>2000:
+					self.thrust[i]=2000	  
 	
 		# mapping 1->26; 2->19; 3->13 and 4->6
-		self.__mGpio.set_servo_pulsewidth(26, thrust[0])
-		self.__mGpio.set_servo_pulsewidth(19, thrust[1])
-		self.__mGpio.set_servo_pulsewidth(13, thrust[2])
-		self.__mGpio.set_servo_pulsewidth( 6, thrust[3])
+		self.__mGpio.set_servo_pulsewidth(26, self.thrust[0])
+		self.__mGpio.set_servo_pulsewidth(19, self.thrust[1])
+		self.__mGpio.set_servo_pulsewidth(13, self.thrust[2])
+		self.__mGpio.set_servo_pulsewidth( 6, self.thrust[3])
 		
 if __name__ == "__main__":	
 	os.getcwd()
