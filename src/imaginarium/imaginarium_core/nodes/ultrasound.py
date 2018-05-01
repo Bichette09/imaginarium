@@ -7,7 +7,7 @@ import os
 import smbus
 import serial
 
-class SensorReader(object):
+class Ultrasound(object):
 
 		def __init__(self,pSerialPort):
 			self.__mSerialPort = serial.Serial(pSerialPort, baudrate=2000000,timeout=10) #Arduino
@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
 	
 	sRosPublisher = rospy.Publisher('imaginarium_core/Ultrasound', imaginarium_core.msg.Ultrasound, queue_size=5)
-  lUltrasoundReader = Ultrasound(rospy.get_param('/ultrasound/serialPort'))
+        lUltrasoundReader = Ultrasound(rospy.get_param('/ultrasound/serialPort'))
 
 	while not rospy.core.is_shutdown():
 	
@@ -46,4 +46,4 @@ if __name__ == "__main__":
 		(lX0,lY0) = computeR0FromDist(lDistance)
 	
 		# Message publication
-sRosPublisher.publish(imaginarium_core.msg.Ultrasound(lDistance,lX0,lY0))
+		sRosPublisher.publish(imaginarium_core.msg.Ultrasound(lDistance,lX0,lY0))
