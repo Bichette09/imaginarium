@@ -1,2 +1,2 @@
 float32 nosewheelAngle
-bool nosewheelStatus
+bool nosewheelShutdown
