@@ -29,7 +29,7 @@ class Ultrasound(object):
 			return lMeasures
 
 def computeR0FromDist(distance):
-  return none 
+	return (distance,distance) 
 
 if __name__ == "__main__":
 	
@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
 	
 	sRosPublisher = rospy.Publisher('imaginarium_core/Ultrasound', imaginarium_core.msg.Ultrasound, queue_size=5)
-        lUltrasoundReader = Ultrasound(rospy.get_param('/ultrasound/serialPort'))
+	lUltrasoundReader = Ultrasound(rospy.get_param('/ultrasound/serialPort'))
 
 	while not rospy.core.is_shutdown():
 	
