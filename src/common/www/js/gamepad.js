@@ -92,7 +92,7 @@ function onDisconnect(){
 	$( "#gamepadroot" ).hide();
 }
 
-var sXBox360Layout = ['A','B','X','Y','LB','RB','LT','RT','back','start','lstick','rstick','up','down','left','right']
+var sXBox360Layout = ['A','B','X','Y','LB','RB','LT','RT','back','start','lstick','rstick','up','down','left','right','?']
 
 function onConnect(pGamePad){
 	sGamePad.mIsInit = true;
@@ -104,7 +104,9 @@ function onConnect(pGamePad){
 	
 	let lButtonLayout = undefined;
 	let lGamePadIdLc = pGamePad.id.toLowerCase();
-	if( lGamePadIdLc.indexOf('xbox') != -1 && lGamePadIdLc.indexOf('360') != -1 && pGamePad.buttons.length == sXBox360Layout.length)
+    console.log(pGamePad.buttons.length)
+    console.log(lGamePadIdLc)
+	if( lGamePadIdLc.indexOf('xbox') != -1 && lGamePadIdLc.indexOf('360') != -1 && pGamePad.buttons.length >= 16)
 	{
 		lButtonLayout = sXBox360Layout;
 	}

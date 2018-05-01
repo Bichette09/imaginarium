@@ -67,9 +67,24 @@ function onload()
 					});
 	}
 	
-	sGraphs.addGraph(
-		lDistanceGraphConfig);
+	sGraphs.addGraph(lDistanceGraphConfig);
 	
+	sGraphs.addGraph(
+		{
+			"title":"speed",
+			"y1":{
+				"unit":"m/sec",
+				"range":[-4,4],
+				"rostraces":[
+					{
+						"name":"speed",
+						"topicname":"/imaginarium_core/Speed",
+						"messagetype":"/imaginarium_core/Speed",
+						"messagefield":"speed"
+					}
+				]
+			}
+		});
 	
 	sGraphs.updateSizes();
 }

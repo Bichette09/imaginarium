@@ -9,9 +9,9 @@ import imaginariumlib
 
 class Speed(object):
 
-	def __init__(self):
+	def __init__(self, pPinA, pPinB):
 		self.__mTickCounter = 0
-		self._rotaryEncoder = imaginariumlib.RotaryEncoder(24,23)
+		self._rotaryEncoder = imaginariumlib.RotaryEncoder(pPinA,pPinB)
 		self._rotaryEncoder.when_rotated = self.onCountChange
 		self.__mPreviousTimeStamp = None
 
@@ -39,11 +39,11 @@ if __name__ == "__main__":
 
 	
 	sRosPublisher = rospy.Publisher('imaginarium_core/Speed', imaginarium_core.msg.Speed, queue_size=5)
-	lSpeedReader = Speed()
+	lSpeedReader = Speed(rospy.get_param('/speed/pinA'),rospy.get_param('/speed/pinB'))
 
 	while not rospy.core.is_shutdown():
 	
 		lSpeed = lSpeedReader.readSpeed()
-			
+		time.sleep(0.05)
 		# Message publication
 		sRosPublisher.publish(imaginarium_core.msg.Speed(lSpeed))

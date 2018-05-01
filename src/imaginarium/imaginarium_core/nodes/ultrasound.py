@@ -6,6 +6,8 @@ import rospy
 import os
 import smbus
 import serial
+import numpy as np
+import math
 
 class Ultrasound(object):
 
@@ -20,18 +22,21 @@ class Ultrasound(object):
 				b=a[1:-3]
 				c=b.split(b",")
 				for i in reversed(c):
+					lVal = float(i)
+					if lVal is None:
+						raise Exception('invalid val ' + str(a))
 					lMeasures.append(float(i)) 
 				
 			except Exception as e:
-				print('read error ' + str(e))
-				lMeasures = []
+				rospy.logerr('Fail to read data from arduino ' + str(e))
+				lMeasures = [0]*10
 			
 			return lMeasures
 
 # this class is used 
 class Distance2PointConverter(object):
 
-	def __init__(self, pConfig):
+	def __init__(self):
 		self.mSensorPositions = []
 		self.mDirVector = []
 		for i in range(0,10):
@@ -46,10 +51,13 @@ class Distance2PointConverter(object):
 		lY = []
 		for i in range(0,10):
 			if pDistances[i] == 0:
-				lX.append(None)
-				lY.append(None)
+				lX.append(0.)
+				lY.append(0.)
 			else:
 				lPoint = self.mSensorPositions[i] + self.mDirVector[i] * pDistances[i]
+				if lPoint[0] is None or lPoint[1] is None:
+					lPoint[0] = 0
+					lPoint[1] = 0
 				lX.append(lPoint[0])
 				lY.append(lPoint[1])
 			
@@ -68,7 +76,9 @@ if __name__ == "__main__":
 	while not rospy.core.is_shutdown():
 	
 		lDistance = lUltrasoundReader.readDistance()
-		(lX0,lY0) = lDistToPointConv.(lDistance)
+		if lDistance is None:
+			continue
+		(lX0,lY0) = lDistToPointConv.computeR0FromDist(lDistance)
 	
 		# Message publication
 		sRosPublisher.publish(imaginarium_core.msg.Ultrasound(lDistance,lX0,lY0))

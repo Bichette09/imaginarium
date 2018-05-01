@@ -15,7 +15,7 @@ class Antenna:
 	
 		self.gpioB.on()
 
-		self.seen_impulse = false
+		self.seen_impulse = False
 
 		self.gpioA.when_pressed = lambda *args : self.pulse(self.gpioA, 1)
 
@@ -32,26 +32,26 @@ class Antenna:
 			self.gpioB.on()
 			self.currentTime = None
 		seen_impulse = self.seen_impulse
-		self.seen_impulse = false
-  		return seen_impulse 
+		self.seen_impulse = False
+		return seen_impulse 
 
 if __name__ == "__main__":
 	
 	os.getcwd()
 	rospy.init_node('antenna')
 	
-	LPreviousStatus = false;
+	lPreviousStatus = False;
 	
 	sRosPublisher = rospy.Publisher('imaginarium_core/Antenna', imaginarium_core.msg.Antenna, queue_size=5)
-        lAntennaInterruption = Antenna(rospy.get_param('/antenna/pinA'),rospy.get_param('/antenna/pinB'))
+	lAntennaInterruption = Antenna(rospy.get_param('/antenna/pinA'),rospy.get_param('/antenna/pinB'))
 
 	while not rospy.core.is_shutdown():
 	
-		if lAntennaInterruption.getAndReset() is not LPreviousStatus:
+		if lAntennaInterruption.getAndReset() is not lPreviousStatus:
 		#Alors on vient de voir passer un front montant ou descendant
 			# Message publication
-			LPreviousStatus = not LPreviousStatus
-			sRosPublisher.publish(imaginarium_core.msg.Antenna(LPreviousStatus))
+			lPreviousStatus = not lPreviousStatus
+			sRosPublisher.publish(imaginarium_core.msg.Antenna(lPreviousStatus))
 		else:
-			sleep(0.1)
+			time.sleep(0.1)
 		
