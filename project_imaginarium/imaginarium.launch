@@ -13,4 +13,8 @@
 	<!--<include file="$(find imaginarium_core)/launch/gyro.launch" > 
 		<arg name="i2cPort" value="1"/>
 	</include>-->
+	<!-- ultrasound -->
+	<!--<include file="$(find imaginarium_core)/launch/ultrasound.launch" > 
+		<arg name="serialPort" value="/dev/ttyACM1"/>
+	</include>-->
 </launch> 

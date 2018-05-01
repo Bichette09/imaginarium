@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
    FILES
    Gyro.msg
+   Ultrasound.msg
 )
 #add_service_files(
 #   FILES
