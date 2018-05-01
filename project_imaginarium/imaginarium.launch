@@ -10,7 +10,7 @@
 	<!-- hardware_monitor -->
 	<node name="hardware_monitor" pkg="hardware_monitor" type="hardware_monitor" />
 	<!-- gyro -->
-	<include file="$(find imaginarium_core)/launch/gyro.launch" > 
+	<!--<include file="$(find imaginarium_core)/launch/gyro.launch" > 
 		<arg name="i2cPort" value="1"/>
-	</include>
+	</include>-->
 </launch> 

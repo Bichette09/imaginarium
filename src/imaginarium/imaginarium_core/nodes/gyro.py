@@ -66,7 +66,7 @@ if __name__ == "__main__":
 	rospy.init_node('gyro')
 
 	
-	sRosPublisher = rospy.Publisher('imaginarium_core/Measures', imaginarium_core.msg.Measures, queue_size=5)
+	sRosPublisher = rospy.Publisher('imaginarium_core/Gyro', imaginarium_core.msg.Gyro, queue_size=5)
 	lGyroReader = Gyro(rospy.get_param('/gyro/i2cPort'))
 
 	while not rospy.core.is_shutdown():
@@ -75,5 +75,5 @@ if __name__ == "__main__":
 		lGyro = lGyroReader.readAngularSpeed()
 	
 		# Message publication
-		sRosPublisher.publish(imaginarium_core.msg.Measures(lAccel,lGyro))
+		sRosPublisher.publish(imaginarium_core.msg.Gyro(lAccel,lGyro))
 
