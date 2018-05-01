@@ -22,6 +22,7 @@ add_message_files(
    Ultrasound.msg
    Speed.msg
    Antenna.msg
+   CommandNosewheel.msg
 )
 #add_service_files(
 #   FILES
