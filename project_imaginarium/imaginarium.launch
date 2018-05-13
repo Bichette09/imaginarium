@@ -28,7 +28,7 @@
 		<arg name="pinB" value="21"/>
 	</include>-->
 	<!-- nosewheel command -->
-	<!--<include file="$(find imaginarium_core)/launch/commandNosewheel.launch" > 
+	<include file="$(find imaginarium_core)/launch/commandNosewheel.launch" > 
 		<arg name="serialPort" value="/dev/ttyACM0"/>
-	</include>-->
+	</include>
 </launch>

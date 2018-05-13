@@ -23,9 +23,9 @@ class Antenna:
 
 	def pulse(self, gpio, level):
 		self.gpioB.off()
-		self.seen_impulse = true
+		self.seen_impulse = True
 		self.currentTime = time.time()
-		print('pulse')
+		rospy.logwarn('pulse')
 
 	def getAndReset(self):
 		if self.currentTime is not None and (time.time() - self.currentTime) > 5:
@@ -47,11 +47,8 @@ if __name__ == "__main__":
 
 	while not rospy.core.is_shutdown():
 	
-		if lAntennaInterruption.getAndReset() is not lPreviousStatus:
-		#Alors on vient de voir passer un front montant ou descendant
-			# Message publication
-			lPreviousStatus = not lPreviousStatus
-			sRosPublisher.publish(imaginarium_core.msg.Antenna(lPreviousStatus))
+		if lAntennaInterruption.getAndReset():
+			sRosPublisher.publish(imaginarium_core.msg.Antenna(True))
 		else:
 			time.sleep(0.1)
 		
