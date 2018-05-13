@@ -71,7 +71,7 @@ function onload()
 	
 	sGraphs.addGraph(
 		{
-			"title":"speed",
+			"title":"speed/dir",
 			"y1":{
 				"unit":"m/sec",
 				"range":[-4,4],
@@ -81,6 +81,24 @@ function onload()
 						"topicname":"/imaginarium_core/Speed",
 						"messagetype":"/imaginarium_core/Speed",
 						"messagefield":"speed"
+					},
+					{
+						"name":"goal",
+						"topicname":"/commandThrust/DiagThrust",
+						"messagetype":"/commandThrust/DiagThrust",
+						"messagefield":"goalSpeed"
+					}
+				]
+			},
+			"y2":{
+				"unit":"°",
+				"range":[-45,45],
+				"rostraces":[
+					{
+						"name":"wheel angle",
+						"topicname":"/commandThrust/DiagThrust",
+						"messagetype":"/commandThrust/DiagThrust",
+						"messagefield":"wheel angle"
 					}
 				]
 			}
