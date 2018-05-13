@@ -15,7 +15,7 @@
 	</include>
 	<!-- ultrasound -->
 	<include file="$(find imaginarium_core)/launch/ultrasound.launch" > 
-		<arg name="serialPort" value="/dev/ttyACM0"/>
+		<arg name="serialPort" value="/dev/ttyACM1"/>
 	</include>
 	<!-- speed -->
 	<include file="$(find imaginarium_core)/launch/speed.launch" > 
@@ -26,5 +26,9 @@
 	<!--<include file="$(find imaginarium_core)/launch/antenna.launch" > 
 		<arg name="pinA" value="20"/>
 		<arg name="pinB" value="21"/>
+	</include>-->
+	<!-- nosewheel command -->
+	<!--<include file="$(find imaginarium_core)/launch/commandNosewheel.launch" > 
+		<arg name="serialPort" value="/dev/ttyACM0"/>
 	</include>-->
 </launch>

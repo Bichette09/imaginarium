@@ -8,10 +8,12 @@ import serial
 import math
 import pypot.dynamixel
 import pigpio
+from settings_store import settings_store_client
+import time
 
 class CommandNosewheel(object):
 	
-	def __init__(self,serialPort,gainKp):
+	def __init__(self,serialPort):
 		self.speed = 0
 		self.ultrasonDist = [0]*10
 		# retrait du capteur arriere (cm)
@@ -30,8 +32,6 @@ class CommandNosewheel(object):
 			self.__mGpio = None
 		time.sleep(5)
 		print('Powertrain is ready')
-		#Gains loi
-		self.kp = gainKp
 	
  	def updateSpeed(self,param):
 		self.speed = param.speed
@@ -46,14 +46,25 @@ class CommandNosewheel(object):
 		if self.__dxl_io is not None:
 			self.__dxl_io.set_goal_position({1:angle})
 
+class CommandNosewheelSettings(settings_store_client.SettingsBase):
+
+	def __init__(self):
+		settings_store_client.SettingsBase.__init__(self)
+		self.kp=1
+		self.registerAttributes([
+			('kp','commandNosewheel/Kp')
+			])
+
 if __name__ == "__main__":
 	
 	os.getcwd()
 	rospy.init_node('commandNosewheel')
 
+	#creation instance settings pour les parametres modifiables
+	lSettings = CommandNosewheelSettings()
 	
 	sRosPublisher = rospy.Publisher('imaginarium_core/CommandNosewheel', imaginarium_core.msg.CommandNosewheel, queue_size=5)
-	lCommandNosewheel = CommandNosewheel(rospy.get_param('/commandNosewheel/serialPort'),rospy.get_param('/commandNosewheel/Kp'))
+	lCommandNosewheel = CommandNosewheel(rospy.get_param('/commandNosewheel/serialPort'))
 	sRosSuscriberUltra = rospy.Subscriber('imaginarium_core/Ultrasound', imaginarium_core.msg.Ultrasound,lCommandNosewheel.updateUltrason)
 	sRosSuscriberSpeed = rospy.Subscriber('imaginarium_core/Speed', imaginarium_core.msg.Speed,lCommandNosewheel.updateSpeed)
 	
@@ -99,7 +110,7 @@ if __name__ == "__main__":
 			# angle between robot and runway
 			lRightAngle = 0.
 			if lCommandNosewheel.ultrasonDist[1]>0. and lCommandNosewheel.ultrasonDist[0]>0.:
-					lRightAngle = -1.5-math.atan((import math[1]-(lCommandNosewheel.ultrasonDist[0]+lCommandNosewheel.rd))/lCommandNosewheel.rL)*180/math.pi
+				lRightAngle = -1.5-math.atan((lCommandNosewheel.ultrasonDist[1]-(lCommandNosewheel.ultrasonDist[0]+lCommandNosewheel.rd))/lCommandNosewheel.rL)*180/math.pi
 				lLeftAngle = 0.
 				if lCommandNosewheel.ultrasonDist[8]>0. and lCommandNosewheel.ultrasonDist[9]>0.:
 					lLeftAngle =  math.atan((lCommandNosewheel.ultrasonDist[8]-(lCommandNosewheel.ultrasonDist[9]+lCommandNosewheel.ld))/lCommandNosewheel.lL)*180/math.pi
@@ -116,7 +127,7 @@ if __name__ == "__main__":
 				#Angle control law
 					erreur= (lRightDist-lLeftDist)
 					#Proportional term
-					lProp= erreur* lCommandNosewheel.kp
+					lProp= erreur* lSettings.kp
 					#precommande (moyenne des directions des bords)
 					#lPrec = 0.5*lRightAngle+0.5*lLeftAngle
 					if lRightAngle>0 and lLeftAngle>0:					
@@ -137,7 +148,7 @@ if __name__ == "__main__":
 					
 		lCommandNosewheel.setWheelAngle(lLastAngle)
 		# Message publication
-		sRosPublisher.publish(imaginarium_core.msg.CommandNosewheel(lNoseWheelAngle),False)
+		sRosPublisher.publish(imaginarium_core.msg.CommandNosewheel(lLastAngle,False))
 		
 	# Message publication en cas de fermeture de la node on envoie un status
-	sRosPublisher.publish(imaginarium_core.msg.CommandNosewheel(lNoseWheelAngle),True)
+	sRosPublisher.publish(imaginarium_core.msg.CommandNosewheel(lLastAngle,True))
