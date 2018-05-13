@@ -12,7 +12,7 @@ import math
 class Ultrasound(object):
 
 		def __init__(self,pSerialPort):
-			self.__mSerialPort = serial.Serial(pSerialPort, baudrate=2000000,timeout=10) #Arduino
+			self.__mSerialPort = serial.Serial(pSerialPort, baudrate=2000000,timeout=1) #Arduino
 			self.__mSerialPort.readline() #on purge la premiere trame
 			
 		def readDistance(self):
@@ -26,7 +26,8 @@ class Ultrasound(object):
 					if lVal is None:
 						raise Exception('invalid val ' + str(a))
 					lMeasures.append(float(i)) 
-				
+				if len(lMeasures) != 10:
+					raise Exception()
 			except Exception as e:
 				rospy.logerr('Fail to read data from arduino ' + str(e))
 				lMeasures = [0]*10
@@ -49,19 +50,23 @@ class Distance2PointConverter(object):
 	def computeR0FromDist(self, pDistances):
 		lX = []
 		lY = []
-		for i in range(0,10):
-			if pDistances[i] == 0:
-				lX.append(0.)
-				lY.append(0.)
-			else:
-				lPoint = self.mSensorPositions[i] + self.mDirVector[i] * pDistances[i]
-				if lPoint[0] is None or lPoint[1] is None:
-					lPoint[0] = 0
-					lPoint[1] = 0
-				lX.append(lPoint[0])
-				lY.append(lPoint[1])
-			
-		return (lX,lY)
+		try:
+			for i in range(0,10):
+				if pDistances[i] == 0:
+					lX.append(0.)
+					lY.append(0.)
+				else:
+					lPoint = self.mSensorPositions[i] + self.mDirVector[i] * pDistances[i]
+					if lPoint[0] is None or lPoint[1] is None:
+						lPoint[0] = 0
+						lPoint[1] = 0
+					lX.append(lPoint[0])
+					lY.append(lPoint[1])
+				
+			return (lX,lY)
+		except:
+			rospy.logerr('Invalid distance vector %s'%(pDistances))
+			return ([0]*10,[0]*10)
 
 if __name__ == "__main__":
 	

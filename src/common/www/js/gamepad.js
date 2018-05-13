@@ -10,8 +10,13 @@ function onProcessGamePad(){
 	let lGamePads = navigator.getGamepads();
 	let lGamePad = undefined;
 	// on chrome getGamepads is an array of null elements
-	if(lGamePads.length > 0)
-		lGamePad = lGamePads[0];
+	for(var i = 0 ; i < lGamePads.length ; ++i)
+	{
+		// look for last valid gamepad
+		if(lGamePads[i] != undefined)
+			lGamePad = lGamePads[i];
+	}
+	
 	
 	if(!sGamePad.mIsInit)
 	{
@@ -49,7 +54,7 @@ function onProcessGamePad(){
 	if(lPressedButtons != sGamePad.mLastPressedButtons)
 	{
 		sGamePad.mLastPressedButtons = lPressedButtons;
-		sRosCtx.writeMsg('gamepadbuttons','std_msgs/String',{data:lPressedButtons});
+		sRosCtx.writeMsg('GamePadButtons','std_msgs/String',{data:lPressedButtons});
 	}
 	
 	let lStickValues = [];
@@ -73,7 +78,7 @@ function onProcessGamePad(){
 	if(lStickCheckSum != sGamePad.mLastStickCheckSum)
 	{
 		sGamePad.mLastStickCheckSum = lStickCheckSum;
-		sRosCtx.writeMsg('gamepadsticks','std_msgs/Float32MultiArray',{layout:{dim:[{label:'',size:lStickValues.length,stride:0}]},data:lStickValues});
+		sRosCtx.writeMsg('GamePadSticks','std_msgs/Float32MultiArray',{layout:{dim:[{label:'',size:lStickValues.length,stride:0}]},data:lStickValues});
 	}
 	
 	for(var i = 0 ; i < lStickValuesCss.length ; i+=2)
@@ -104,9 +109,10 @@ function onConnect(pGamePad){
 	
 	let lButtonLayout = undefined;
 	let lGamePadIdLc = pGamePad.id.toLowerCase();
-    console.log(pGamePad.buttons.length)
-    console.log(lGamePadIdLc)
-	if( lGamePadIdLc.indexOf('xbox') != -1 && lGamePadIdLc.indexOf('360') != -1 && pGamePad.buttons.length >= 16)
+	let lIsXBox = false;
+	lIsXBox = lIsXBox || (lGamePadIdLc.indexOf('xbox') != -1 && lGamePadIdLc.indexOf('360') != -1);
+	lIsXBox = lIsXBox || (lGamePadIdLc.indexOf('vendor: 045e') != -1 && lGamePadIdLc.indexOf('product: 028e') != -1);
+	if( lIsXBox && pGamePad.buttons.length >= 16)
 	{
 		lButtonLayout = sXBox360Layout;
 	}

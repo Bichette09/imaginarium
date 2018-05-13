@@ -1,4 +1,3 @@
-int Kp
-float32 mThrust
-float32 mGoalSpeed
+float32 commandedThrust
+float32 goalSpeed
 float32[4] thrust

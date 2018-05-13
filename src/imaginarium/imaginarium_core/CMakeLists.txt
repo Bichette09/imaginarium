@@ -23,6 +23,9 @@ add_message_files(
    Speed.msg
    Antenna.msg
    CommandNosewheel.msg
+   DiagThrust.msg
+   GamePadButtons.msg
+   GamePadSticks.msg
 )
 #add_service_files(
 #   FILES

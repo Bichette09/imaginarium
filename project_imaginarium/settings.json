@@ -1,10 +1,10 @@
 {
     "commandNosewheel/Kp": {
-        "inuse": false, 
+        "inuse": true, 
         "value": "1"
     }, 
     "commandThrust/Kp": {
-        "inuse": true, 
+        "inuse": false, 
         "value": "5"
     }, 
     "hardware_monitor/update_period": {

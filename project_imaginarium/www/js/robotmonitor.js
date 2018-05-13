@@ -68,7 +68,15 @@ function onload()
 	}
 	
 	sGraphs.addGraph(lDistanceGraphConfig);
-	
+	/*
+	,
+					{
+						"name":"goal",
+						"topicname":"/imaginarium_core/DiagThrust",
+						"messagetype":"/imaginarium_core/DiagThrust",
+						"messagefield":"goalSpeed"
+					}
+					*/
 	sGraphs.addGraph(
 		{
 			"title":"speed/dir",
@@ -81,12 +89,6 @@ function onload()
 						"topicname":"/imaginarium_core/Speed",
 						"messagetype":"/imaginarium_core/Speed",
 						"messagefield":"speed"
-					},
-					{
-						"name":"goal",
-						"topicname":"/commandThrust/DiagThrust",
-						"messagetype":"/commandThrust/DiagThrust",
-						"messagefield":"goalSpeed"
 					}
 				]
 			},
@@ -96,9 +98,47 @@ function onload()
 				"rostraces":[
 					{
 						"name":"wheel angle",
-						"topicname":"/commandThrust/DiagThrust",
-						"messagetype":"/commandThrust/DiagThrust",
-						"messagefield":"wheel angle"
+						"topicname":"/imaginarium_core/CommandNosewheel",
+						"messagetype":"/imaginarium_core/CommandNosewheel",
+						"messagefield":"nosewheelAngle"
+					}
+				]
+			}
+		});
+		
+	sGraphs.addGraph(
+		{
+			"title":"wheel_cmd",
+			/*"range":[-4,4],*/
+			"y1":{
+				"unit":"?",
+				"rostraces":[
+					{
+						"name":"propcommand",
+						"topicname":"/imaginarium_core/CommandNosewheel",
+						"messagetype":"/imaginarium_core/CommandNosewheel",
+						"messagefield":"propCommand"
+					},{
+						"name":"preccommand",
+						"topicname":"/imaginarium_core/CommandNosewheel",
+						"messagetype":"/imaginarium_core/CommandNosewheel",
+						"messagefield":"precCommand"
+					}
+				]
+			},
+			"y2":{
+				"unit":"°",
+				"rostraces":[
+					{
+						"name":"left_angle",
+						"topicname":"/imaginarium_core/CommandNosewheel",
+						"messagetype":"/imaginarium_core/CommandNosewheel",
+						"messagefield":"leftAngle"
+					},{
+						"name":"right_angle",
+						"topicname":"/imaginarium_core/CommandNosewheel",
+						"messagetype":"/imaginarium_core/CommandNosewheel",
+						"messagefield":"rightAngle"
 					}
 				]
 			}

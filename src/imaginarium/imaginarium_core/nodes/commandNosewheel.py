@@ -44,13 +44,16 @@ class CommandNosewheel(object):
 		
 	def setWheelAngle(self,angle):
 		if self.__dxl_io is not None:
-			self.__dxl_io.set_goal_position({1:angle})
+			try:
+				self.__dxl_io.set_goal_position({1:angle})
+			except:
+				pass
 
 class CommandNosewheelSettings(settings_store_client.SettingsBase):
 
 	def __init__(self):
 		settings_store_client.SettingsBase.__init__(self)
-		self.kp=1
+		self.kp=1.
 		self.registerAttributes([
 			('kp','commandNosewheel/Kp')
 			])
@@ -76,11 +79,15 @@ if __name__ == "__main__":
 	lLeftDist = 0.
 	lTimeInt=time.time()
 	ierreur=0.
+	lProp=0.
+	lPrec=0.
+	lLeftAngle=0.
+	lRightAngle=0.
 	
 	while not rospy.core.is_shutdown():
 		
-		# we want 1kHz reresh rate in practice we will get 700Hz
-		time.sleep(0.001)
+		# we want 100Hz reresh rate
+		time.sleep(0.01)
 		
 
 		if lCommandNosewheel.ultrasonDist is not None:
@@ -148,7 +155,7 @@ if __name__ == "__main__":
 					
 		lCommandNosewheel.setWheelAngle(lLastAngle)
 		# Message publication
-		sRosPublisher.publish(imaginarium_core.msg.CommandNosewheel(lLastAngle,False))
+		sRosPublisher.publish(imaginarium_core.msg.CommandNosewheel(lLastAngle,False,lProp,lPrec,lRightAngle,lLeftAngle))
 		
 	# Message publication en cas de fermeture de la node on envoie un status
-	sRosPublisher.publish(imaginarium_core.msg.CommandNosewheel(lLastAngle,True))
+	sRosPublisher.publish(imaginarium_core.msg.CommandNosewheel(lLastAngle,True,lProp,lPrec,lRightAngle,lLeftAngle))
