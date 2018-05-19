@@ -102,7 +102,7 @@ int main(int argc, char ** argv)
 		
 		
 		
-		CameraWorker lCameraWorker(CameraWorker::Parameters(1600,1680,25));
+		CameraWorker lCameraWorker(CameraWorker::Parameters(1600,1680,12));
 		FilterWorker lFilterWorker(lCameraWorker,lSettings.mFilterParameters);
 		ExtractWorker lExtractWorker(lFilterWorker,lSettings.mExtractParameters);
 		

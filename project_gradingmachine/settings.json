@@ -1,7 +1,7 @@
 {
     "grading_machine/debug_img_channels": {
         "inuse": true, 
-        "value": ""
+        "value": "a"
     }, 
     "grading_machine/exclusion_percent_bottom": {
         "inuse": true, 
