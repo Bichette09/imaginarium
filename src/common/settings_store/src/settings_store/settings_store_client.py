@@ -15,7 +15,7 @@ class SettingsBase:
 		
 	def __init__(self):
 		self.__mAttributes = {}
-		rospy.Subscriber('settings_store/Change',settings_store.msg.change,self.__onSettingChangeCallback)
+		rospy.Subscriber('settings_store/Change',settings_store.msg.Change,self.__onSettingChangeCallback)
 		rospy.wait_for_service('/settings_store/declareandget',2.)
 		self.__mServiceDeclareAndGet = rospy.ServiceProxy('/settings_store/declareandget', settings_store.srv.declareandget)
 	

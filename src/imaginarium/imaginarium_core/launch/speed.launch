@@ -1,0 +1,8 @@
+<launch>
+	<arg name="pinA" default="24"/>
+	<arg name="pinB" default="23"/>
+	<node name="speed" pkg="imaginarium_core" type="speed.py">
+		<param name="pinA" value="$(arg pinA)"/>
+		<param name="pinB" value="$(arg pinB)"/>
+	</node>
+</launch>

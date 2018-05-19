@@ -6,3 +6,5 @@ basic functionalities are
  - display ros topology
  
 It could be extended by referencing it and creating new index.html and other pages.
+
+https://www.w3schools.com/icons/icons_reference.asp
