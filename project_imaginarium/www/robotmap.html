@@ -21,11 +21,12 @@
 		<link rel="stylesheet" type="text/css" href="common/css/style.css"></link>
 		<link rel="stylesheet" type="text/css" href="common/css/graph.css"></link>
 		<script type="text/javascript" src="common/js/rosmgr.js"></script>
+		<script type="text/javascript" src="common/js/canvashelper.js"></script>
 		<script type="text/javascript" src="common/js/graph.js"></script>
 		<script type="text/javascript" src="js/robotmap.js"></script>
 
 	</head>
-	<body onload="onload()">
+	<body onload="onload()" onresize="resizeCanvans()" >
 		<div class="titleroot"> 
 			<a class="link" href="index.html"><div class="titlehome">home</div></a>
 			<div class="title">Robot Environment</div>
@@ -33,8 +34,9 @@
 		<div class="separator"></div>
 		<div id="roserror" class="warning"><div class="linkicon">warning</div>Ros not connected</div>
 		<div id="maproot">
-			<canvas id="mapcanvas">
+			<canvas id="mapcanvas" >
 			</canvas>
 		</div>
+		
 	</body>
 </html>
