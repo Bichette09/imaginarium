@@ -40,12 +40,59 @@ class Distance2PointConverter(object):
 	def __init__(self):
 		self.mSensorPositions = []
 		self.mDirVector = []
-		for i in range(0,10):
-			lAngle = float(i) * np.pi / (10 - 1)
-			lPos = np.array([16 * math.cos(lAngle) , 16 * math.sin(lAngle)])
-			self.mDirVector.append(lPos / np.linalg.norm(lPos))
-			self.mSensorPositions.append(lPos)
+		# for i in range(0,10):
+			# lAngle = float(i) * np.pi / (10 - 1)
+			# lPos = np.array([16 * math.cos(lAngle) , 16 * math.sin(lAngle)])
+			# self.mDirVector.append(lPos / np.linalg.norm(lPos))
+			# self.mSensorPositions.append(lPos)
 		
+		# 0 0°
+		self.mSensorPositions.append(np.array([170.,18.]))
+		self.mDirVector.append(np.array([1.,0.]));
+		
+		# 1a 20°
+		# self.mSensorPositions.append(np.array([165.,82.]))
+		# self.mDirVector.append(np.array([0.939693,0.34202]));
+		
+		# 1b 0°
+		self.mSensorPositions.append(np.array([145.,-361.]))
+		self.mDirVector.append(np.array([1.,0.]));
+		
+		# 2 40°
+		self.mSensorPositions.append(np.array([132.,132.]))
+		self.mDirVector.append(np.array([0.766044,0.642788]));
+		
+		# 3 62°
+		self.mSensorPositions.append(np.array([86.,174.]))
+		self.mDirVector.append(np.array([0.469472,0.882948]));
+		
+		# 4 80°
+		self.mSensorPositions.append(np.array([30.,194.]))
+		self.mDirVector.append(np.array([0.173648,0.984808]));
+		
+		# 5 100°
+		self.mSensorPositions.append(np.array([-30.,194.]))
+		self.mDirVector.append(np.array([-0.173648,0.984808]));
+		
+		# 6 123°
+		self.mSensorPositions.append(np.array([-92.,169.]))
+		self.mDirVector.append(np.array([-0.544639,0.838671]));
+		
+		# 7 145°
+		self.mSensorPositions.append(np.array([-137.,140.]))
+		self.mDirVector.append(np.array([-0.819152,0.573576]));
+		
+		# 8a 160°
+		# self.mSensorPositions.append(np.array([162.,87.]))
+		# self.mDirVector.append(np.array([-0.939693,0.34202]));
+	
+		# 8b 180°
+		self.mSensorPositions.append(np.array([-148.,-355.]))
+		self.mDirVector.append(np.array([-1.,0.]));
+		
+		# 9 180°
+		self.mSensorPositions.append(np.array([-174.,24.]))
+		self.mDirVector.append(np.array([-1.,0.]));
 	
 	def computeR0FromDist(self, pDistances):
 		lX = []
