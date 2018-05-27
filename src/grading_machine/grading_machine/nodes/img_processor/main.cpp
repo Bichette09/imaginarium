@@ -20,6 +20,7 @@
 #include "camera_worker.h"
 #include "filter_worker.h"
 #include "extract_worker.h"
+#include "detectionmodel.h"
 
 class GradingMachineCppSettings : public settings_store::SettingsBase
 {
@@ -115,6 +116,8 @@ int main(int argc, char ** argv)
 		grading_machine::ImgProcessorStat lNextStat;
 		int lStatCptr = 0;
 		
+		DetectionModel lModel;
+		
 		while(ros::ok())
 		{
 			if(lExtractThread.getNextFrame(lFrame))
@@ -175,6 +178,12 @@ int main(int argc, char ** argv)
 					for( ; lIt != lItEnd ; ++lIt)
 					{
 						AreaOfInterest & lArea = *lIt;
+						
+						if(!lArea.mOverlapBorder)
+						{
+							lModel.addAreaToModel(lArea);
+						}
+						
 						// cv::rectangle(lYDownsized,lArea.mAABBMin,lArea.mAABBMax,255);
 						
 						// rotated rectangle
@@ -198,8 +207,11 @@ int main(int argc, char ** argv)
 			ros::spinOnce();
 
 		}
-		
+		std::cout<<lModel.toString()<<std::endl;
+	
 	}
+	
+	
 	
 	return 0;
 }
