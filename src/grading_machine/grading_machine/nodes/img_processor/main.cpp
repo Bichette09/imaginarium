@@ -20,7 +20,7 @@
 #include "camera_worker.h"
 #include "filter_worker.h"
 #include "extract_worker.h"
-#include "detectionmodel.h"
+#include "areatracker.h"
 
 class GradingMachineCppSettings : public settings_store::SettingsBase
 {
@@ -110,13 +110,12 @@ int main(int argc, char ** argv)
 		FrameProcessor lExtractThread(lExtractWorker);
 		
 		Frame lFrame;
+		AreaTracker lAreaTracker;
 		
 		Frame::tTimestamp lPreviousFrameTs = std::chrono::system_clock::now();
 		Frame::tTimestamp lStatStart;
 		grading_machine::ImgProcessorStat lNextStat;
 		int lStatCptr = 0;
-		
-		DetectionModel lModel;
 		
 		while(ros::ok())
 		{
@@ -135,6 +134,8 @@ int main(int argc, char ** argv)
 				lNextStat.latency += std::chrono::duration<float,std::milli>(lNow - lFrame[Frame::F_GrabDone]).count();
 				lNextStat.filter += std::chrono::duration<float,std::milli>(lFrame[Frame::F_FilterDone] - lFrame[Frame::F_FilterStart]).count();
 				lNextStat.areaextraction += std::chrono::duration<float,std::milli>(lFrame[Frame::F_AreaExtractionDone] - lFrame[Frame::F_AreaExtractionStart]).count();
+				
+				lAreaTracker.addNewFrame(lFrame);
 				
 				//std::cout<<std::chrono::duration<float,std::milli>(lFrame[Frame::F_FilterDone] - lFrame[Frame::F_FilterStart]).count()<<" "<<std::chrono::duration<float,std::milli>(lFrame[Frame::F_AreaExtractionDone] - lFrame[Frame::F_AreaExtractionStart]).count()<<std::endl;
 				
@@ -178,12 +179,6 @@ int main(int argc, char ** argv)
 					for( ; lIt != lItEnd ; ++lIt)
 					{
 						AreaOfInterest & lArea = *lIt;
-						
-						if(!lArea.mOverlapBorder)
-						{
-							lModel.addAreaToModel(lArea);
-						}
-						
 						// cv::rectangle(lYDownsized,lArea.mAABBMin,lArea.mAABBMax,255);
 						
 						// rotated rectangle
@@ -207,11 +202,8 @@ int main(int argc, char ** argv)
 			ros::spinOnce();
 
 		}
-		std::cout<<lModel.toString()<<std::endl;
-	
+		
 	}
-	
-	
 	
 	return 0;
 }

@@ -11,6 +11,8 @@ AreaOfInterest::AreaOfInterest()
 
 bool AreaOfInterest::operator<(const AreaOfInterest & pOther) const
 {
+	if(mAABBMin.x == pOther.mAABBMin.x)
+		return mAABBMin.y < pOther.mAABBMin.y;
 	return mAABBMin.x < pOther.mAABBMin.x;
 }
 
@@ -36,6 +38,11 @@ cv::Mat & Frame::operator[](Layer pLayer)
 }
 
 tAreas & Frame::editAreas()
+{
+	return mAreas;
+}
+
+const tAreas & Frame::getAreas() const
 {
 	return mAreas;
 }

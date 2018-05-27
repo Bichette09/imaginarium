@@ -27,6 +27,7 @@ struct AreaOfInterest
 	
 };
 typedef std::vector<AreaOfInterest> tAreas;
+typedef std::list<AreaOfInterest> tAreasList;
 
 
 class Frame
@@ -62,6 +63,7 @@ public:
 	cv::Mat & operator[](Layer pLayer);
 	
 	tAreas & editAreas();
+	const tAreas & getAreas() const;
 
 	void setTimestamp(TimeStampFence pFence);
 	tTimestamp operator[](TimeStampFence pFence);
