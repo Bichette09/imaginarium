@@ -5,13 +5,13 @@ AreaOfInterest::AreaOfInterest()
 	, mAABBMax(0,0)
 	, mAABBMin(0,0)
 	, mOverlapBorder(false)
-	, mIsHorizontalySeparated(false)
+	, mIsAloneOnXAxis(false)
 {
 }
 
 bool AreaOfInterest::operator<(const AreaOfInterest & pOther) const
 {
-	return mAABBMax.y > pOther.mAABBMax.y;
+	return mAABBMin.x < pOther.mAABBMin.x;
 }
 
 Frame::Frame()

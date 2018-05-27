@@ -38,25 +38,32 @@ class Display():
 		self.__mDevice = None
 		
 		# create device
-		self.__mDevice = cmdline.create_device(args)
-		self.__mDevice.clear()
+		try:
+			self.__mDevice = cmdline.create_device(args)
+			self.__mDevice.clear()
+			
+			#create buffer
+			self.__mBuffer = Image.new("RGB", self.__mDevice.size)
+			self.__mBufferTmp = Image.new("RGB", self.__mDevice.size)
+			
+			self.__mHasPendingChanges = True
+			self.__mPreviousBrightness = -1
+			
+			rospy.Subscriber('/oled_display/draw_rect',grading_machine.msg.DisplayDrawRect,self.__onDrawRect)
+			rospy.Subscriber('/oled_display/draw_text',grading_machine.msg.DisplayDrawText,self.__onDrawText)
+		except:
+			self.__mDevice = None
+			rospy.logerr('Fail to initialize i2c oled display')
 		
-		#create buffer
-		self.__mBuffer = Image.new("RGB", self.__mDevice.size)
-		self.__mBufferTmp = Image.new("RGB", self.__mDevice.size)
 		
-		self.__mHasPendingChanges = True
-		self.__mPreviousBrightness = -1
-		
-		rospy.Subscriber('/oled_display/draw_rect',grading_machine.msg.DisplayDrawRect,self.__onDrawRect)
-		rospy.Subscriber('/oled_display/draw_text',grading_machine.msg.DisplayDrawText,self.__onDrawText)
 	
 	def setBrightness(self, pVal):
+		if (self.__mDevice is None):
+			return
 		lVal = 1 + max(0,(pVal - 1) / 4.)*254
 		lVal = int(lVal)
 		if lVal == self.__mPreviousBrightness:
 			return
-		print(lVal)
 		self.__mPreviousBrightness = lVal
 		self.__mDevice.contrast(lVal)
 	
@@ -90,7 +97,7 @@ class Display():
 		self.drawRectangle(0,0,self.__mBuffer.size[0],self.__mBuffer.size[1],False,False)
 		
 	def swapDisplay(self):
-		if not self.__mHasPendingChanges:
+		if (self.__mDevice is None) or (not self.__mHasPendingChanges):
 			return
 		self.__mHasPendingChanges = False
 		lCanvas = canvas(self.__mDevice)

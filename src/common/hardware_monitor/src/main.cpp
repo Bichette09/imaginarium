@@ -86,27 +86,31 @@ struct HwMonitor
 		return strtol(lFreqStr.c_str(),NULL,10) / 1000000;
 	}
 	
-	
+	// https://www.raspberrypi.org/forums/viewtopic.php?f=63&t=147781&start=50#p972790
+	// 0: under-voltage
+	// 1: arm frequency capped
+	// 2: currently throttled 
+	// 16: under-voltage has occurred
+	// 17: arm frequency capped has occurred
+	// 18: throttling has occurred
 	void checkThrottledFlags()
 	{
 		std::string lFlags = exec("vcgencmd get_throttled");
 		// remove 'throttled=0x'
 		int lNewFlags = (int)strtol( lFlags.substr(12).c_str(),NULL,16);
-		// get current flags
-		int lToPrint = (lNewFlags & 0xF) & ~mPreviousThrottledFlags;
+		// keep only first four bits
+		lNewFlags &= 0xF;
+		// print only states that were raised
+		int lToPrint = lNewFlags & (~mPreviousThrottledFlags);
 		mPreviousThrottledFlags = lNewFlags;
 		
-		if(lToPrint & 0x01)
+		if(lToPrint)
 		{
-			ROS_ERROR_STREAM("Undervoltage detected");
-		}
-		if(lToPrint & 0x02)
-		{
-			ROS_ERROR_STREAM("ArmFreqCapped detected");
-		}
-		if(lToPrint & 0x04)
-		{
-			ROS_ERROR_STREAM("Throttled detected");
+			ROS_ERROR_STREAM( 
+				(lToPrint & 0x01 ? "Undervoltage detected " : "") 
+				<< (lToPrint & 0x02 ? "ArmFreqCapped detected " : "") 
+				<< (lToPrint & 0x04 ? "Throttled detected " : "") 
+				);
 		}
 	}
 	

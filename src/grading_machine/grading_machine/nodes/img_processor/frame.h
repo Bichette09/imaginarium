@@ -23,7 +23,8 @@ struct AreaOfInterest
 	/** true if this area is alone in it's vertical area,
 	*	there is no other area sharing same x coordinates
 	*/
-	bool		mIsHorizontalySeparated;
+	bool		mIsAloneOnXAxis;
+	
 };
 typedef std::vector<AreaOfInterest> tAreas;
 

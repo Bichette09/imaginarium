@@ -182,7 +182,7 @@ int main(int argc, char ** argv)
 						lArea.mOBB.points( rect_points );
 						for( int j = 0; j < 4; j++ )
 							cv::line( lTmp, rect_points[j], rect_points[(j+1)%4], 220, 1, 8 );
-						if(!lArea.mIsHorizontalySeparated || lArea.mOverlapBorder)
+						if((!lArea.mIsAloneOnXAxis) || lArea.mOverlapBorder)
 						{
 							cv::line( lTmp, rect_points[0], rect_points[2], 220, 1, 8 );
 							cv::line( lTmp, rect_points[1], rect_points[3], 220, 1, 8 );

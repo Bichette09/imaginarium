@@ -81,15 +81,16 @@ bool ExtractWorker::computeNextResult(Frame & pRes)
 			for( ; lIt != lItEnd ; ++lIt)
 			{
 				AreaOfInterest & lArea = *lIt;
-				lArea.mIsHorizontalySeparated = true;
+				lArea.mIsAloneOnXAxis = true;
+				
 				if(lIt != lAreas.begin())
 				{
 					AreaOfInterest & lPrevious = *(lIt - 1);
 					int lDeltaX = lArea.mAABBMin.x - lPrevious.mAABBMax.x;
 					if(lDeltaX < (lWidth * mParameters.mMinimumSpaceBetweenAreaPercent))
 					{
-						lArea.mIsHorizontalySeparated = false;
-						lPrevious.mIsHorizontalySeparated = false;
+						lArea.mIsAloneOnXAxis = false;
+						lPrevious.mIsAloneOnXAxis = false;
 					}
 				}
 				
