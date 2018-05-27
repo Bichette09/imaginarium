@@ -19,7 +19,7 @@ class OledDisplaySettings(settings_store_client.SettingsBase):
 		self.mBrightness = 5
 		
 		self.registerAttributes([
-			('mBrightness','oled_display/mBrightness',1,5),
+			('mBrightness','oled_display/mBrightness',1,5,'brightness of display [1-5]'),
 			])
 
 class Display():

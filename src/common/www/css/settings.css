@@ -106,6 +106,15 @@
 	margin-bottom:0.2em;
 }
 
+.settingdescription {
+	/*background-color:red;*/
+	overflow:hidden;
+	font-size:0.7em;
+	margin-bottom:0.2em;
+	font-style: italic;
+	margin-left:0.5em;
+}
+
 .settingvalue {
 	font-size:1.0em;
 	/*background-color:green;*/

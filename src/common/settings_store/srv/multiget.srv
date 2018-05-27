@@ -4,5 +4,6 @@ string[] requestednames
 ---
 string[] names
 string[] values
+string[] descriptions
 # is this setting used by a node during this session ?
 bool[] inuse

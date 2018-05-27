@@ -20,26 +20,35 @@ class SettingsBase:
 		self.__mServiceDeclareAndGet = rospy.ServiceProxy('/settings_store/declareandget', settings_store.srv.declareandget)
 	
 	class SettingInfo:
-		def __init__(self, pName = None, pDefault = None, pMin = None, pMax = None):
+		def __init__(self, pName = None, pDefault = None, pMin = None, pMax = None, pDescription = None):
 			self.mAttributeName = pName
 			self.mMin = pMin
 			self.mMax = pMax
 			self.mDefault = pDefault
+			self.mDescription = pDescription
 		
 	## this method will register given attributes to sync them with settings store
-	# pAttributes is a list of tuple (local_attribute_name, settings_store_key_name, numeric_min, numeric_max)
+	# pAttributes is a list of tuple (local_attribute_name, settings_store_key_name, [numeric_min, numeric_max], [description])
 	# local_attribute_name : is the name of attribute in sub class eg mMyAttribute
 	# settings_store_key_name : is the key name in settings_store eg MyPackage/MySetting
 	# numeric_min / numeric_max : are used for numeric attributes to ensure that value retrieve from the store is acceptable, if not default value will be used
 	def registerAttributes(self, pAttributes):
 		lNames = []
 		lDefaultValues = []
+		lDescriptions = []
 		
 		for lAttr in pAttributes:
 			local = lAttr[0]
 			distant = lAttr[1]
-			min = lAttr[2] if len(lAttr) == 4 else None
-			max = lAttr[3] if len(lAttr) == 4 else None
+			min = lAttr[2] if len(lAttr) == 4 or len(lAttr) == 5 else None
+			max = lAttr[3] if len(lAttr) == 4 or len(lAttr) == 5 else None
+			
+			if len(lAttr) == 3:
+				lDescriptions.append(lAttr[2])
+			elif len(lAttr) == 5:
+				lDescriptions.append(lAttr[4])
+			else:
+				lDescriptions.append('')
 			
 			if distant in self.__mAttributes:
 				raise Exception('setting ' + distant + ' is already associated to attribute ' + self.__mAttributes[distant].mAttributeName)
@@ -48,7 +57,7 @@ class SettingsBase:
 			self.__mAttributes[distant] = SettingsBase.SettingInfo(local,getattr(self,local), min, max)
 			
 			lNames.append(distant)
-		lServiceReq = settings_store.srv.declareandgetRequest(lNames, lDefaultValues)
+		lServiceReq = settings_store.srv.declareandgetRequest(lNames, lDefaultValues,lDescriptions)
 		lResponse = self.__mServiceDeclareAndGet(lServiceReq)
 		
 		for (lAttr,val) in zip(pAttributes,lResponse.values):

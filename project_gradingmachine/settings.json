@@ -1,77 +1,96 @@
 {
     "grading_machine/debug_img_channels": {
-        "inuse": true, 
+        "description": "", 
+        "inuse": false, 
         "value": "a"
     }, 
     "grading_machine/exclusion_percent_bottom": {
-        "inuse": true, 
+        "description": "", 
+        "inuse": false, 
         "value": "0.015"
     }, 
     "grading_machine/exclusion_percent_top": {
-        "inuse": true, 
+        "description": "", 
+        "inuse": false, 
         "value": "0.060"
     }, 
     "grading_machine/extract_connectivity_full": {
-        "inuse": true, 
+        "description": "", 
+        "inuse": false, 
         "value": "t"
     }, 
     "grading_machine/extract_min_area_dist_percent": {
-        "inuse": true, 
+        "description": "", 
+        "inuse": false, 
         "value": "0.05"
     }, 
     "grading_machine/extract_min_background_percent": {
-        "inuse": true, 
+        "description": "", 
+        "inuse": false, 
         "value": "0.7"
     }, 
     "grading_machine/extract_min_pixel_per_area": {
-        "inuse": true, 
+        "description": "", 
+        "inuse": false, 
         "value": "128"
     }, 
     "grading_machine/filter_dilate_channels": {
-        "inuse": true, 
+        "description": "", 
+        "inuse": false, 
         "value": "yuv"
     }, 
     "grading_machine/filter_erode": {
-        "inuse": true, 
+        "description": "", 
+        "inuse": false, 
         "value": "t"
     }, 
     "grading_machine/filter_gaussian_channels": {
-        "inuse": true, 
+        "description": "", 
+        "inuse": false, 
         "value": "uv"
     }, 
     "grading_machine/filter_th_U": {
-        "inuse": true, 
+        "description": "", 
+        "inuse": false, 
         "value": "-1"
     }, 
     "grading_machine/filter_th_V": {
-        "inuse": true, 
+        "description": "", 
+        "inuse": false, 
         "value": "-1"
     }, 
     "grading_machine/filter_th_Y": {
-        "inuse": true, 
+        "description": "", 
+        "inuse": false, 
         "value": "210"
     }, 
     "hardware_monitor/update_period": {
+        "description": "hardware state read interval", 
         "inuse": true, 
         "value": "0.5"
     }, 
     "oled_display/mBrightness": {
+        "description": "", 
         "inuse": true, 
         "value": "1"
     }, 
     "picamera_capture/HFlip": {
+        "description": "", 
         "inuse": false, 
         "value": "f"
     }, 
     "picamera_capture/HighQuality": {
+        "description": "", 
         "inuse": false, 
         "value": "f"
     }, 
     "picamera_capture/UpdatePeriod": {
+        "description": "", 
         "inuse": false, 
         "value": ".1"
     }, 
     "picamera_capture/VFlip": {
+        "description": "", 
         "inuse": false, 
         "value": "f"
     }

@@ -54,6 +54,7 @@ void SettingsBase::declareAndRetrieveSettings()
 		{
 			lParam.request.names.push_back(lIt->first);
 			lParam.request.defaultvalues.push_back(lIt->second.getValueAsString());
+			lParam.request.descriptions.push_back(lIt->second.mDescription);
 		}
 	}
 	

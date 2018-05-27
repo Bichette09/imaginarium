@@ -31,23 +31,22 @@ public:
 		, mGaussianChannels("uv")
 		, mDilateChannels("yuv")
 	{
-		registerAttribute<int>("grading_machine/filter_th_Y",mFilterParameters.mYParam.mThreshold,-1,255);
-		registerAttribute<int>("grading_machine/filter_th_U",mFilterParameters.mUParam.mThreshold,-1,255);
-		registerAttribute<int>("grading_machine/filter_th_V",mFilterParameters.mVParam.mThreshold,-1,255);
-		registerAttribute<bool>("grading_machine/filter_erode",mFilterParameters.mErode);
-		registerAttribute<float>("grading_machine/exclusion_percent_top",mFilterParameters.mExclusionZoneTopPercent,0.,0.25);
-		registerAttribute<float>("grading_machine/exclusion_percent_bottom",mFilterParameters.mExclusionZoneBottomPercent,0.,0.25);
-		
+		registerAttribute<int>("grading_machine/filter_th_Y",mFilterParameters.mYParam.mThreshold,-1,255,"threshold on Y -1=>automatic");
+		registerAttribute<int>("grading_machine/filter_th_U",mFilterParameters.mUParam.mThreshold,-1,255,"threshold on U -1=>automatic");
+		registerAttribute<int>("grading_machine/filter_th_V",mFilterParameters.mVParam.mThreshold,-1,255,"threshold on V -1=>automatic");
+		registerAttribute<bool>("grading_machine/filter_erode",mFilterParameters.mErode,"should we erode combined mask ?");
+		registerAttribute<float>("grading_machine/exclusion_percent_top",mFilterParameters.mExclusionZoneTopPercent,0.,0.25,"percent (of height) of pixels ignore in top");
+		registerAttribute<float>("grading_machine/exclusion_percent_bottom",mFilterParameters.mExclusionZoneBottomPercent,0.,0.25,"percent (of height) of pixels ignore in bottom");
 
-		registerAttribute<std::string>("grading_machine/filter_gaussian_channels",mGaussianChannels);
-		registerAttribute<std::string>("grading_machine/filter_dilate_channels",mDilateChannels);
+		registerAttribute<std::string>("grading_machine/filter_gaussian_channels",mGaussianChannels,"should we use a gaussian filter to remove noise ?");
+		registerAttribute<std::string>("grading_machine/filter_dilate_channels",mDilateChannels,"should we dilate mask of each channel");
 		
-		registerAttribute<int32_t>("grading_machine/extract_min_pixel_per_area",mExtractParameters.mMinimumPixelsPerGroup,0,1024);
-		registerAttribute<float>("grading_machine/extract_min_background_percent",mExtractParameters.mMinimumBackgroundPercent,0.,1.);
-		registerAttribute<float>("grading_machine/extract_min_area_dist_percent",mExtractParameters.mMinimumSpaceBetweenAreaPercent,0.,1.);
-		registerAttribute<bool>("grading_machine/extract_connectivity_full",mExtractParameters.mConnectivityFullWay);
+		registerAttribute<int32_t>("grading_machine/extract_min_pixel_per_area",mExtractParameters.mMinimumPixelsPerGroup,0,1024,"minimum pixel count in an area");
+		registerAttribute<float>("grading_machine/extract_min_background_percent",mExtractParameters.mMinimumBackgroundPercent,0.,1.,"minimum percentage of frame that should be background");
+		registerAttribute<float>("grading_machine/extract_min_area_dist_percent",mExtractParameters.mMinimumSpaceBetweenAreaPercent,0.,1.,"mimimum space in percent of width between two areas");
+		registerAttribute<bool>("grading_machine/extract_connectivity_full",mExtractParameters.mConnectivityFullWay,"connexity used to extract ROI f=4,t=8");
 		
-		registerAttribute<std::string>("grading_machine/debug_img_channels",mDebugImgChannels);
+		registerAttribute<std::string>("grading_machine/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? AYUVM");
 		
 		declareAndRetrieveSettings();
 	}

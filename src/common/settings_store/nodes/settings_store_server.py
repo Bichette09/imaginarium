@@ -23,9 +23,13 @@ def loadSettings(pFileName):
 		lSettings = json.load(f)
 		if lSettings is None:
 			lSettings = {}
-		# clear inuse flag
+		
+		# clear inuse flag and ensure that description is set
 		for k in lSettings:
+			if not 'description' in lSettings[k]:
+				lSettings[k]['description'] = ''
 			lSettings[k]['inuse'] = False
+		
 		return lSettings
 	rospy.logerr('Fail to load settings')
 	raise Exception()
@@ -39,13 +43,15 @@ def saveSettings(pFileName,pSettings):
 def emitChange(pField):
 	lName = ''
 	lValue = ''
+	lDesc = ''
 	lInUse = False
 
 	if pField in sSettings:
 		lName = pField
 		lValue = sSettings[pField]['value']
 		lInUse = sSettings[pField]['inuse']
-	sRosPublisher.publish(settings_store.msg.Change(lName,lValue,lInUse))
+		lDesc = sSettings[pField]['description']
+	sRosPublisher.publish(settings_store.msg.Change(lName,lValue,lDesc,lInUse))
 
 def handle_declareandget(req):
 	if len(req.names) != len(req.defaultvalues):
@@ -53,13 +59,14 @@ def handle_declareandget(req):
 		return None
 	lVals = []
 	lChanges = []
-	for (name, defaultval) in zip(req.names, req.defaultvalues):
+	for (name, defaultval,description) in zip(req.names, req.defaultvalues,req.descriptions):
 		if not name in sSettings:
-			sSettings[name] = {'value':defaultval,'inuse':True}
+			sSettings[name] = {'value':defaultval,'inuse':True,'description':description}
 			lChanges.append(name)
 		elif not sSettings[name]['inuse']:
 			sSettings[name]['inuse'] = True
-			lChanges.append
+			sSettings[name]['description'] = description
+			lChanges.append(name)
 		lVals.append(str(sSettings[name]['value']))
 
 	for name in lChanges:
@@ -70,6 +77,7 @@ def handle_declareandget(req):
 def handle_multiget(req):
 	lNames = []
 	lVals = []
+	lDescriptions = []
 	lInUses = []
 	
 	lRequestedNames = req.requestednames
@@ -80,12 +88,14 @@ def handle_multiget(req):
 		lNames.append(lName)
 		if lName in sSettings:
 			lVals.append(sSettings[lName]['value'])
+			lDescriptions.append(sSettings[lName]['description'])
 			lInUses.append(sSettings[lName]['inuse'])
 		else:
 			lVals.append('')
+			lDescriptions.append('')
 			lInUses.append(False)
 	
-	return settings_store.srv.multigetResponse(lNames,lVals,lInUses)
+	return settings_store.srv.multigetResponse(lNames,lVals,lDescriptions,lInUses)
 	
 def handle_set(req):
 	lError = False

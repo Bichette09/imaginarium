@@ -159,7 +159,7 @@ function escapeHtml (string) {
   });
 }
 
-function addOrUpdateSetting(pName,pValue,pInUse)
+function addOrUpdateSetting(pName,pValue,pDescription,pInUse)
 {
 	if(pName.length <= 0)
 		return;
@@ -167,11 +167,17 @@ function addOrUpdateSetting(pName,pValue,pInUse)
 	var lId = btoa( "settingentry_" + pName).replace(/=/g,'_');
 	
 	var lDiv = $("#"+lId);
+	
+	var lDesc = '';
+	if(pDescription.length > 0)
+	{
+		lDesc = '(' + pDescription + ')'
+	}
 
 	if (lDiv.length == 0){
 		$( "#settingscontainer" ).append( 
 		"<div class=\"settingentry\" id=\"" + lId + "\" paramname=\"" + escapeHtml(pName) + "\">"+
-			"<div class=\"settingname\">" + escapeHtml(pName) + "<div id=\"deletebutton\" class=\"settingsbutton\" onclick=\"deletesetting(event)\">delete</div></div>"+
+			"<div class=\"settingtitle\"><span class=\"settingname\">" + escapeHtml(pName) + "</span><span class=\"settingdescription\">" + escapeHtml(lDesc) + "</span><div id=\"deletebutton\" class=\"settingsbutton\" onclick=\"deletesetting(event)\">delete</div></div>"+
 			"<input type=\"text\" onkeypress=\"onsettinginput(event)\" onchange=\"onsettinginputloosefocus(event)\" class=\"settingvalue\" originalvalue=\"\" value=\"\"></input>"+
 		"</div>");
 		lIsNew = true;
@@ -223,7 +229,7 @@ function onParamRetrieved()
 
 function onSettingChanged(pMsg)
 {
-	if(addOrUpdateSetting(pMsg.name,pMsg.value,pMsg.inuse))
+	if(addOrUpdateSetting(pMsg.name,pMsg.value,pMsg.description,pMsg.inuse))
 	{
 		sortsettings();
 		onfilter();
@@ -244,7 +250,7 @@ function onload()
 	sRosCtx.callService('/settings_store/multiget','settingsstore/multiget',{requestednames:[]}, function(pResult) {
 		for(var i = 0 ; i < pResult.names.length ; ++i)
 		{
-			addOrUpdateSetting(pResult.names[i],pResult.values[i],pResult.inuse[i])
+			addOrUpdateSetting(pResult.names[i],pResult.values[i],pResult.descriptions[i],pResult.inuse[i])
 		}
 		onParamRetrieved();
 	})

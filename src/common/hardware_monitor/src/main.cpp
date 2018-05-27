@@ -233,7 +233,7 @@ public:
 		: settings_store::SettingsBase(pNodeHandle)
 		, mUpdateIntervalSec(1.)
 	{
-		registerAttribute<float>("hardware_monitor/update_period",mUpdateIntervalSec,0.5,10);
+		registerAttribute<float>("hardware_monitor/update_period",mUpdateIntervalSec,0.5,10,"hardware state read interval");
 		
 		declareAndRetrieveSettings();
 	}

@@ -45,36 +45,39 @@ namespace settings_store
 
 	
 	template <>
-	void SettingsBase::registerAttribute<std::string>(const std::string & pSettingName, std::string & pAttribute)
+	void SettingsBase::registerAttribute<std::string>(const std::string & pSettingName, std::string & pAttribute, const char * pDescription)
 	{
 		GET_SETTING_INFO;
 		lSettingInfo.mType = T_String;
 		lSettingInfo.mPtr = &pAttribute;
 		lSettingInfo.mDefault = lSettingInfo.getValueAsString();
+		lSettingInfo.mDescription = pDescription ? std::string(pDescription) : std::string();
 	}
 	
 	template <>
-	void SettingsBase::registerAttribute<bool>(const std::string & pSettingName, bool & pAttribute)
+	void SettingsBase::registerAttribute<bool>(const std::string & pSettingName, bool & pAttribute, const char * pDescription)
 	{
 		GET_SETTING_INFO;
 		lSettingInfo.mType = T_Bool;
 		lSettingInfo.mPtr = &pAttribute;
 		lSettingInfo.mDefault = lSettingInfo.getValueAsString();
+		lSettingInfo.mDescription = pDescription ? std::string(pDescription) : std::string();
 	}
 	
 	template <typename T>
-	void SettingsBase::registerAttribute(const std::string & pSettingName, T & pAttribute)
+	void SettingsBase::registerAttribute(const std::string & pSettingName, T & pAttribute, const char * pDescription)
 	{
-		registerAttribute(pSettingName,pAttribute,std::numeric_limits<T>::lowest(),std::numeric_limits<T>::max());
+		registerAttribute(pSettingName,pAttribute,std::numeric_limits<T>::lowest(),std::numeric_limits<T>::max(),pDescription);
 	}
 	
 	template <typename T>
-	void SettingsBase::registerAttribute(const std::string & pSettingName, T & pAttribute, T pMin, T pMax)
+	void SettingsBase::registerAttribute(const std::string & pSettingName, T & pAttribute, T pMin, T pMax, const char * pDescription)
 	{
 		GET_SETTING_INFO;
 		lSettingInfo.mType = GetTypeOf<T>();
 		lSettingInfo.mPtr = &pAttribute;
 		lSettingInfo.mDefault = lSettingInfo.getValueAsString();
+		lSettingInfo.mDescription = pDescription ? std::string(pDescription) : std::string();
 		memcpy(&lSettingInfo.mMin,&pMin,sizeof(T));
 		memcpy(&lSettingInfo.mMax,&pMax,sizeof(T));
 	}

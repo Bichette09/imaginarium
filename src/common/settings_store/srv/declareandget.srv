@@ -2,6 +2,8 @@
 string[] names
 # default values
 string[] defaultvalues
+# descriptions
+string[] descriptions
 ---
 # actual value in the store
 string[] values

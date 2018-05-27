@@ -30,9 +30,9 @@ namespace settings_store
 		*	@param pAttribute is the attribute that should be mapped to the setting
 		*/
 		template <typename T>
-		void registerAttribute(const std::string & pSettingName, T & pAttribute);
+		void registerAttribute(const std::string & pSettingName, T & pAttribute, const char * pDescription = NULL);
 		template <typename T>
-		void registerAttribute(const std::string & pSettingName, T & pAttribute,T pMin, T pMax);
+		void registerAttribute(const std::string & pSettingName, T & pAttribute,T pMin, T pMax, const char * pDescription = NULL);
 		
 		void declareAndRetrieveSettings();
 		
@@ -73,6 +73,7 @@ namespace settings_store
 			
 			
 			std::string		mDistantName;
+			std::string		mDescription;
 			Type			mType;
 			void *			mPtr;
 			char			mMin[8];
