@@ -62,7 +62,14 @@ void SettingsBase::declareAndRetrieveSettings()
 		return;
 	if(!mDeclareAndGetService.call(lParam))
 	{
-		ROS_ERROR_STREAM("fail to call declareandget service");
+		std::stringstream lVals;
+		for( tSettings::iterator lIt = mSettings.begin() ; lIt != mSettings.end() ; ++lIt)
+		{
+			if(lIt != mSettings.begin())
+				lVals<<", ";
+			lVals<<lIt->first;
+		}
+		ROS_ERROR_STREAM("fail to call declareandget service "<<lVals.c_str());
 		return;
 	}
 	

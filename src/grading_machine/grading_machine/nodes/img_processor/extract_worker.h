@@ -13,6 +13,7 @@ public:
 		Parameters();
 		
 		int		mMinimumPixelsPerGroup;
+		int		mMaxAreaToExtract;
 		float	mMinimumBackgroundPercent;
 		float	mMinimumSpaceBetweenAreaPercent;
 		bool	mConnectivityFullWay;

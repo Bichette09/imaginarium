@@ -9,6 +9,7 @@ ExtractWorker::Parameters::Parameters()
 	, mMinimumPixelsPerGroup(128)
 	, mMinimumBackgroundPercent(0.5)
 	, mMinimumSpaceBetweenAreaPercent(0.05)
+	, mMaxAreaToExtract(10)
 {
 }
 
@@ -51,7 +52,7 @@ bool ExtractWorker::computeNextResult(Frame & pRes)
 			mParameters.mConnectivityFullWay ? 8 : 4,
 			CV_16U,
 			cv::CCL_DEFAULT);
-		if(1 < lGroupCount && lGroupCount <= 12)
+		if(1 < lGroupCount && lGroupCount <= mParameters.mMaxAreaToExtract)
 		{
 			lAreas.reserve(lGroupCount - 1);
 			for(int i = 1 ; i < lGroupCount ; ++i)

@@ -45,6 +45,7 @@ public:
 		registerAttribute<float>("grading_machine/extract_min_background_percent",mExtractParameters.mMinimumBackgroundPercent,0.,1.,"minimum percentage of frame that should be background");
 		registerAttribute<float>("grading_machine/extract_min_area_dist_percent",mExtractParameters.mMinimumSpaceBetweenAreaPercent,0.,1.,"mimimum space in percent of width between two areas");
 		registerAttribute<bool>("grading_machine/extract_connectivity_full",mExtractParameters.mConnectivityFullWay,"connexity used to extract ROI f=4,t=8");
+		registerAttribute<int>("grading_machine/extract_max_area_count",mExtractParameters.mMaxAreaToExtract,1,25,"maximum number of expected areas");
 		
 		registerAttribute<std::string>("grading_machine/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? AYUVM");
 		
