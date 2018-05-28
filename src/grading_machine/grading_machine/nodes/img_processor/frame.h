@@ -17,9 +17,19 @@ struct AreaOfInterest
 	cv::Point	mAABBMax;
 	int32_t		mPixelCount;
 	cv::RotatedRect	mOBB;
+	
+	enum OverlapBorder
+	{
+		OB_None = 0x00,
+		OB_XMin = 0x01,
+		OB_XMax = 0x02,
+		OB_YMin = 0x04,
+		OB_YMax = 0x08
+	};
+	
 	/** true if this area is partialy out of the frame
 	*/
-	bool		mOverlapBorder;
+	int			mOverlapBorder;
 	/** true if this area is alone in it's vertical area,
 	*	there is no other area sharing same x coordinates
 	*/
@@ -61,6 +71,7 @@ public:
 	void swap(Frame & pOther);
 	
 	cv::Mat & operator[](Layer pLayer);
+	const cv::Mat & operator[](Layer pLayer) const;
 	
 	tAreas & editAreas();
 	const tAreas & getAreas() const;

@@ -5,7 +5,7 @@
 // std
 
 #include "frame.h"
-
+#include "scalaraggregator.h"
 
 
 
@@ -22,26 +22,6 @@ class DetectionModel
 		std::string toString() const;
 		
 	private:
-	
-		class MetricAggregator
-		{
-			public:
-				MetricAggregator();
-				~MetricAggregator();
-				
-				void clear();
-				void addValue(double pValue);
-				
-				std::string toString() const;
-				
-				double	mMin;
-				double	mAvg;
-				double	mSum;
-				double	mMax;
-				double	mAggCount;
-				
-		};
-
 		enum ScalarMetrics
 		{
 			/** longest part of OBB
@@ -57,5 +37,8 @@ class DetectionModel
 			
 			SM_Count
 		};
-		std::vector<MetricAggregator> mScalarMetrics;
+		
+
+		
+		std::vector< ScalarAggregator<double> > mScalarMetrics;
 };

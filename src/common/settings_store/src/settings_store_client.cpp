@@ -69,7 +69,7 @@ void SettingsBase::declareAndRetrieveSettings()
 				lVals<<", ";
 			lVals<<lIt->first;
 		}
-		ROS_ERROR_STREAM("fail to call declareandget service "<<lVals.c_str());
+		ROS_ERROR_STREAM("fail to call declareandget service "<<lVals.str());
 		return;
 	}
 	

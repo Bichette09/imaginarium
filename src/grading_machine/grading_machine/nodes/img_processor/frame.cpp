@@ -4,7 +4,7 @@ AreaOfInterest::AreaOfInterest()
 	: mPixelCount(0)
 	, mAABBMax(0,0)
 	, mAABBMin(0,0)
-	, mOverlapBorder(false)
+	, mOverlapBorder(OB_None)
 	, mIsAloneOnXAxis(false)
 {
 }
@@ -36,6 +36,19 @@ cv::Mat & Frame::operator[](Layer pLayer)
 {
 	return mLayers[pLayer];
 }
+
+static cv::Mat sNullMat;
+
+const cv::Mat & Frame::operator[](Layer pLayer) const
+{
+	tLayers::const_iterator lFindIt = mLayers.find(pLayer);
+	if(lFindIt == mLayers.end())
+	{
+		return sNullMat;
+	}
+	return lFindIt->second;
+}
+
 
 tAreas & Frame::editAreas()
 {

@@ -95,11 +95,14 @@ bool ExtractWorker::computeNextResult(Frame & pRes)
 					}
 				}
 				
-				lArea.mOverlapBorder = (lArea.mAABBMin.x <= 1) 
-										|| (lArea.mAABBMax.x >= (lWidth - 2))
-										|| (lArea.mAABBMin.y <= (int)((lHeight * mFilterWorker.mParameters.mExclusionZoneTopPercent) + 1)) 
-										|| (lArea.mAABBMax.y >= (int)(lHeight - 2 - (int)(lHeight * mFilterWorker.mParameters.mExclusionZoneBottomPercent)))
-										;
+				if(lArea.mAABBMin.x <= 1)
+					lArea.mOverlapBorder |= AreaOfInterest::OB_XMin;
+				if(lArea.mAABBMax.x >= (lWidth - 2))
+					lArea.mOverlapBorder |= AreaOfInterest::OB_XMax;
+				if(lArea.mAABBMin.y <= (int)((lHeight * mFilterWorker.mParameters.mExclusionZoneTopPercent) + 1))
+					lArea.mOverlapBorder |= AreaOfInterest::OB_YMin;
+				if(lArea.mAABBMax.y >= (int)(lHeight - 2 - (int)(lHeight * mFilterWorker.mParameters.mExclusionZoneBottomPercent)))
+					lArea.mOverlapBorder |= AreaOfInterest::OB_YMax;
 			}
 			
 			pRes.mExtractSuccessfull = true;

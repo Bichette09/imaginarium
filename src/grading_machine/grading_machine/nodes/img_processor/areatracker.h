@@ -5,6 +5,9 @@
 #include <chrono>
 #include <memory>
 
+// ros
+#include "ros/ros.h"
+
 #include "frame.h"
 
 /** this class will compute area movement between two frames to allow tracking area and ensure
@@ -43,11 +46,11 @@ public:
 	
 	
 private:
-
+	typedef std::vector<std::shared_ptr<AreaTrackingFunctor> > tFunctors;
+	typedef std::vector<int> tIntVector;
+	tIntVector 	mOffsets;
 
 	std::unique_ptr<AreaTrackingFunctor> mFunctorTemplate;
-	typedef std::vector<std::shared_ptr<AreaTrackingFunctor> > tFunctors;
-
 	tFunctors	mFunctors;
 	tAreas		mPreviousAreas;
 };
