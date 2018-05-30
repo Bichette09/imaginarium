@@ -17,10 +17,11 @@
 #include "opencv2/opencv.hpp"
 
 #include "grading_machine/ImgProcessorStat.h"
-#include "camera_worker.h"
-#include "filter_worker.h"
-#include "extract_worker.h"
+#include "img/camera_worker.h"
+#include "img/filter_worker.h"
+#include "img/extract_worker.h"
 #include "areatracker.h"
+#include "detectionmanager.h"
 
 class GradingMachineCppSettings : public settings_store::SettingsBase
 {
@@ -106,11 +107,13 @@ int main(int argc, char ** argv)
 		CameraWorker lCameraWorker(CameraWorker::Parameters(1600,1680,12));
 		FilterWorker lFilterWorker(lCameraWorker,lSettings.mFilterParameters);
 		ExtractWorker lExtractWorker(lFilterWorker,lSettings.mExtractParameters);
-		
 		FrameProcessor lExtractThread(lExtractWorker);
 		
 		Frame lFrame;
+		
+		DetectionManager lDetectionManager;
 		AreaTracker lAreaTracker;
+		lAreaTracker.setTrackingFunctor(&lDetectionManager);
 		
 		Frame::tTimestamp lPreviousFrameTs = std::chrono::system_clock::now();
 		Frame::tTimestamp lStatStart;
@@ -121,34 +124,37 @@ int main(int argc, char ** argv)
 		{
 			if(lExtractThread.getNextFrame(lFrame))
 			{
-				if(lStatCptr == 0)
+				// update stats
 				{
-					lStatStart = std::chrono::system_clock::now();
-					lNextStat = grading_machine::ImgProcessorStat();
+					if(lStatCptr == 0)
+					{
+						lStatStart = std::chrono::system_clock::now();
+						lNextStat = grading_machine::ImgProcessorStat();
+					}
+					++lStatCptr;
+					
+					Frame::tTimestamp lNow = std::chrono::system_clock::now();
+					lNextStat.fps += 1.f/std::chrono::duration<float>(lNow - lPreviousFrameTs).count();
+					lPreviousFrameTs = lNow;
+					lNextStat.latency += std::chrono::duration<float,std::milli>(lNow - lFrame[Frame::F_GrabDone]).count();
+					lNextStat.filter += std::chrono::duration<float,std::milli>(lFrame[Frame::F_FilterDone] - lFrame[Frame::F_FilterStart]).count();
+					lNextStat.areaextraction += std::chrono::duration<float,std::milli>(lFrame[Frame::F_AreaExtractionDone] - lFrame[Frame::F_AreaExtractionStart]).count();
+					
+					//std::cout<<std::chrono::duration<float,std::milli>(lFrame[Frame::F_FilterDone] - lFrame[Frame::F_FilterStart]).count()<<" "<<std::chrono::duration<float,std::milli>(lFrame[Frame::F_AreaExtractionDone] - lFrame[Frame::F_AreaExtractionStart]).count()<<std::endl;
+					
+					if(std::chrono::duration<float>(lNow - lStatStart).count() > 0.25)
+					{
+						lNextStat.fps /= lStatCptr;
+						lNextStat.latency /= lStatCptr;
+						lNextStat.filter /= lStatCptr;
+						lNextStat.areaextraction /= lStatCptr;
+						lStatCptr = 0;
+						lPubStat.publish(lNextStat);
+						
+					}
 				}
-				++lStatCptr;
-				
-				Frame::tTimestamp lNow = std::chrono::system_clock::now();
-				lNextStat.fps += 1.f/std::chrono::duration<float>(lNow - lPreviousFrameTs).count();
-				lPreviousFrameTs = lNow;
-				lNextStat.latency += std::chrono::duration<float,std::milli>(lNow - lFrame[Frame::F_GrabDone]).count();
-				lNextStat.filter += std::chrono::duration<float,std::milli>(lFrame[Frame::F_FilterDone] - lFrame[Frame::F_FilterStart]).count();
-				lNextStat.areaextraction += std::chrono::duration<float,std::milli>(lFrame[Frame::F_AreaExtractionDone] - lFrame[Frame::F_AreaExtractionStart]).count();
 				
 				lAreaTracker.addNewFrame(lFrame);
-				
-				//std::cout<<std::chrono::duration<float,std::milli>(lFrame[Frame::F_FilterDone] - lFrame[Frame::F_FilterStart]).count()<<" "<<std::chrono::duration<float,std::milli>(lFrame[Frame::F_AreaExtractionDone] - lFrame[Frame::F_AreaExtractionStart]).count()<<std::endl;
-				
-				if(std::chrono::duration<float>(lNow - lStatStart).count() > 0.25)
-				{
-					lNextStat.fps /= lStatCptr;
-					lNextStat.latency /= lStatCptr;
-					lNextStat.filter /= lStatCptr;
-					lNextStat.areaextraction /= lStatCptr;
-					lStatCptr = 0;
-					lPubStat.publish(lNextStat);
-					
-				}
 				
 				if( lSettings.mDebugImgChannels.find("y") != std::string::npos)
 				{
@@ -174,24 +180,7 @@ int main(int argc, char ** argv)
 				{
 					
 					cv::bitwise_and(lFrame[Frame::Y],lFrame[Frame::BackgroundMask],lTmp);
-					tAreas::iterator lIt = lFrame.editAreas().begin();
-					const tAreas::iterator lItEnd = lFrame.editAreas().end();
-					for( ; lIt != lItEnd ; ++lIt)
-					{
-						AreaOfInterest & lArea = *lIt;
-						// cv::rectangle(lYDownsized,lArea.mAABBMin,lArea.mAABBMax,255);
-						
-						// rotated rectangle
-						cv::Point2f rect_points[4]; 
-						lArea.mOBB.points( rect_points );
-						for( int j = 0; j < 4; j++ )
-							cv::line( lTmp, rect_points[j], rect_points[(j+1)%4], 220, 1, 8 );
-						if((!lArea.mIsAloneOnXAxis) || lArea.mOverlapBorder)
-						{
-							cv::line( lTmp, rect_points[0], rect_points[2], 220, 1, 8 );
-							cv::line( lTmp, rect_points[1], rect_points[3], 220, 1, 8 );
-						}
-					}
+					lDetectionManager.computeDebugFrame(lTmp,lFrame);
 					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lTmp).toImageMsg();
 					lPubA.publish(lMsg);
 					

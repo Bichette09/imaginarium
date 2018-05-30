@@ -49,5 +49,5 @@ private:
 	raspicam::RaspiCam *	mCameraHandle;
 	unsigned char *			mBuffer;
 	cv::Mat 				mFullY;
-	bool		mIsError;
+	bool					mIsError;
 };

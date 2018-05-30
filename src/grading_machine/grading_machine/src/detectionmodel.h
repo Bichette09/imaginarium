@@ -4,10 +4,9 @@
 
 // std
 
-#include "frame.h"
 #include "scalaraggregator.h"
 
-
+class AreaOfInterest;
 
 class DetectionModel
 {

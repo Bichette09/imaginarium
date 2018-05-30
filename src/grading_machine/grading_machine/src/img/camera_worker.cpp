@@ -14,6 +14,7 @@ CameraWorker::Parameters::Parameters(int pRequestedWidth, int pRequestedHeight, 
 	, mPixelCount(mWidth*mHeight)
 	, mQuarterPixelCount(mHalfWidth*mHalfHeight)
 	, mFps(std::max(1,std::min(pFps,50)))
+	
 {
 }
 
@@ -25,6 +26,7 @@ CameraWorker::CameraWorker(Parameters pParams)
 	: mParameters(pParams)
 	, mIsError(false)
 	, mBuffer(NULL)
+	
 {
 	mCameraHandle = new raspicam::RaspiCam();
 	// we capture in YUV to achieve max speed
@@ -83,8 +85,10 @@ bool CameraWorker::computeNextResult(Frame & pRes)
 		return false;
 	EnsureMatSizeAndType(pRes,mParameters);
 
+	
 	mCameraHandle->grab();
 	mCameraHandle->retrieve ( mBuffer );
+	
 	pRes.setTimestamp(Frame::F_GrabDone);
 	memcpy(mFullY.data,mBuffer,mParameters.mPixelCount);
 	cv::resize(mFullY,pRes[Frame::Y],cv::Size(mParameters.mHalfWidth,mParameters.mHalfHeight));

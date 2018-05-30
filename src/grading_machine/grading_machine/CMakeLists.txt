@@ -68,6 +68,9 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  src/
+  src/img
+  src/common
 )
 
 ## Declare a C++ library
