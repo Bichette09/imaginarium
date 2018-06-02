@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(imaginarium_core)
+project(imaginarium_common)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -19,13 +19,7 @@ catkin_python_setup()
 add_message_files(
    FILES
    Gyro.msg
-   Ultrasound.msg
-   Speed.msg
-   Antenna.msg
-   CommandNosewheel.msg
-   DiagThrust.msg
-   GamePadButtons.msg
-   GamePadSticks.msg
+   
 )
 #add_service_files(
 #   FILES
@@ -37,7 +31,7 @@ generate_messages(
 )
 
 catkin_package(
-   LIBRARIES imaginariumlib
+   LIBRARIES 
    CATKIN_DEPENDS 
    rospy
    message_runtime 

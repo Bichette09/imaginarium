@@ -142,7 +142,7 @@ include_directories(
 
 add_executable(hardware_monitor src/main.cpp)
 target_link_libraries(hardware_monitor ${catkin_LIBRARIES})
-add_dependencies(hardware_monitor hardware_monitor_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME} "${PROJECT_NAME}_generate_messages_cpp" ${catkin_EXPORTED_TARGETS})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

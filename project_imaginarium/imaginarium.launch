@@ -10,25 +10,25 @@
 	<!-- hardware_monitor -->
 	<node name="hardware_monitor" pkg="hardware_monitor" type="hardware_monitor" />
 	<!-- gyro -->
-	<include file="$(find imaginarium_core)/launch/gyro.launch" > 
+	<include file="$(find imaginarium_common)/launch/gyro.launch" > 
 		<arg name="i2cPort" value="1"/>
 	</include>
 	<!-- ultrasound -->
-	<include file="$(find imaginarium_core)/launch/ultrasound.launch" > 
+	<include file="$(find imaginarium)/launch/ultrasound.launch" > 
 		<arg name="serialPort" value="/dev/ttyACM1"/>
 	</include>
 	<!-- speed -->
-	<include file="$(find imaginarium_core)/launch/speed.launch" > 
+	<include file="$(find imaginarium)/launch/speed.launch" > 
 		<arg name="pinA" value="24"/>
 		<arg name="pinB" value="23"/>
 	</include>
 	<!-- antenna -->
-	<!--<include file="$(find imaginarium_core)/launch/antenna.launch" > 
+	<!--<include file="$(find imaginarium)/launch/antenna.launch" > 
 		<arg name="pinA" value="20"/>
 		<arg name="pinB" value="21"/>
 	</include>-->
 	<!-- nosewheel command -->
-	<include file="$(find imaginarium_core)/launch/commandNosewheel.launch" > 
+	<include file="$(find imaginarium)/launch/commandNosewheel.launch" > 
 		<arg name="serialPort" value="/dev/ttyACM0"/>
 	</include>
 </launch>

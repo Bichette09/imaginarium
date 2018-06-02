@@ -3,7 +3,7 @@
 	<arg name="pinB" default="19"/>
 	<arg name="pinC" default="13"/>
 	<arg name="pinD" default="6"/>
-	<node name="commandThrust" pkg="imaginarium_core" type="commandThrust.py">
+	<node name="commandThrust" pkg="imaginarium" type="commandThrust.py">
 		<param name="pinA" value="$(arg pinA)"/>
 		<param name="pinB" value="$(arg pinB)"/>
 		<param name="pinC" value="$(arg pinC)"/>

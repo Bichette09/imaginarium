@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(settings_store)
+project(emobile)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-	roscpp
-	rospy
-	message_generation
-	std_msgs
+  message_generation
+  rospy
+  std_msgs
+  settings_store
 )
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -16,27 +16,27 @@ find_package(catkin REQUIRED COMPONENTS
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 catkin_python_setup()
 
-add_message_files(
-	FILES
-	Change.msg
-)
-add_service_files(
-	FILES
-	declareandget.srv
-	delete.srv
-	multiget.srv
-	set.srv
-)
+# add_message_files(
+   # FILES
+   
+# )
+#add_service_files(
+#   FILES
+#)
 
-generate_messages(
-	DEPENDENCIES
-	std_msgs
-)
+# generate_messages(
+   # DEPENDENCIES
+   # std_msgs
+# )
 
 catkin_package(
-	INCLUDE_DIRS include
-	LIBRARIES settings_store
-	CATKIN_DEPENDS message_runtime std_msgs 
+   LIBRARIES imaginariumlib
+   CATKIN_DEPENDS 
+   rospy
+   message_runtime 
+   std_msgs
+   imaginarium_common
+   settings_store
 )
 
 ###########
@@ -46,19 +46,19 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-	include
-	${catkin_INCLUDE_DIRS}
+# include
+  ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-add_library(settings_store
-	src/settings_store_client.cpp
-)
+# add_library(${PROJECT_NAME}
+#   src/${PROJECT_NAME}/settingsstore.cpp
+# )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-add_dependencies(${PROJECT_NAME} "${PROJECT_NAME}_generate_messages_cpp" ${catkin_EXPORTED_TARGETS})
+# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
@@ -102,11 +102,11 @@ add_dependencies(${PROJECT_NAME} "${PROJECT_NAME}_generate_messages_cpp" ${catki
 # )
 
 ## Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
-	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-	FILES_MATCHING PATTERN "*.h"
-	PATTERN ".svn" EXCLUDE
-)
+# install(DIRECTORY include/${PROJECT_NAME}/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#   FILES_MATCHING PATTERN "*.h"
+#   PATTERN ".svn" EXCLUDE
+# )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

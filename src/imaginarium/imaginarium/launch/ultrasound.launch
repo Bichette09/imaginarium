@@ -1,6 +1,6 @@
 <launch>
 	<arg name="serialPort" default="/dev/ttyACM1"/>
-	<node name="ultrasound" pkg="imaginarium_core" type="ultrasound.py">
+	<node name="ultrasound" pkg="imaginarium" type="ultrasound.py">
 		<param name="serialPort" value="$(arg serialPort)"/>
 	</node>
 </launch>

@@ -1,72 +1,72 @@
 {
     "grading_machine/debug_img_channels": {
         "description": "which channels should be published for debug ? AYUVM", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "a"
     }, 
     "grading_machine/exclusion_percent_bottom": {
         "description": "percent (of height) of pixels ignore in bottom", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "0.015"
     }, 
     "grading_machine/exclusion_percent_top": {
         "description": "percent (of height) of pixels ignore in top", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "0.060"
     }, 
     "grading_machine/extract_connectivity_full": {
         "description": "connexity used to extract ROI f=4,t=8", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "t"
     }, 
     "grading_machine/extract_max_area_count": {
         "description": "maximum number of expected areas", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "10"
     }, 
     "grading_machine/extract_min_area_dist_percent": {
         "description": "mimimum space in percent of width between two areas", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "0.05"
     }, 
     "grading_machine/extract_min_background_percent": {
         "description": "minimum percentage of frame that should be background", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "0.7"
     }, 
     "grading_machine/extract_min_pixel_per_area": {
         "description": "minimum pixel count in an area", 
-        "inuse": false, 
-        "value": "128"
+        "inuse": true, 
+        "value": "256"
     }, 
     "grading_machine/filter_dilate_channels": {
         "description": "should we dilate mask of each channel", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "yuv"
     }, 
     "grading_machine/filter_erode": {
         "description": "should we erode combined mask ?", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "t"
     }, 
     "grading_machine/filter_gaussian_channels": {
         "description": "should we use a gaussian filter to remove noise ?", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "uv"
     }, 
     "grading_machine/filter_th_U": {
         "description": "threshold on U -1=>automatic", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "-1"
     }, 
     "grading_machine/filter_th_V": {
         "description": "threshold on V -1=>automatic", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "-1"
     }, 
     "grading_machine/filter_th_Y": {
         "description": "threshold on Y -1=>automatic", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "210"
     }, 
     "hardware_monitor/update_period": {

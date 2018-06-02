@@ -1,7 +1,7 @@
 <launch>
 	<arg name="pinA" default="20"/>
 	<arg name="pinB" default="21"/>
-	<node name="antenna" pkg="imaginarium_core" type="antenna.py">
+	<node name="antenna" pkg="imaginarium" type="antenna.py">
 		<param name="pinA" value="$(arg pinA)"/>
 		<param name="pinB" value="$(arg pinB)"/>
 	</node>
