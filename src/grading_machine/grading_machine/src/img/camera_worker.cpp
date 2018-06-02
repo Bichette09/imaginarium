@@ -1,7 +1,9 @@
 #include "camera_worker.h"
 
 // raspicam lib
+#ifdef USE_RASPICAM_LIB
 #include <raspicam/raspicam.h>
+#endif
 
 // ros
 #include "ros/ros.h"
@@ -26,8 +28,9 @@ CameraWorker::CameraWorker(Parameters pParams)
 	: mParameters(pParams)
 	, mIsError(false)
 	, mBuffer(NULL)
-	
+	, mCameraHandle(NULL)
 {
+#ifdef USE_RASPICAM_LIB
 	mCameraHandle = new raspicam::RaspiCam();
 	// we capture in YUV to achieve max speed
 	mCameraHandle->setFormat( raspicam::RASPICAM_FORMAT_YUV420);
@@ -52,12 +55,20 @@ CameraWorker::CameraWorker(Parameters pParams)
 		ROS_INFO_STREAM("OpenCV version "<<CV_MAJOR_VERSION<<"."<<CV_MINOR_VERSION);
 		ROS_INFO_STREAM("CameraThread capture Y["<<mParameters.mWidth<<"x"<<mParameters.mHeight<<"] UV["<<mParameters.mHalfWidth<<"x"<<mParameters.mHalfHeight<<"] @"<<mParameters.mFps<<"fps");
 	}
+#else
+	ROS_ERROR_STREAM("CameraThread not build with raspicam support");
+	mIsError = true;
+#endif
 	
 	mFullY = cv::Mat(mParameters.mHeight,mParameters.mWidth,CV_8UC1);
 }
 
 CameraWorker::~CameraWorker()
 {
+#ifdef USE_RASPICAM_LIB
+	delete mCameraHandle;
+	mCameraHandle = NULL;
+#endif
 	delete mBuffer;
 	mBuffer = NULL;
 }
@@ -81,14 +92,15 @@ void CameraWorker::EnsureMatSizeAndType(Frame & pFrame, const Parameters & pPara
 
 bool CameraWorker::computeNextResult(Frame & pRes)
 {
+#ifdef USE_RASPICAM_LIB
 	if(mIsError)
 		return false;
 	EnsureMatSizeAndType(pRes,mParameters);
 
-	
+
 	mCameraHandle->grab();
 	mCameraHandle->retrieve ( mBuffer );
-	
+
 	pRes.setTimestamp(Frame::F_GrabDone);
 	memcpy(mFullY.data,mBuffer,mParameters.mPixelCount);
 	cv::resize(mFullY,pRes[Frame::Y],cv::Size(mParameters.mHalfWidth,mParameters.mHalfHeight));
@@ -96,5 +108,8 @@ bool CameraWorker::computeNextResult(Frame & pRes)
 	memcpy(pRes[Frame::V].data,mBuffer + mParameters.mPixelCount +  mParameters.mQuarterPixelCount, mParameters.mQuarterPixelCount);
 	
 	return true;
+#else
+	return false;
+#endif	
 }
 
