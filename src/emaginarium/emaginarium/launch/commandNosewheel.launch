@@ -1,0 +1,6 @@
+<launch>
+	<arg name="serialPort" default="/dev/ttyACM0"/>
+	<node name="commandNosewheel" pkg="emaginarium" type="commandNosewheel.py">
+		<param name="serialPort" value="$(arg serialPort)"/>
+	</node>
+</launch>

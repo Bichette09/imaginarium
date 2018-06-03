@@ -1,0 +1,14 @@
+# to install rules 
+# udevadm info -a /dev/ttyACM0
+# udevadm info /dev/ttyACM0
+# sudo cp 10-emaginarium.rules /etc/udev/rules.d/
+# sudo udevadm trigger
+
+# rule for arduino
+ SUBSYSTEM=="tty", ATTRS{idVendor}=="2a03", ATTRS{idProduct}=="0042", SYMLINK+="arduino"
+#SUBSYSTEM=="tty", ATTRS{serial}=="755333530383515192F1", SYMLINK+="arduino"
+
+# rule for dynamixel
+SUBSYSTEM=="tty", ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="06a7", SYMLINK+="dynamixel"
+#SUBSYSTEM=="tty", ATTRS{serial}=="740313034373517082F1", SYMLINK+="dynamixel"
+

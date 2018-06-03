@@ -1,6 +1,0 @@
-<launch>
-	<arg name="i2cPort" default="1"/>
-	<node name="gyro" pkg="imaginarium_common" type="gyro.py">
-		<param name="i2cPort" value="$(arg i2cPort)"/>
-	</node>
-</launch>
