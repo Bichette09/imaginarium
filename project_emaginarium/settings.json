@@ -6,7 +6,7 @@
     }, 
     "commandThrust/Kp": {
         "description": "", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "5"
     }, 
     "hardware_monitor/update_period": {

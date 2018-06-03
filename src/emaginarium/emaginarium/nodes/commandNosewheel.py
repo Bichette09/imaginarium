@@ -67,6 +67,8 @@ if __name__ == "__main__":
 	lSettings = CommandNosewheelSettings()
 	
 	sRosPublisher = rospy.Publisher('emaginarium/CommandNosewheel', emaginarium.msg.CommandNosewheel, queue_size=5)
+	sRosSuscriberSpeedTarget = rospy.Publisher('emaginarium/SpeedTarget', emaginarium.msg.SpeedTarget, queue_size=5)
+	
 	lCommandNosewheel = CommandNosewheel(rospy.get_param('/commandNosewheel/serialPort'))
 	sRosSuscriberUltra = rospy.Subscriber('emaginarium/Ultrasound', emaginarium.msg.Ultrasound,lCommandNosewheel.updateUltrason)
 	sRosSuscriberSpeed = rospy.Subscriber('emaginarium/Speed', emaginarium.msg.Speed,lCommandNosewheel.updateSpeed)
@@ -83,6 +85,7 @@ if __name__ == "__main__":
 	lPrec=0.
 	lLeftAngle=0.
 	lRightAngle=0.
+	lLastSpeedTarget=0.
 	
 	while not rospy.core.is_shutdown():
 		
@@ -156,6 +159,7 @@ if __name__ == "__main__":
 		lCommandNosewheel.setWheelAngle(lLastAngle)
 		# Message publication
 		sRosPublisher.publish(emaginarium.msg.CommandNosewheel(lLastAngle,False,lProp,lPrec,lRightAngle,lLeftAngle))
+		sRosSuscriberSpeedTarget.publish(emaginarium.msg.SpeedTarget(lLastSpeedTarget))
 		
 	# Message publication en cas de fermeture de la node on envoie un status
 	sRosPublisher.publish(emaginarium.msg.CommandNosewheel(lLastAngle,True,lProp,lPrec,lRightAngle,lLeftAngle))

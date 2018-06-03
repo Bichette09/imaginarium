@@ -13,7 +13,7 @@ class CommandThrust(object):
 		self.speed = 0
 		self.thrust = [0,0,0,0]# Thrust table for all the engines
 		self.mthrust = 0 # Command Thrust
-		self.mGoalSpeed = 0 # Goal Speed
+		self.mGoalSpeed = 0. # Goal Speed
 		self.__mIsEnable = False # Engine are disabled
 		self.__mGpio = pigpio.pi()
 		self.pinA=pinA
@@ -29,24 +29,27 @@ class CommandThrust(object):
 		
  	def updatexbox (self,param):
 		if '|B|' in param.data:
-			self.__mIsEnable = not self.__mIsEnable
-			rospy.logwarn('Powertrain isEnable: %s'%(self.__mIsEnable))
+			self.__mIsEnable = False
+			if '|Y|' in param.data:
+				self.__mIsEnable = True
 		
-		if '|A|' in param.data:
-			if self.mGoalSpeed == 0:
-				self.mGoalSpeed = 1
-			else:
-				self.mGoalSpeed = 0
+			
 		self.updateThrust()
 				
 				
  	def updateSpeed(self,param):
 		self.speed = param.speed
 		self.updateThrust()
+	
+	def updateSpeedTarget(self, param):
+		self.mGoalSpeed = min(max(-5.,param.speedtarget),5.)
+		if self.mGoalSpeed != param.speedtarget:
+			rospy.logerr('Goal speed out of range %f' % (param.speedtarget))
+		self.updateThrust();
 		
 	def updateThrust(self):
 		# limit goal speed
-		self.mGoalSpeed = max(min(-5.,self.mGoalSpeed),5.)
+		self.mGoalSpeed = min(max(-5.,self.mGoalSpeed),5.)
 		lError = self.speed - self.mGoalSpeed
 		
 		self.mThrust = lError * self.settings.kp
@@ -108,6 +111,7 @@ if __name__ == "__main__":
 	lCommandThrust = CommandThrust(rospy.get_param('/commandThrust/pinA'),rospy.get_param('/commandThrust/pinB'),rospy.get_param('/commandThrust/pinC'),rospy.get_param('/commandThrust/pinD'),lSettings)
 	
 	sRosSuscriberSpeed = rospy.Subscriber('emaginarium/Speed', emaginarium.msg.Speed,lCommandThrust.updateSpeed)
+	sRosSuscriberSpeed = rospy.Subscriber('emaginarium/SpeedTarget', emaginarium.msg.SpeedTarget,lCommandThrust.updateSpeedTarget)
 	sRosSuscriberSpeed = rospy.Subscriber('GamePadButtons', emaginarium.msg.GamePadButtons,lCommandThrust.updatexbox)
 	rospy.spin() # Attente de la mise à jour de la valeur de Speed pour executer updateSpeed
 	

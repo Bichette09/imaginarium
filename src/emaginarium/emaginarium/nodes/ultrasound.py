@@ -12,11 +12,20 @@ import math
 class Ultrasound(object):
 
 		def __init__(self,pSerialPort):
-			self.__mSerialPort = serial.Serial(pSerialPort, baudrate=2000000,timeout=1) #Arduino
-			self.__mSerialPort.readline() #on purge la premiere trame
+			self.__mSerialPort = None
+			self.__mPlotError = True
+			self.__mExpectedResLength = 10
+			try:
+				self.__mSerialPort = serial.Serial(pSerialPort, baudrate=2000000,timeout=1) #Arduino
+				self.__mSerialPort.readline() #on purge la premiere trame
+			except:
+				rospy.logerr('Fail to open serial port with arduino')
+			
 			
 		def readDistance(self):
 			lMeasures = []
+			if self.__mSerialPort is None:
+				return [0]*self.__mExpectedResLength
 			try:
 				a=self.__mSerialPort.readline()
 				b=a[1:-3]
@@ -25,12 +34,15 @@ class Ultrasound(object):
 					lVal = float(i)
 					if lVal is None:
 						raise Exception('invalid val ' + str(a))
-					lMeasures.append(float(i)) 
+					lMeasures.append(lVal*10.) 
 				if len(lMeasures) != 10:
 					raise Exception()
+				self.__mPlotError = True
 			except Exception as e:
-				rospy.logerr('Fail to read data from arduino ' + str(e))
-				lMeasures = [0]*10
+				lMeasures = [0]*self.__mExpectedResLength
+				if self.__mPlotError:
+					rospy.logerr('Fail to read data from arduino ' + str(e))
+					self.__mPlotError = False
 			
 			return lMeasures
 

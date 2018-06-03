@@ -37,13 +37,17 @@ sUltraSoundPosDir = [
 		// 9 180°
 		[-174.,24.,-1.,0.]
 ];
+
 sUltraSoundSensorOrder = 
 	//[0,1,2,3,4,5,6,7,8,9];
 	[1,0,2,3,4,5,6,7,9,8];
 
-sLastUltraSoundMeasure = [[1250.,53.],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,[-650.,53.]];
-sWheelAngle = 15.;
-	
+sLastUltraSoundMeasure = undefined;
+// [[1250.,53.],undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,[-650.,53.]];
+sWheelAngle = undefined;
+
+sNeedRedraw = false;
+
 function redraw()
 {
 	let canvas = document.getElementById('mapcanvas');
@@ -53,8 +57,8 @@ function redraw()
 	sCanvasHelper.ctx = ctx;
 	
 	// clear canvas 
-	sCanvasHelper.clear(3000.,4000.,0.80);
-	sCanvasHelper.drawGrid(250.,'rgba(0, 0, 0, 0.2)',2);
+	sCanvasHelper.clear(2000.,4000.,0.50);
+	sCanvasHelper.drawGrid(200.0,'rgba(0, 0, 0, 0.2)',2);
 	sCanvasHelper.drawGrid(1000.0,'rgba(0, 0, 0, 0.2)',2);
 	
 	
@@ -80,8 +84,11 @@ function redraw()
 	
 	// draw wheel
 	ctx.save();
-	ctx.rotate(Math.PI * sWheelAngle / 180.);
-	sCanvasHelper.drawRectangle(0,0,30,200,'rgba(0,0,128,0.7)',undefined,undefined);
+	if(sWheelAngle !== undefined)
+	{
+		ctx.rotate(Math.PI * sWheelAngle / 180.);
+		sCanvasHelper.drawRectangle(0,0,30,200,'rgba(0,0,128,0.7)',undefined,undefined);
+	}
 	ctx.restore();
 	
 	// draw position of each sensor
@@ -90,10 +97,11 @@ function redraw()
 		for(let i = 0 ; i < sUltraSoundSensorOrder.length ; ++i)
 		{
 			let lSensorId = sUltraSoundSensorOrder[i];
+			
 			let lMeasure = sLastUltraSoundMeasure[lSensorId];
 			let lSensorDir = sUltraSoundPosDir[lSensorId].slice(2,4);
 			let lSensorPos = sUltraSoundPosDir[lSensorId].slice(0,2);
-			if(lMeasure === undefined || (lMeasure[0] < 0.5 && lMeasure[1] < 0.5))
+			if(lMeasure === undefined || (Math.abs(lMeasure[0]) < 0.5 && Math.abs(lMeasure[1]) < 0.5))
 			{
 				sCanvasHelper.drawRectangle(lSensorPos[0],lSensorPos[1],30,30,'rgba(255,0,0,0.7)',undefined,undefined);
 			}
@@ -135,6 +143,7 @@ function redraw()
 	
 }
 
+
 function onload()
 {
 	$('#maproot').ready(resizeCanvans());
@@ -145,8 +154,27 @@ function onload()
 		else $( "#roserror" ).show();
 	});
 	
-	sRosCtx.startListeningTopic('emaginarium/Ultrasound','emaginarium/Ultrasound',function(data){console.log(data);});
-	sRosCtx.startListeningTopic('emaginarium/CommandNosewheel','emaginarium/CommandNosewheel',function(data){console.log(data);});
+	sRosCtx.startListeningTopic('emaginarium/Ultrasound','emaginarium/Ultrasound',function(data){
+		sLastUltraSoundMeasure = []
+		for(var i = 0 ; i < data.x0.length ; ++i)
+		{
+			sLastUltraSoundMeasure.push([data.x0[i], data.y0[i]]);
+		}
+		sNeedRedraw = true;
+	});
+	
+	sRosCtx.startListeningTopic('emaginarium/CommandNosewheel','emaginarium/CommandNosewheel',function(data){
+		sWheelAngle = -data.nosewheelAngle;
+		sNeedRedraw = true;
+	});
+	
+	setInterval(function(){
+		if(sNeedRedraw)
+		{
+			sNeedRedraw = false;
+			redraw();
+		}
+	}, 50)
 	
 	redraw();
 }

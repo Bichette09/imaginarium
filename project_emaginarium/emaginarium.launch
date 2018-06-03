@@ -27,8 +27,12 @@
 		<arg name="pinA" value="20"/>
 		<arg name="pinB" value="21"/>
 	</include>-->
-	<!-- nosewheel command -->
-	<include file="$(find emaginarium)/launch/commandNosewheel.launch" > 
-		<arg name="serialPort" value="/dev/dynamixel"/>
+	<!-- command thrust -->
+	<include file="$(find emaginarium)/launch/commandThrust.launch" > 
+		
 	</include>
+	<!-- nosewheel command -->
+	<!--<include file="$(find emaginarium)/launch/commandNosewheel.launch" > 
+		<arg name="serialPort" value="/dev/dynamixel"/>
+	</include>-->
 </launch>

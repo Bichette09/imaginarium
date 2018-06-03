@@ -89,6 +89,11 @@ function onload()
 						"topicname":"/emaginarium/Speed",
 						"messagetype":"/emaginarium/Speed",
 						"messagefield":"speed"
+					},{
+						"name":"speedtarget",
+						"topicname":"/emaginarium/SpeedTarget",
+						"messagetype":"/emaginarium/SpeedTarget",
+						"messagefield":"speedtarget"
 					}
 				]
 			},

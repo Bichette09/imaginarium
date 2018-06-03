@@ -19,7 +19,7 @@ var sCanvasHelper = {
 		this.pxToUnitScale = 1./this.unitToPxScale;
 		
 		// apply a transform to move robot origin
-		console.log('size ' + (this.pxToUnitScale * this.canvas.width).toString() + 'x' + (this.pxToUnitScale * this.canvas.height).toString() + 'm ' + this.canvas.width.toString() + 'x' + this.canvas.height.toString() + 'px');
+		// console.log('size ' + (this.pxToUnitScale * this.canvas.width).toString() + 'x' + (this.pxToUnitScale * this.canvas.height).toString() + 'm ' + this.canvas.width.toString() + 'x' + this.canvas.height.toString() + 'px');
 		
 		// we do not apply scale here to avoid blurry rendering due to non integer positions after transform
 		this.ctx.transform(1.,0.,0.,-1., Math.round(this.canvas.width * 0.5),Math.round(this.canvas.height * pCenterYPercent));
@@ -89,6 +89,7 @@ var sCanvasHelper = {
 		}
 		
 		for(let y = Math.round(this.boundMeter[1] / pStep) - 1 ; y <= Math.round(this.boundMeter[3] / pStep) + 1 ; ++y)
+			// for(let y = 0 ; y <= 12 ; ++y)
 		{
 			let lYPx = Math.round(y*pStep*this.unitToPxScale);
 			this.ctx.moveTo(this.boundPx[0],lYPx);

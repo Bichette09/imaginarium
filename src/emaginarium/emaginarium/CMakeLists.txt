@@ -21,6 +21,7 @@ add_message_files(
    FILES
    Ultrasound.msg
    Speed.msg
+   SpeedTarget.msg
    Antenna.msg
    CommandNosewheel.msg
    DiagThrust.msg
