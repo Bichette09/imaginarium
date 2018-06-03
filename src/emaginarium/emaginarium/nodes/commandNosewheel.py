@@ -7,41 +7,25 @@ import os
 import serial
 import math
 import pypot.dynamixel
-import pigpio
+# import pigpio
 from settings_store import settings_store_client
 import time
 
-class CommandNosewheel(object):
+class Dynamixel(object):
 	
 	def __init__(self,serialPort):
-		self.speed = 0
-		self.ultrasonDist = [0]*10
-		# retrait du capteur arriere (cm)
-		self.rd = 1.9
-		self.ld = 1.6
-		# distance entre le capteur arriere et avant (cm)		
-		self.rL = 37.5
-		self.lL = 37.5
 		#Servomoteur init
 		self.__dxl_io = pypot.dynamixel.DxlIO(serialPort)
 		if self.__dxl_io is None:
-			print('Servo is disabled, fail to create DxlIO object')
-		self.__mGpio = pigpio.pi()
-		if self.__mGpio is None or not self.__mGpio.connected:
-			print('Powertrain is disabled, fail to create GPIO object')
-			self.__mGpio = None
+			rospy.logerr('Servo is disabled, fail to create DxlIO object')
+		# self.__mGpio = pigpio.pi()
+		# if self.__mGpio is None or not self.__mGpio.connected:
+			# print('Powertrain is disabled, fail to create GPIO object')
+			# self.__mGpio = None
 		time.sleep(5)
-		print('Powertrain is ready')
+		# print('Powertrain is ready')
 	
- 	def updateSpeed(self,param):
-		self.speed = param.speed
-	
-	def updateUltrason(self,param):
-		self.ultrasonDist = param.distance
-	
-	def updateAntenna(self,param):
-		self.antennaStatus = param.status
-		
+ 
 	def setWheelAngle(self,angle):
 		if self.__dxl_io is not None:
 			try:
@@ -58,6 +42,29 @@ class CommandNosewheelSettings(settings_store_client.SettingsBase):
 			('kp','commandNosewheel/Kp')
 			])
 
+class ControlLaw():
+	
+	def __init__(self):
+		self.speed = 0
+		self.ultrasonDist = [0]*10
+		# retrait du capteur arriere (cm)
+		self.rd = 1.9
+		self.ld = 1.6
+		# distance entre le capteur arriere et avant (cm)		
+		self.rL = 37.5
+		self.lL = 37.5
+		
+	def onNewSpeed(self,param):
+		self.speed = param.speed
+	
+	def onNewUltrasound(self,param):
+		self.ultrasonDist = param.distance
+	
+	def updateAntenna(self,param):
+		self.antennaStatus = param.status
+		
+		
+		
 if __name__ == "__main__":
 	
 	os.getcwd()
@@ -69,9 +76,11 @@ if __name__ == "__main__":
 	sRosPublisher = rospy.Publisher('emaginarium/CommandNosewheel', emaginarium.msg.CommandNosewheel, queue_size=5)
 	sRosSuscriberSpeedTarget = rospy.Publisher('emaginarium/SpeedTarget', emaginarium.msg.SpeedTarget, queue_size=5)
 	
-	lCommandNosewheel = CommandNosewheel(rospy.get_param('/commandNosewheel/serialPort'))
-	sRosSuscriberUltra = rospy.Subscriber('emaginarium/Ultrasound', emaginarium.msg.Ultrasound,lCommandNosewheel.updateUltrason)
-	sRosSuscriberSpeed = rospy.Subscriber('emaginarium/Speed', emaginarium.msg.Speed,lCommandNosewheel.updateSpeed)
+	lDynamixel = Dynamixel(rospy.get_param('/commandNosewheel/serialPort'))
+	lControlLaw = ControlLaw()
+	sRosSuscriberUltra = rospy.Subscriber('emaginarium/Ultrasound', emaginarium.msg.Ultrasound,lControlLaw.onNewUltrasound)
+	sRosSuscriberSpeed = rospy.Subscriber('emaginarium/Speed', emaginarium.msg.Speed,lControlLaw.onNewSpeed)
+	
 	
 	#init
 	cptDoor = 0
@@ -93,37 +102,37 @@ if __name__ == "__main__":
 		time.sleep(0.01)
 		
 
-		if lCommandNosewheel.ultrasonDist is not None:
+		if lControlLaw.ultrasonDist is not None:
 			lRightDist = 0.
 			for i in range(0,4):		
-				if	lCommandNosewheel.ultrasonDist[i] > 0:
+				if	lControlLaw.ultrasonDist[i] > 0:
 					if lRightDist > 0:
-						lRightDist = min(lRightDist,lCommandNosewheel.ultrasonDist[i])
+						lRightDist = min(lRightDist,lControlLaw.ultrasonDist[i])
 					else:
-						lRightDist = lCommandNosewheel.ultrasonDist[i]
+						lRightDist = lControlLaw.ultrasonDist[i]
 			lLeftDist = 0.
 			for i in range(6,10):		
-				if	lCommandNosewheel.ultrasonDist[i] > 0:
+				if	lControlLaw.ultrasonDist[i] > 0:
 					if lLeftDist > 0:
-						lLeftDist = min(lLeftDist,lCommandNosewheel.ultrasonDist[i])
+						lLeftDist = min(lLeftDist,lControlLaw.ultrasonDist[i])
 					else:
-						lLeftDist = lCommandNosewheel.ultrasonDist[i]
+						lLeftDist = lControlLaw.ultrasonDist[i]
 				
 			lFrontDist = 0.
 			for i in range(3,7):		
-				if	lCommandNosewheel.ultrasonDist[i] > 0:
+				if	lControlLaw.ultrasonDist[i] > 0:
 					if lFrontDist > 0:
-						lFrontDist = min(lFrontDist,lCommandNosewheel.ultrasonDist[i])
+						lFrontDist = min(lFrontDist,lControlLaw.ultrasonDist[i])
 					else:
-						lFrontDist = lCommandNosewheel.ultrasonDist[i]
+						lFrontDist = lControlLaw.ultrasonDist[i]
 
 			# angle between robot and runway
 			lRightAngle = 0.
-			if lCommandNosewheel.ultrasonDist[1]>0. and lCommandNosewheel.ultrasonDist[0]>0.:
-				lRightAngle = -1.5-math.atan((lCommandNosewheel.ultrasonDist[1]-(lCommandNosewheel.ultrasonDist[0]+lCommandNosewheel.rd))/lCommandNosewheel.rL)*180/math.pi
+			if lControlLaw.ultrasonDist[1]>0. and lControlLaw.ultrasonDist[0]>0.:
+				lRightAngle = -1.5-math.atan((lControlLaw.ultrasonDist[1]-(lControlLaw.ultrasonDist[0]+lControlLaw.rd))/lControlLaw.rL)*180/math.pi
 				lLeftAngle = 0.
-				if lCommandNosewheel.ultrasonDist[8]>0. and lCommandNosewheel.ultrasonDist[9]>0.:
-					lLeftAngle =  math.atan((lCommandNosewheel.ultrasonDist[8]-(lCommandNosewheel.ultrasonDist[9]+lCommandNosewheel.ld))/lCommandNosewheel.lL)*180/math.pi
+				if lControlLaw.ultrasonDist[8]>0. and lControlLaw.ultrasonDist[9]>0.:
+					lLeftAngle =  math.atan((lControlLaw.ultrasonDist[8]-(lControlLaw.ultrasonDist[9]+lControlLaw.ld))/lControlLaw.lL)*180/math.pi
 
 
 				#print "rightAngle:"+str(lRightAngle)+"\t leftAngle:"+str(lLeftAngle)
@@ -156,7 +165,7 @@ if __name__ == "__main__":
 				elif lLeftDist != 0 and lRightDist == 0:
 					lLastAngle = 30
 					
-		lCommandNosewheel.setWheelAngle(lLastAngle)
+		lDynamixel.setWheelAngle(lLastAngle)
 		# Message publication
 		sRosPublisher.publish(emaginarium.msg.CommandNosewheel(lLastAngle,False,lProp,lPrec,lRightAngle,lLeftAngle))
 		sRosSuscriberSpeedTarget.publish(emaginarium.msg.SpeedTarget(lLastSpeedTarget))

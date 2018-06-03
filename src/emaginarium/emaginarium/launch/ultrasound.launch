@@ -1,5 +1,5 @@
 <launch>
-	<arg name="serialPort" default="/dev/ttyACM1"/>
+	<arg name="serialPort" default="/dev/arduino"/>
 	<node name="ultrasound" pkg="emaginarium" type="ultrasound.py">
 		<param name="serialPort" value="$(arg serialPort)"/>
 	</node>
