@@ -36,9 +36,9 @@ generate_messages(
    DEPENDENCIES
    std_msgs
 )
-
+# emaginariumlib
 catkin_package(
-   LIBRARIES emaginariumlib
+   LIBRARIES 
    CATKIN_DEPENDS 
    rospy
    message_runtime 

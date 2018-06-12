@@ -29,7 +29,7 @@ generate_messages(
    DEPENDENCIES
    std_msgs
 )
-
+# emaginariumcommonlib 
 catkin_package(
    LIBRARIES 
    CATKIN_DEPENDS 

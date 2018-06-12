@@ -22,7 +22,11 @@ class CommandThrust(object):
 		self.pinD=pinD
 		self.sRosPublisher = rospy.Publisher('emaginarium/DiagThrust', emaginarium.msg.DiagThrust,queue_size=5) 	
 		self.settings = settings # Goal Speed propotional gain
-		self.updateThrust() # mandatory init engines
+		try:
+			self.updateThrust() # mandatory init engines
+		except:
+			rospy.logerr('Fail to initialize engines')
+			self.__mGpio = None
 		time.sleep(5)
 		print('Powertrain is ready')
 
@@ -80,10 +84,11 @@ class CommandThrust(object):
 				self.thrust[i]=2000	  
 	
 		# mapping 1->26; 2->19; 3->13 and 4->6
-		self.__mGpio.set_servo_pulsewidth(self.pinA, self.thrust[0])
-		self.__mGpio.set_servo_pulsewidth(self.pinB, self.thrust[1])
-		self.__mGpio.set_servo_pulsewidth(self.pinC, self.thrust[2])
-		self.__mGpio.set_servo_pulsewidth(self.pinD, self.thrust[3])
+		if self.__mGpio is not None:
+			self.__mGpio.set_servo_pulsewidth(self.pinA, self.thrust[0])
+			self.__mGpio.set_servo_pulsewidth(self.pinB, self.thrust[1])
+			self.__mGpio.set_servo_pulsewidth(self.pinC, self.thrust[2])
+			self.__mGpio.set_servo_pulsewidth(self.pinD, self.thrust[3])
 
 		# Diagnostic message publishing
 		msg = emaginarium.msg.DiagThrust()
