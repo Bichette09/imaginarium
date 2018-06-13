@@ -8,6 +8,8 @@ import smbus
 import serial
 import numpy as np
 import math
+import time
+
 
 class Ultrasound(object):
 
@@ -25,6 +27,7 @@ class Ultrasound(object):
 		def readDistance(self):
 			lMeasures = []
 			if self.__mSerialPort is None:
+				time.sleep(0.01);
 				return [0]*self.__mExpectedResLength
 			try:
 				a=self.__mSerialPort.readline()
@@ -39,6 +42,7 @@ class Ultrasound(object):
 					raise Exception()
 				self.__mPlotError = True
 			except Exception as e:
+				time.sleep(0.01);
 				lMeasures = [0]*self.__mExpectedResLength
 				if self.__mPlotError:
 					rospy.logerr('Fail to read data from arduino ' + str(e))
