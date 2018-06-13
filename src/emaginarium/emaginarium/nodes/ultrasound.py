@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import emaginarium.msg
+import emaginariumcommonlib
 import rospy
 import os
 import smbus
@@ -141,6 +142,8 @@ if __name__ == "__main__":
 	lUltrasoundReader = Ultrasound(rospy.get_param('/ultrasound/serialPort'))
 	lDistToPointConv = Distance2PointConverter()
 
+	lFilter = emaginariumcommonlib.DataStreamFilter('ultrasoundfilter')
+	
 	while not rospy.core.is_shutdown():
 	
 		lDistance = lUltrasoundReader.readDistance()

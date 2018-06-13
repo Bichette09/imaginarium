@@ -11,24 +11,31 @@ import time
 sMpuAddress = 0x69
 class Gyro(object):
 	def __init__(self, pIcPort):
-		self.__mI2cPort = smbus.SMBus(pIcPort)
-		# wake up device and init power management
-		self.__mI2cPort.write_byte_data(sMpuAddress,0x6B,0x00)# PWR_MGMT_1
-		
-		# who am i
-		lWhoAmI = self.__mI2cPort.read_byte_data(sMpuAddress,0x75)
-		if lWhoAmI != 0x68:
-			raise Exception('Fail to init gyro ' + str(lWhoAmI))
+		try:
+			self.__mI2cPort = smbus.SMBus(pIcPort)
+			# wake up device and init power management
+			self.__mI2cPort.write_byte_data(sMpuAddress,0x6B,0x00)# PWR_MGMT_1
+			
+			# who am i
+			lWhoAmI = self.__mI2cPort.read_byte_data(sMpuAddress,0x75)
+			if lWhoAmI != 0x68:
+				rospy.logerr('Fail to init gyro ' + str(lWhoAmI))
+				raise Exception()
 
-		# configure gyro
-		self.__mI2cPort.write_byte_data(sMpuAddress,0x1B,0x00) # range @ +/- 250°/s
-		self.__mAngularSpeedFactor = 250. * 1. / 32768.
-		
-		# configure accelero
-		self.__mI2cPort.write_byte_data(sMpuAddress,0x1C,0x00) # range +/- 2g (we are not in a jet fighter)
-		self.__mAccelFactor = 2. * 1. / 32768.
+			# configure gyro
+			self.__mI2cPort.write_byte_data(sMpuAddress,0x1B,0x00) # range @ +/- 250°/s
+			self.__mAngularSpeedFactor = 250. * 1. / 32768.
+			
+			# configure accelero
+			self.__mI2cPort.write_byte_data(sMpuAddress,0x1C,0x00) # range +/- 2g (we are not in a jet fighter)
+			self.__mAccelFactor = 2. * 1. / 32768.
+		except:
+			self.__mI2cPort = None
+			rospy.logerr('Fail to initialize gyro')
 	
 	def readAccel(self):
+		if self.__mI2cPort is None:
+			return [0,0,0]
 		lAccelData = self.__mI2cPort.read_i2c_block_data(sMpuAddress,0x3B,6)
 		lXAccel = lAccelData[0] * 256 + lAccelData[1]
 		if lXAccel > 32767:
@@ -45,6 +52,8 @@ class Gyro(object):
 		return [lXAccel,lYAccel,lZAccel]
 		
 	def readAngularSpeed(self):
+		if self.__mI2cPort is None:
+			return [0,0,0]
 		lGyroData = self.__mI2cPort.read_i2c_block_data(sMpuAddress,0x43,6)
 		lXGyro = lGyroData[0] * 256 + lGyroData[1]
 		if lXGyro > 32767:
