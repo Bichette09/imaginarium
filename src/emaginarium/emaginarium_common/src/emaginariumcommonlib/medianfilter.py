@@ -1,4 +1,6 @@
 from settings_store import settings_store_client
+import collections
+import math
 
 class DataStreamFilter(settings_store_client.SettingsBase):
 
@@ -30,13 +32,13 @@ class DataStreamFilter(settings_store_client.SettingsBase):
 			lSizeDelta = len(pValues) - len(self.__mValueQueues)
 			if lSizeDelta < 0:
 				self.__mValueQueues = self.__mValueQueues[:-lSizeDelta]
-				self.mMedianValues = self.mMedianValues[:-lSizeDelta]
-				self.mFilteredValues = self.mFilteredValues[:-lSizeDelta]
+				self.__mMedianValues = self.__mMedianValues[:-lSizeDelta]
+				self.__mFilteredValues = self.__mFilteredValues[:-lSizeDelta]
 			else:
 				for i in range(lSizeDelta):
 					self.__mValueQueues.append(collections.deque())
-					self.mMedianValues.append(None)
-					self.mFilteredValues.append(None)
+					self.__mMedianValues.append(0.)
+					self.__mFilteredValues.append(0.)
 
 		for i in range(len(pValues)):
 			lQueue = self.__mValueQueues[i];
@@ -44,7 +46,7 @@ class DataStreamFilter(settings_store_client.SettingsBase):
 			while len(lQueue) > self.mWindowSize:
 				lQueue.popleft()
 
-			self.__mTmpSorteBuffer.clear()
+			self.__mTmpSorteBuffer = []
 			for v in lQueue:
 				if v is None:
 					continue
@@ -52,12 +54,12 @@ class DataStreamFilter(settings_store_client.SettingsBase):
 			self.__mTmpSorteBuffer.sort()
 
 			if len(self.__mTmpSorteBuffer) == 0 or len(self.__mTmpSorteBuffer) < self.mMinimumValidSamples:
-				self.mMedianValues[i] = None
-				self.mFilteredValues[i] = None
+				self.__mMedianValues[i] = 0.
+				self.__mFilteredValues[i] = 0.
 			else:
-				self.mMedianValues[i] = self.__mTmpSorteBuffer[math.floor(len(self.__mTmpSorteBuffer)/2)]
-				if self.mFilteredValues[i] is None or self.mLowPassFilterGain <= 0.:
-					self.mFilteredValues[i] = self.mMedianValues[i]
+				self.__mMedianValues[i] = self.__mTmpSorteBuffer[int(math.floor(len(self.__mTmpSorteBuffer)/2))]
+				if self.__mFilteredValues[i] is None or self.mLowPassFilterGain <= 0.:
+					self.__mFilteredValues[i] = self.__mMedianValues[i]
 				else:
-					self.mFilteredValues[i] = self.mFilteredValues[i] + (self.mMedianValues[i] - self.mFilteredValues[i])*self.__mLowPassFilterGain
+					self.__mFilteredValues[i] = self.__mFilteredValues[i] + (self.__mMedianValues[i] - self.__mFilteredValues[i])*self.mLowPassFilterGain
 		return self.__mFilteredValues

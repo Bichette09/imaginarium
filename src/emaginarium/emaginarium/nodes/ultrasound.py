@@ -146,9 +146,10 @@ if __name__ == "__main__":
 	
 	while not rospy.core.is_shutdown():
 	
-		lDistance = lUltrasoundReader.readDistance()
-		if lDistance is None:
+		lRawDistance = lUltrasoundReader.readDistance()
+		if lRawDistance is None:
 			continue
+		lDistance = lFilter.addValues(lRawDistance)
 		(lX0,lY0) = lDistToPointConv.computeR0FromDist(lDistance)
 	
 		# Message publication
