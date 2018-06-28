@@ -12,11 +12,10 @@ function onProcessGamePad(){
 	// on chrome getGamepads is an array of null elements
 	for(var i = 0 ; i < lGamePads.length ; ++i)
 	{
-		// look for last valid gamepad
-		if(lGamePads[i] != undefined)
+		// look for last valid gamepad with at least one button
+		if(lGamePads[i] != undefined && lGamePads[i].buttons.length > 0)
 			lGamePad = lGamePads[i];
 	}
-	
 	
 	if(!sGamePad.mIsInit)
 	{
