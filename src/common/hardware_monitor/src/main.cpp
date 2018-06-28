@@ -13,7 +13,7 @@
 #include <settings_store/settings_store_client.h>
 
 // hardware_monitor
-#include <hardware_monitor/msg.h>
+#include <hardware_monitor/HardwareInfo.h>
 
 std::string exec(const char* cmd) 
 {
@@ -253,10 +253,10 @@ int main(int argc, char ** argv)
 		ros::NodeHandle n;
 		
 		// do not bufferize those messages
-		ros::Publisher lMsgPublisher = n.advertise<hardware_monitor::msg>("hardware_monitor", 1);
-		hardware_monitor::msg lMsg;
+		ros::Publisher lMsgPublisher = n.advertise<hardware_monitor::HardwareInfo>("hardware_monitor/HardwareInfo", 1);
+		hardware_monitor::HardwareInfo lMsg;
 		lMsg.header.seq = 0;
-		ros::message_operations::Printer<hardware_monitor::msg> lMsgPrinter;
+		ros::message_operations::Printer<hardware_monitor::HardwareInfo> lMsgPrinter;
 		
 		ros::Rate lLoopRate(4);
 		

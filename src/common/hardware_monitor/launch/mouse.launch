@@ -1,0 +1,6 @@
+<launch>
+	<arg name="eventchannel" default="/dev/input/event0"/>
+	<node name="mouse" pkg="hardware_monitor" type="mouse.py">
+		<param name="eventchannel" value="$(arg eventchannel)"/>
+	</node>
+</launch>

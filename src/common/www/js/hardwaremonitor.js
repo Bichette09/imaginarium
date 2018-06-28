@@ -24,7 +24,7 @@ function onload()
 		else $( "#roserror" ).show();
 	});
 	
-	sRosCtx.startListeningTopic('/hardware_monitor','hardware_monitor/msg',function(message) {
+	sRosCtx.startListeningTopic('/hardware_monitor/HardwareInfo','hardware_monitor/HardwareInfo',function(message) {
 		updateScalarValue('cpuload',message,0,"%",{'hw_ok':[0,50],'hw_warning':[50,75],'hw_critical':[75,1000]})
 		updateScalarValue('cputemp',message,0,"°C",{'hw_ok':[0,50],'hw_warning':[50,60],'hw_critical':[60,1000]})
 		updateScalarValue('cpufreq',message,0,"MHz",{'hw_ok':[0,1000],'hw_warning':[1000,5000],'hw_critical':[0,0]})
@@ -46,13 +46,13 @@ function onload()
 				"rostraces":[
 					{
 						"name":"cpu",
-						"topicname":"/hardware_monitor",
-						"messagetype":"/hardware_monitor/msg",
+						"topicname":"/hardware_monitor/HardwareInfo",
+						"messagetype":"/hardware_monitor/HardwareInfo",
 						"messagefield":"cpuload"
 					},{
 						"name":"mem",
-						"topicname":"/hardware_monitor",
-						"messagetype":"/hardware_monitor/msg",
+						"topicname":"/hardware_monitor/HardwareInfo",
+						"messagetype":"/hardware_monitor/HardwareInfo",
 						"messagefield":"memload"
 					}
 				]
@@ -67,18 +67,18 @@ function onload()
 				"rostraces":[
 					{
 						"name":"wifi",
-						"topicname":"/hardware_monitor",
-						"messagetype":"/hardware_monitor/msg",
+						"topicname":"/hardware_monitor/HardwareInfo",
+						"messagetype":"/hardware_monitor/HardwareInfo",
 						"messagefield":"wifi"
 					},{
 						"name":"eth",
-						"topicname":"/hardware_monitor",
-						"messagetype":"/hardware_monitor/msg",
+						"topicname":"/hardware_monitor/HardwareInfo",
+						"messagetype":"/hardware_monitor/HardwareInfo",
 						"messagefield":"eth"
 					},{
 						"name":"lo",
-						"topicname":"/hardware_monitor",
-						"messagetype":"/hardware_monitor/msg",
+						"topicname":"/hardware_monitor/HardwareInfo",
+						"messagetype":"/hardware_monitor/HardwareInfo",
 						"messagefield":"lo"
 					}
 				]
@@ -89,8 +89,8 @@ function onload()
 				"rostraces":[
 					{
 						"name":"wifi strength",
-						"topicname":"/hardware_monitor",
-						"messagetype":"/hardware_monitor/msg",
+						"topicname":"/hardware_monitor/HardwareInfo",
+						"messagetype":"/hardware_monitor/HardwareInfo",
 						"messagefield":"wifistrength"
 					}
 				]
@@ -105,8 +105,8 @@ function onload()
 				"rostraces":[
 					{
 						"name":"cpufreq",
-						"topicname":"/hardware_monitor",
-						"messagetype":"/hardware_monitor/msg",
+						"topicname":"/hardware_monitor/HardwareInfo",
+						"messagetype":"/hardware_monitor/HardwareInfo",
 						"messagefield":"cpufreq"
 					}
 				]
@@ -117,8 +117,8 @@ function onload()
 				"rostraces":[
 					{
 						"name":"cputemp",
-						"topicname":"/hardware_monitor",
-						"messagetype":"/hardware_monitor/msg",
+						"topicname":"/hardware_monitor/HardwareInfo",
+						"messagetype":"/hardware_monitor/HardwareInfo",
 						"messagefield":"cputemp"
 					}
 				]

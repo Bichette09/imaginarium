@@ -11,7 +11,7 @@ function onload()
 	sGraphs.init('graphs');
 	sGraphs.addGraph(
 		{
-			"title":"img processor",
+			"title":"imgprocessor",
 			"y1":{
 				"unit":"fps",
 				"range":[0,30],
@@ -47,6 +47,37 @@ function onload()
 				]
 			}
 		});
-	
+	sGraphs.addGraph(
+		{
+			"title":"mouse",
+			"y1":{
+				"unit":"ms",
+				"rostraces":[
+					{
+						"name":"wheel",
+						"topicname":"/hardware_monitor/Mouse",
+						"messagetype":"/hardware_monitor/Mouse",
+						"messagefield":"wheel"
+					}
+				]
+			},"y2":{
+				"unit":"fps",
+				"rostraces":[
+					{
+						"name":"x",
+						"topicname":"/hardware_monitor/Mouse",
+						"messagetype":"/hardware_monitor/Mouse",
+						"messagefield":"x"
+					},
+					{
+						"name":"y",
+						"topicname":"/hardware_monitor/Mouse",
+						"messagetype":"/hardware_monitor/Mouse",
+						"messagefield":"y"
+					}
+				]
+			}
+			
+		});
 	sGraphs.updateSizes();
 }
