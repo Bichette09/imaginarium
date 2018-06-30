@@ -15,7 +15,11 @@
 	</include>
 	<!-- ultrasound -->
 	<include file="$(find emaginarium)/launch/ultrasound.launch" > 
-		<arg name="serialPort" value="/dev/arduino"/>
+		<arg name="serialPort" value="/dev/arduinomega"/>
+	</include>
+	<!-- tinylidar -->
+	<include file="$(find emaginarium)/launch/tinylidar.launch" > 
+		<arg name="serialPort" value="/dev/arduinoduemilanove"/>
 	</include>
 	<!-- speed -->
 	<include file="$(find emaginarium)/launch/speed.launch" > 

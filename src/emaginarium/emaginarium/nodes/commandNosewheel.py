@@ -46,7 +46,7 @@ class ControlLaw():
 	
 	def __init__(self):
 		self.speed = 0
-		self.ultrasonDist = [0]*10
+		self.ultrasonDist = [0]*11
 		# retrait du capteur arriere (cm)
 		self.rd = 1.9
 		self.ld = 1.6

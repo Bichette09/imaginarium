@@ -1,0 +1,6 @@
+<launch>
+	<arg name="serialPort" default="/dev/arduinoduemilanove"/>
+	<node name="tinylidar" pkg="emaginarium" type="tinylidar.py">
+		<param name="serialPort" value="$(arg serialPort)"/>
+	</node>
+</launch>

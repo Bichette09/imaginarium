@@ -1,5 +1,5 @@
 <launch>
-	<arg name="serialPort" default="/dev/arduino"/>
+	<arg name="serialPort" default="/dev/arduinomega"/>
 	<node name="ultrasound" pkg="emaginarium" type="ultrasound.py">
 		<param name="serialPort" value="$(arg serialPort)"/>
 	</node>

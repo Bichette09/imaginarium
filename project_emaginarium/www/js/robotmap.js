@@ -156,7 +156,7 @@ function onload()
 	
 	sRosCtx.startListeningTopic('emaginarium/Ultrasound','emaginarium/Ultrasound',function(data){
 		sLastUltraSoundMeasure = []
-		for(var i = 0 ; i < data.x0.length ; ++i)
+		for(var i = 0 ; i < 10 ; ++i)
 		{
 			sLastUltraSoundMeasure.push([data.x0[i], data.y0[i]]);
 		}

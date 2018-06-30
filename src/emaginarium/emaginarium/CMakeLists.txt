@@ -20,6 +20,7 @@ catkin_python_setup()
 add_message_files(
    FILES
    Ultrasound.msg
+   TinyLidar.msg
    Speed.msg
    SpeedTarget.msg
    Antenna.msg

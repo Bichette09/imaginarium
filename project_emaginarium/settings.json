@@ -17,7 +17,7 @@
     "ultrasoundfilter/lowpassgain": {
         "description": "gain of lowpass filter, 0 to disable", 
         "inuse": true, 
-        "value": "0.75"
+        "value": "0."
     }, 
     "ultrasoundfilter/minsamples": {
         "description": "minimum valid samples", 

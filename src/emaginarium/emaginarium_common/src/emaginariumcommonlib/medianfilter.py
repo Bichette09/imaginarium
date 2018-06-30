@@ -25,7 +25,7 @@ class DataStreamFilter(settings_store_client.SettingsBase):
 			])
 
 	def addValues(self, pValues):
-		if self.mWindowSize < 0:
+		if self.mWindowSize <= 0:
 			return pValues
 		
 		if len(pValues) != len(self.__mValueQueues):

@@ -3,6 +3,7 @@
 
 import emaginarium.msg
 import emaginariumcommonlib
+import emaginariumlib
 import rospy
 import os
 import smbus
@@ -11,58 +12,13 @@ import numpy as np
 import math
 import time
 
-
-class Ultrasound(object):
-
-		def __init__(self,pSerialPort):
-			self.__mSerialPort = None
-			self.__mPlotError = True
-			self.__mExpectedResLength = 10
-			try:
-				self.__mSerialPort = serial.Serial(pSerialPort, baudrate=2000000,timeout=1) #Arduino
-				self.__mSerialPort.readline() #on purge la premiere trame
-			except:
-				rospy.logerr('Fail to open serial port with arduino')
-			
-			
-		def readDistance(self):
-			lMeasures = []
-			if self.__mSerialPort is None:
-				time.sleep(0.01);
-				return [0]*self.__mExpectedResLength
-			try:
-				a=self.__mSerialPort.readline()
-				b=a[1:-3]
-				c=b.split(b",")
-				for i in reversed(c):
-					lVal = float(i)
-					if lVal is None:
-						raise Exception('invalid val ' + str(a))
-					lMeasures.append(lVal*10.) 
-				if len(lMeasures) != 10:
-					raise Exception()
-				self.__mPlotError = True
-			except Exception as e:
-				time.sleep(0.01);
-				lMeasures = [0]*self.__mExpectedResLength
-				if self.__mPlotError:
-					rospy.logerr('Fail to read data from arduino ' + str(e))
-					self.__mPlotError = False
-			
-			return lMeasures
-
-# this class is used 
 class Distance2PointConverter(object):
 
-	def __init__(self):
+	def __init__(self, pExpectedResultLength):
 		self.mSensorPositions = []
 		self.mDirVector = []
-		# for i in range(0,10):
-			# lAngle = float(i) * np.pi / (10 - 1)
-			# lPos = np.array([16 * math.cos(lAngle) , 16 * math.sin(lAngle)])
-			# self.mDirVector.append(lPos / np.linalg.norm(lPos))
-			# self.mSensorPositions.append(lPos)
-		
+		self.mExpectedResLength = pExpectedResultLength
+
 		# 0 0°
 		self.mSensorPositions.append(np.array([170.,18.]))
 		self.mDirVector.append(np.array([1.,0.]));
@@ -110,12 +66,13 @@ class Distance2PointConverter(object):
 		# 9 180°
 		self.mSensorPositions.append(np.array([-174.,24.]))
 		self.mDirVector.append(np.array([-1.,0.]));
+		
 	
 	def computeR0FromDist(self, pDistances):
 		lX = []
 		lY = []
 		try:
-			for i in range(0,10):
+			for i in range(0,len(pDistances)):
 				if pDistances[i] == 0:
 					lX.append(0.)
 					lY.append(0.)
@@ -139,8 +96,9 @@ if __name__ == "__main__":
 
 	
 	sRosPublisher = rospy.Publisher('emaginarium/Ultrasound', emaginarium.msg.Ultrasound, queue_size=5)
-	lUltrasoundReader = Ultrasound(rospy.get_param('/ultrasound/serialPort'))
-	lDistToPointConv = Distance2PointConverter()
+	#lUltrasoundReader = Ultrasound(rospy.get_param('/ultrasound/serialPort'))
+	lUltrasoundReader = emaginariumlib.ArduinoFloatArrayReader(rospy.get_param('/ultrasound/serialPort'),10,'ultrasound')
+	lDistToPointConv = Distance2PointConverter(lUltrasoundReader.mExpectedResLength)
 
 	lFilter = emaginariumcommonlib.DataStreamFilter('ultrasoundfilter')
 	

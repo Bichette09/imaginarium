@@ -48,8 +48,8 @@ function onload()
 	lDistanceGraphConfig = {
 			"title":"ultrasound",
 			"y1":{
-				"unit":"cm",
-				"range":[-0.1,400.1],
+				"unit":"mm",
+				"range":[-0.1,4000.1],
 				"rostraces":[
 					
 				]
