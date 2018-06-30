@@ -27,6 +27,6 @@
     "ultrasoundfilter/windowsize": {
         "description": "sample window size, < 0 to disable ", 
         "inuse": true, 
-        "value": "5"
+        "value": "0"
     }
 }

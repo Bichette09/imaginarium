@@ -4,13 +4,13 @@ import serial
 
 class ArduinoFloatArrayReader(object):
 
-	def __init__(self,pSerialPort,pArrayLength,pName):
+	def __init__(self,pSerialPort,pArrayLength,pSpeed,pName):
 		self.__mSerialPort = None
 		self.__mPlotError = True
 		self.__mName = pName
 		self.mExpectedResLength = pArrayLength
 		try:
-			self.__mSerialPort = serial.Serial(pSerialPort, baudrate=2000000,timeout=1) #Arduino
+			self.__mSerialPort = serial.Serial(pSerialPort, baudrate=pSpeed,timeout=1) #Arduino
 			self.__mSerialPort.readline() #on purge la premiere trame
 		except:
 			rospy.logerr('Fail to open serial port with ' + pName + ' ' + pSerialPort)

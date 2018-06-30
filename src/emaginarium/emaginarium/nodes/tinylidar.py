@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
 	
 	sRosPublisher = rospy.Publisher('emaginarium/TinyLidar', emaginarium.msg.TinyLidar, queue_size=5)
-	lReader = emaginariumlib.ArduinoFloatArrayReader(rospy.get_param('/tinylidar/serialPort'),1,'tinylidar')
+	lReader = emaginariumlib.ArduinoFloatArrayReader(rospy.get_param('/tinylidar/serialPort'),1,9600,'tinylidar')
 	
 	while not rospy.core.is_shutdown():
 	
