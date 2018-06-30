@@ -97,7 +97,7 @@ if __name__ == "__main__":
 	
 	sRosPublisher = rospy.Publisher('emaginarium/Ultrasound', emaginarium.msg.Ultrasound, queue_size=5)
 	#lUltrasoundReader = Ultrasound(rospy.get_param('/ultrasound/serialPort'))
-	lUltrasoundReader = emaginariumlib.ArduinoFloatArrayReader(rospy.get_param('/ultrasound/serialPort'),10,'ultrasound')
+	lUltrasoundReader = emaginariumlib.ArduinoFloatArrayReader(rospy.get_param('/ultrasound/serialPort'),10,2000000,'ultrasound')
 	lDistToPointConv = Distance2PointConverter(lUltrasoundReader.mExpectedResLength)
 
 	lFilter = emaginariumcommonlib.DataStreamFilter('ultrasoundfilter')
