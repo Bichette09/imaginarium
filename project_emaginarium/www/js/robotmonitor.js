@@ -9,42 +9,7 @@ function onload()
 	
 	// create graphs
 	sGraphs.init('graphs');
-	sGraphs.addGraph(
-		{
-			"title":"gyro",
-			"y1":{
-				"unit":"°/sec",
-				"range":[-10,10],
-				"rostraces":[
-					{
-						"name":"angular rot",
-						"topicname":"/emaginarium_common/Gyro",
-						"messagetype":"/emaginarium_common/Gyro",
-						"messagefield":"angular_speed",
-						"fieldindex":2
-					}
-				]
-			},
-			"y2":{
-				"unit":"m/s-2",
-				"range":[-5,5],
-				"rostraces":[
-					{
-						"name":"accel X",
-						"topicname":"/emaginarium_common/Gyro",
-						"messagetype":"/emaginarium_common/Gyro",
-						"messagefield":"acceleration",
-						"fieldindex":1
-					},{
-						"name":"accel Y",
-						"topicname":"/emaginarium_common/Gyro",
-						"messagetype":"/emaginarium_common/Gyro",
-						"messagefield":"acceleration",
-						"fieldindex":2
-					}
-				]
-			}
-		});
+	
 	lDistanceGraphConfig = {
 			"title":"ultrasound",
 			"y1":{
@@ -68,6 +33,31 @@ function onload()
 	}
 	
 	sGraphs.addGraph(lDistanceGraphConfig);
+	
+	lLidarGraphConfig = {
+			"title":"lidar",
+			"y1":{
+				"unit":"mm",
+				"range":[-0.1,4000.1],
+				"rostraces":[
+					
+				]
+			}
+		}
+	for(var i = 0 ; i < 1 ; ++i)
+	{
+		lLidarGraphConfig["y1"]["rostraces"].push(
+				{
+						"name":i.toString(),
+						"topicname":"/emaginarium/TinyLidar",
+						"messagetype":"/emaginarium/TinyLidar",
+						"messagefield":"distance",
+						"fieldindex":i
+					});
+	}
+	
+	sGraphs.addGraph(lLidarGraphConfig);
+	
 	/*
 	,
 					{
@@ -148,6 +138,41 @@ function onload()
 				]
 			}
 		});
-	
+	sGraphs.addGraph(
+		{
+			"title":"gyro",
+			"y1":{
+				"unit":"°/sec",
+				"range":[-10,10],
+				"rostraces":[
+					{
+						"name":"angular rot",
+						"topicname":"/emaginarium_common/Gyro",
+						"messagetype":"/emaginarium_common/Gyro",
+						"messagefield":"angular_speed",
+						"fieldindex":2
+					}
+				]
+			},
+			"y2":{
+				"unit":"m/s-2",
+				"range":[-5,5],
+				"rostraces":[
+					{
+						"name":"accel X",
+						"topicname":"/emaginarium_common/Gyro",
+						"messagetype":"/emaginarium_common/Gyro",
+						"messagefield":"acceleration",
+						"fieldindex":1
+					},{
+						"name":"accel Y",
+						"topicname":"/emaginarium_common/Gyro",
+						"messagetype":"/emaginarium_common/Gyro",
+						"messagefield":"acceleration",
+						"fieldindex":2
+					}
+				]
+			}
+		});
 	sGraphs.updateSizes();
 }
