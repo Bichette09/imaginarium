@@ -1,0 +1,9 @@
+# to install rules 
+# udevadm info -a /dev/ttyACM0
+# udevadm info /dev/ttyACM0
+# sudo cp 10-emobile.rules /etc/udev/rules.d/
+# sudo udevadm trigger
+
+# rule for leddar v8
+SUBSYSTEM=="tty", ATTRS{idVendor}=="28f1", ATTRS{serial}=="DI4800198", SYMLINK+="leddarvu8"
+
