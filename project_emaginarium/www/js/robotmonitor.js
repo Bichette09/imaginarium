@@ -134,6 +134,11 @@ function onload()
 						"topicname":"/emaginarium/CommandNosewheel",
 						"messagetype":"/emaginarium/CommandNosewheel",
 						"messagefield":"rightAngle"
+					},{
+						"name":"final angle",
+						"topicname":"/emaginarium/CommandNosewheel",
+						"messagetype":"/emaginarium/CommandNosewheel",
+						"messagefield":"finalAngle"
 					}
 				]
 			}

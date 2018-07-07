@@ -1,7 +1,7 @@
 {
     "commandNosewheel/Kp": {
         "description": "", 
-        "inuse": false, 
+        "inuse": true, 
         "value": "1"
     }, 
     "commandThrust/Kp": {
@@ -27,6 +27,6 @@
     "ultrasoundfilter/windowsize": {
         "description": "sample window size, < 0 to disable ", 
         "inuse": true, 
-        "value": "0"
+        "value": "5"
     }
 }

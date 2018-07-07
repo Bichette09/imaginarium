@@ -10,6 +10,7 @@ import pypot.dynamixel
 # import pigpio
 from settings_store import settings_store_client
 import time
+import numpy as np
 
 class Dynamixel(object):
 	
@@ -37,16 +38,21 @@ class CommandNosewheelSettings(settings_store_client.SettingsBase):
 
 	def __init__(self):
 		settings_store_client.SettingsBase.__init__(self)
-		self.kp=1.
+		self.kprop=1.
+		self.kprec=1.
 		self.registerAttributes([
-			('kp','commandNosewheel/Kp')
+			('kprop','commandNosewheel/Kprop','Gain of prop command'),
+			('kprec','commandNosewheel/Kprec','Gain of pre command')
 			])
 
 class ControlLaw():
 	
 	def __init__(self):
 		self.speed = 0
-		self.ultrasonDist = [0]*11
+		self.ultrasonDist = [0]*10
+		self.ultrasoundDistX0 = [0]*10
+		self.ultrasoundDistY0 = [0]*10
+
 		# retrait du capteur arriere (cm)
 		self.rd = 1.9
 		self.ld = 1.6
@@ -59,11 +65,56 @@ class ControlLaw():
 	
 	def onNewUltrasound(self,param):
 		self.ultrasonDist = param.distance
+		self.ultrasoundDistX0 = param.x0
+		self.ultrasoundDistY0 = param.y0
 	
 	def updateAntenna(self,param):
 		self.antennaStatus = param.status
+	
+	# this method will compute angle with a border based on side sensors
+	# if an error occurs it will return None
+	def __computeSideAngle(self, pPtFront, pPtBack):
+		if self.ultrasonDist[pPtFront] <= 0. or self.ultrasonDist[pPtBack] <= 0.:
+			return None
+		try:
+			# let A be the measure point closest to the front
+			lA = np.array([self.ultrasoundDistX0[pPtFront],self.ultrasoundDistY0[pPtFront]])
+			# let O be the other measured point
+			lO = np.array([self.ultrasoundDistX0[pPtBack],self.ultrasoundDistY0[pPtBack]])
+			# let B as O plus dir vector (y)
+			lB = lO + np.array([0.,1.])
+			lOA = lA - lO
+			lOB = lB - lO
+			lDot = np.dot(lOA,lOB)
+			lAngle = math.acos(lDot / np.linalg.norm(lOA)) * 57.3
+			if not np.isfinite(lAngle):
+				return None
+			if self.ultrasoundDistX0[pPtFront] > self.ultrasoundDistX0[pPtBack]:
+				lAngle = -lAngle
+			return lAngle
+		except:
+			return None
 		
+	
+	def computeAngleToBorders(self):
+		lLeftAngle = self.__computeSideAngle(9,8)
+		lRightAngle = self.__computeSideAngle(0,1)
 		
+		lFinalAngle = lLeftAngle
+		if lFinalAngle is None:
+			lFinalAngle = lRightAngle
+		elif lRightAngle is not None and math.fabs(lFinalAngle) > math.fabs(lRightAngle):
+			# both are angle are valid, take the smallest one in absolute value
+			lFinalAngle = lRightAngle
+		
+		if lFinalAngle is None:
+			lFinalAngle = 0.
+		if lLeftAngle is None:
+			lLeftAngle = 99.
+		if lRightAngle is None:
+			lRightAngle = 99.
+		#  rospy.logwarn('%s %s %s' %(str(lFinalAngle),str(lLeftAngle),str(lRightAngle)))
+		return (lFinalAngle,lLeftAngle,lRightAngle)
 		
 if __name__ == "__main__":
 	
@@ -84,7 +135,7 @@ if __name__ == "__main__":
 	
 	#init
 	cptDoor = 0
-	lLastAngle = 0.
+	lWheelAngle = 0.
 	lFrontDist = 0.
 	lRightDist = 0.
 	lLeftDist = 0.
@@ -94,6 +145,7 @@ if __name__ == "__main__":
 	lPrec=0.
 	lLeftAngle=0.
 	lRightAngle=0.
+	lFinalAngle=0.
 	lLastSpeedTarget=0.
 	
 	while not rospy.core.is_shutdown():
@@ -127,48 +179,54 @@ if __name__ == "__main__":
 						lFrontDist = lControlLaw.ultrasonDist[i]
 
 			# angle between robot and runway
-			lRightAngle = 0.
-			if lControlLaw.ultrasonDist[1]>0. and lControlLaw.ultrasonDist[0]>0.:
-				lRightAngle = -1.5-math.atan((lControlLaw.ultrasonDist[1]-(lControlLaw.ultrasonDist[0]+lControlLaw.rd))/lControlLaw.rL)*180/math.pi
-				lLeftAngle = 0.
-				if lControlLaw.ultrasonDist[8]>0. and lControlLaw.ultrasonDist[9]>0.:
-					lLeftAngle =  math.atan((lControlLaw.ultrasonDist[8]-(lControlLaw.ultrasonDist[9]+lControlLaw.ld))/lControlLaw.lL)*180/math.pi
-
-
-				#print "rightAngle:"+str(lRightAngle)+"\t leftAngle:"+str(lLeftAngle)
-				#print "Dist8:"+str(lCommandNosewheel.ultrasonDist[8])+"\t Dist9:"+str(lCommandNosewheel.ultrasonDist[9])
-				#print "Dist1:"+str(lCommandNosewheel.ultrasonDist[1])+"\t Dist0:"+str(lCommandNosewheel.ultrasonDist[0])
+			# lRightAngle = 0.
+			# if lControlLaw.ultrasonDist[1]>0. and lControlLaw.ultrasonDist[0]>0.:
+				# lRightAngle = -1.5-math.atan((lControlLaw.ultrasonDist[1]-(lControlLaw.ultrasonDist[0]+lControlLaw.rd))/lControlLaw.rL)*180/math.pi
+			# lLeftAngle = 0.
+			# if lControlLaw.ultrasonDist[8]>0. and lControlLaw.ultrasonDist[9]>0.:
+				# lLeftAngle =  math.atan((lControlLaw.ultrasonDist[8]-(lControlLaw.ultrasonDist[9]+lControlLaw.ld))/lControlLaw.lL)*180/math.pi
+			
+			
+			(lFinalAngle, lLeftAngle,lRightAngle) = lControlLaw.computeAngleToBorders()
+			
+			#print "rightAngle:"+str(lRightAngle)+"\t leftAngle:"+str(lLeftAngle)
+			#print "Dist8:"+str(lCommandNosewheel.ultrasonDist[8])+"\t Dist9:"+str(lCommandNosewheel.ultrasonDist[9])
+			#print "Dist1:"+str(lCommandNosewheel.ultrasonDist[1])+"\t Dist0:"+str(lCommandNosewheel.ultrasonDist[0])
 
 				
-				# compute angle			
-				lLastAngle = 0.
-				if lLeftDist != 0 and lRightDist != 0:
-				#Angle control law
-					erreur= (lRightDist-lLeftDist)
-					#Proportional term
-					lProp= erreur* lSettings.kp
-					#precommande (moyenne des directions des bords)
-					#lPrec = 0.5*lRightAngle+0.5*lLeftAngle
-					if lRightAngle>0 and lLeftAngle>0:					
-						lPrec = 1.0*min(lRightAngle,lLeftAngle)
-					elif lRightAngle<0 and lLeftAngle<0:					
-						lPrec = 1.0*max(lRightAngle,lLeftAngle)
-					else:
-						lPrec = 0.0
-					
-					# synthese of all terms
-					lLastAngle = lPrec + lProp
-					
-					lLastAngle = max(-30,min(30,lLastAngle))
-				elif lLeftDist == 0 and lRightDist != 0:
-					lLastAngle = -30
-				elif lLeftDist != 0 and lRightDist == 0:
-					lLastAngle = 30
-					
-		lDynamixel.setWheelAngle(lLastAngle)
+			# compute angle			
+			lWheelAngle = 0.
+			if lLeftDist != 0 and lRightDist != 0:
+			#Angle control law
+				erreur= (lRightDist-lLeftDist)
+				#Proportional term
+				lProp= erreur* lSettings.kprop
+				#precommande (moyenne des directions des bords)
+				#lPrec = 0.5*lRightAngle+0.5*lLeftAngle
+				# if lLeftAngle is not None and lRightAngle is not None:
+					# if lRightAngle>0 and lLeftAngle>0:					
+						# lPrec = 1.0*min(lRightAngle,lLeftAngle)
+					# elif lRightAngle<0 and lLeftAngle<0:					
+						# lPrec = 1.0*max(lRightAngle,lLeftAngle)
+					# else:
+						# lPrec = 0.0
+				# else:
+					# lPrec = 0.0
+				
+				# synthese of all terms
+				lWheelAngle = lPrec + lProp
+				lPrec = lFinalAngle*lSettings.kprec
+				
+				lWheelAngle = max(-30,min(30,lWheelAngle))
+			elif lLeftDist == 0 and lRightDist != 0:
+				lWheelAngle = -30
+			elif lLeftDist != 0 and lRightDist == 0:
+				lWheelAngle = 30
+			
+		lDynamixel.setWheelAngle(lWheelAngle)
 		# Message publication
-		sRosPublisher.publish(emaginarium.msg.CommandNosewheel(lLastAngle,False,lProp,lPrec,lRightAngle,lLeftAngle))
+		sRosPublisher.publish(emaginarium.msg.CommandNosewheel(lWheelAngle,False,lProp,lPrec,lFinalAngle,lLeftAngle,lRightAngle))
 		sRosSuscriberSpeedTarget.publish(emaginarium.msg.SpeedTarget(lLastSpeedTarget))
 		
 	# Message publication en cas de fermeture de la node on envoie un status
-	sRosPublisher.publish(emaginarium.msg.CommandNosewheel(lLastAngle,True,lProp,lPrec,lRightAngle,lLeftAngle))
+	sRosPublisher.publish(emaginarium.msg.CommandNosewheel(lWheelAngle,True,lProp,lPrec,lFinalAngle,lLeftAngle,lRightAngle))
