@@ -26,10 +26,10 @@ add_message_files(
 #   FILES
 #)
 
-# generate_messages(
-   # DEPENDENCIES
-   # std_msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   std_msgs
+)
 
 catkin_package(
    # LIBRARIES 

@@ -22,7 +22,7 @@ pub = rospy.Publisher('/leddarVu8', LaserScan,queue_size = 10)
 
 # init serial connection
 minimalmodbus.BAUDRATE = 115200
-lSerialPort = rospy.get_param('/leddarvu8/serialPort')
+lSerialPort = rospy.get_param('/leddarVu8/serialPort')
 m = minimalmodbus.Instrument(lSerialPort,1,'rtu')
 # necessary hardware pause
 time.sleep(1)
