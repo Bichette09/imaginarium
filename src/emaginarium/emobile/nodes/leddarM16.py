@@ -9,10 +9,10 @@ from numpy import pi
 
 # parameters
 # opening of the sensor (deg)
-opening = 90
+opening = 100
 # number of beams
-nBeams = 8
-# range
+nBeams = 16
+# range (m)
 rangemin = 0.0
 rangemax = 15.0
 
@@ -30,10 +30,10 @@ time.sleep(1)
 t=rospy.Time.now()
 while not rospy.is_shutdown():
 	#read the sensor
-	# read register from 16 to 16+8
+	# read register from 16 to 16+16
 	t_old = t
 	t=rospy.Time.now()
-	lDist = m.read_registers(16,8,4)
+	lDist = m.read_registers(16,16,4)
 	for i in range(nBeams):
 		lDist[i] /= 100.0
 
@@ -54,7 +54,7 @@ while not rospy.is_shutdown():
 	# range (m)
 	msg.ranges = lDist
 	# intensity (?)
-	msg.intensities = [0.0]*8
+	msg.intensities = [0.0]*nBeams
 
 	# send the message
 	pub.publish(msg)
