@@ -1,0 +1,3 @@
+<launch>
+	<node name="command" pkg="emobile" type="command.py"/node>
+</launch>

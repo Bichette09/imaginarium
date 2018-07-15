@@ -1,0 +1,8 @@
+<launch>
+	<arg name="pinT" default="18"/>
+	<arg name="pinS" default="23"/>
+	<node name="actuator" pkg="emobile" type="actuator.py">
+		<param name="pinT" value="$(arg pinT)"/>
+		<param name="pinS" value="$(arg pinS)"/>
+	</node>
+</launch>

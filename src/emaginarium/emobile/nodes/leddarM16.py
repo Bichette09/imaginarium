@@ -18,11 +18,11 @@ rangemax = 15.0
 
 # init ros node
 rospy.init_node('leddar')
-pub = rospy.Publisher('/leddar', LaserScan,queue_size = 10)
+pub = rospy.Publisher('/leddarM16', LaserScan,queue_size = 10)
 
 # init serial connection
 minimalmodbus.BAUDRATE = 115200
-lSerialPort = rospy.get_param('/leddar/serialPort')
+lSerialPort = rospy.get_param('/leddarm16/serialPort')
 m = minimalmodbus.Instrument(lSerialPort,1,'rtu')
 # necessary hardware pause
 time.sleep(1)

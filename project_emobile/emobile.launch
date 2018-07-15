@@ -9,8 +9,13 @@
 	</include>
 	<!-- hardware_monitor -->
 	<node name="hardware_monitor" pkg="hardware_monitor" type="hardware_monitor" />
-	<!-- leddar -->
-	<include file="$(find emobile)/launch/leddar.launch" > 
-		<arg name="serialPort" value="/dev/leddarvu8"/>
+	<!-- leddarM16 -->
+	<include file="$(find emobile)/launch/leddarM16.launch" > 
+		<arg name="serialPort" value="/dev/leddarm16"/>
+	</include>
+	<!-- Actuator -->
+	<include file="$(find emobile)/launch/actuator.launch" > 
+		<arg name="pinT" value="18"/>
+		<arg name="pinS" value="23"/>
 	</include>
 </launch>

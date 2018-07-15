@@ -1,60 +1,60 @@
 #!/usr/bin/env python
-# coding: utf-8
+# -*- coding: utf-8 -*-
 
-
-import minimalmodbus,time
 import rospy
-from sensor_msgs.msg import LaserScan
-from numpy import pi
+import pigpio
+import time
+import emobile.msg
+from settings_store import settings_store_client
+import os
 
-# parameters
-# opening of the sensor (deg)
-opening = 90
-# number of beams
-nBeams = 8
-# range
-rangemin = 0.0
-rangemax = 15.0
+class Actuator(object):
+	def __init__(self,pinT,pinS,settings):
+		self.throttles = 0
+		self.steering = 0
+		self.__mGpio = pigpio.pi()
+		self.pinT=pinT
+		self.pinS=pinS
+		self.settings = settings 
+		time.sleep(5)
+		print('Powertrain is ready')
+	
+		
+	def updateThottles(self):
+			self.__mGpio.set_servo_pulsewidth(self.pinT, self.throttles)
 
-# init ros node
-rospy.init_node('leddar')
-pub = rospy.Publisher('/leddar', LaserScan,queue_size = 10)
+	def updateSteering(self):
+			self.__mGpio.set_servo_pulsewidth(self.pinS, self.steering)
 
-# init serial connection
-minimalmodbus.BAUDRATE = 115200
-lSerialPort = rospy.get_param('/leddar/serialPort')
-m = minimalmodbus.Instrument(lSerialPort,1,'rtu')
-# necessary hardware pause
-time.sleep(1)
+ 	def updatexbox (self,param):
+		if '|B|' in param.data:
+			self.throttles = 1520
+			if '|Y|' in param.data:
+				self.throttles = 1540
+					
+		self.updateThottles()
 
-t=rospy.Time.now()
-while not rospy.is_shutdown():
-	#read the sensor
-	# read register from 16 to 16+8
-	t_old = t
-	t=rospy.Time.now()
-	lDist = m.read_registers(16,8,4)
-	for i in range(nBeams):
-		lDist[i] /= 100.0
+	def updatestick (self,param):
+		self.steering= (1.49-0.25*param.data[0])*1000
+		self.updateSteering()
 
-	# compose the message
-	msg = LaserScan()
-	# header
-	msg.header.stamp = t
-	msg.header.frame_id = "laser_frame"
-	# start, end and increment angle of the scan (rad)
-	msg.angle_min = -0.5*(opening*pi/180.0)
-	msg.angle_max = 0.5*(opening*pi/180.0)
-	msg.angle_increment = (opening*pi/180.0)/(nBeams-1)
-	# time between measure (s)
-	msg.time_increment = (t-t_old).nsecs/1000000000.0
-	# max and min range (meter)
-	msg.range_min = rangemin
-	msg.range_max = rangemax
-	# range (m)
-	msg.ranges = lDist
-	# intensity (?)
-	msg.intensities = [0.0]*8
+class ActuatorSettings(settings_store_client.SettingsBase):
 
-	# send the message
-	pub.publish(msg)
+	def __init__(self):
+		settings_store_client.SettingsBase.__init__(self)
+		self.kp=1
+		self.registerAttributes([
+			('kp','command/Kp')
+			])
+		
+if __name__ == "__main__":	
+	os.getcwd()
+	rospy.init_node('actuator')
+
+	#creation instance settings pour les parametres modifiables
+	lSettings = ActuatorSettings()
+
+	lActuator = Actuator(rospy.get_param('/actuator/pinT'),rospy.get_param('/actuator/pinS'),lSettings)	
+	sRosSuscriberSpeed = rospy.Subscriber('GamePadButtons', emaginarium.msg.GamePadButtons,lActuator.updatexbox)
+	sRosSuscriberSteering = rospy.Subscriber('GamePadSticks', emaginarium.msg.GamePadSticks,lActuator.updatestick)
+	

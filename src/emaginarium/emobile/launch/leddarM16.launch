@@ -1,6 +1,6 @@
 <launch>
-	<arg name="serialPort" default="/dev/leddarvu8"/>
-	<node name="leddar" pkg="emobile" type="leddar.py">
+	<arg name="serialPort" default="/dev/leddarm16"/>
+	<node name="leddar" pkg="emobile" type="leddarM16.py">
 		<param name="serialPort" value="$(arg serialPort)"/>
 	</node>
 </launch>
