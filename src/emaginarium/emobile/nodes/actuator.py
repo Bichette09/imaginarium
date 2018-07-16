@@ -6,7 +6,7 @@ import pigpio
 import time
 import emobile.msg
 import os
-import emaginarium.msg
+import emaginarium_common.msg
 
 class Actuator(object):
 	def __init__(self,pinT,pinS):
@@ -43,6 +43,6 @@ if __name__ == "__main__":
 	rospy.init_node('actuator')
 
 	lActuator = Actuator(rospy.get_param('/actuator/pinT'),rospy.get_param('/actuator/pinS'))	
-	sRosSuscriberSpeed = rospy.Subscriber('GamePadButtons', emaginarium.msg.GamePadButtons,lActuator.updatexbox)
-	sRosSuscriberSteering = rospy.Subscriber('GamePadSticks', emaginarium.msg.GamePadSticks,lActuator.updatestick)
+	sRosSuscriberSpeed = rospy.Subscriber('GamePadButtons', emaginarium_common.msg.GamePadButtons,lActuator.updatexbox)
+	sRosSuscriberSteering = rospy.Subscriber('GamePadSticks', emaginarium_common.msg.GamePadSticks,lActuator.updatestick)
 	rospy.spin()

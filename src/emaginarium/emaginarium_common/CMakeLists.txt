@@ -19,7 +19,8 @@ catkin_python_setup()
 add_message_files(
    FILES
    Gyro.msg
-   
+   GamePadButtons.msg
+   GamePadSticks.msg
 )
 #add_service_files(
 #   FILES
