@@ -3,10 +3,5 @@
         "description": "hardware state read interval", 
         "inuse": true, 
         "value": "1"
-    },
-    "actuator/Kp": {
-        "description": "", 
-        "inuse": true, 
-        "value": "1"
-    }, 
+    }
 }

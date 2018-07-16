@@ -16,23 +16,31 @@ sRosPublisher = None
 def loadSettings(pFileName):
 	if pFileName is None:
 		return {}
-	if not os.path.isfile(pFileName):
-		rospy.loginfo('store_settings create file ' + pFileName)
-		saveSettings(pFileName,{});
-	with codecs.open(pFileName,'r',encoding='utf8') as f:
-		lSettings = json.load(f)
-		if lSettings is None:
-			lSettings = {}
-		
-		# clear inuse flag and ensure that description is set
-		for k in lSettings:
-			if not 'description' in lSettings[k]:
-				lSettings[k]['description'] = ''
-			lSettings[k]['inuse'] = False
-		
-		return lSettings
-	rospy.logerr('Fail to load settings')
-	raise Exception()
+	try:
+		if not os.path.isfile(pFileName):
+			rospy.loginfo('store_settings create file ' + pFileName)
+			saveSettings(pFileName,{});
+	except:
+		rospy.logerr('Fail to create settings file %s' % (pFileName))
+		raise Exception()
+	
+	try:
+		with codecs.open(pFileName,'r',encoding='utf8') as f:
+			lSettings = json.load(f)
+			if lSettings is None:
+				lSettings = {}
+			
+			# clear inuse flag and ensure that description is set
+			for k in lSettings:
+				if not 'description' in lSettings[k]:
+					lSettings[k]['description'] = ''
+				lSettings[k]['inuse'] = False
+			
+			return lSettings
+	except:
+		rospy.logerr('Fail to load settings')
+		raise Exception()
+	
 def saveSettings(pFileName,pSettings):
 	if pFileName is None:
 		return

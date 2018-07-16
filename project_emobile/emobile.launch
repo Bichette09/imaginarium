@@ -1,8 +1,8 @@
 ﻿<launch>
 	<!-- settings server -->
-	<!-- <include file="$(find settings_store)/launch/settings_store_server.launch" > 
+	<include file="$(find settings_store)/launch/settings_store_server.launch" > 
 		<arg name="settingsfilename" value="$(env PWD)/settings.json"/>
-	</include> -->
+	</include>
 	<!-- web bridge -->
 	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" > 
 		<arg name="port" value="9090"/>

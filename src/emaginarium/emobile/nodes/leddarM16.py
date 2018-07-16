@@ -2,10 +2,14 @@
 # coding: utf-8
 
 
-import minimalmodbus,time
+
+import time
 import rospy
 from sensor_msgs.msg import LaserScan
 from numpy import pi
+import sys
+
+
 
 # parameters
 # opening of the sensor (deg)
@@ -18,6 +22,13 @@ rangemax = 15.0
 
 # init ros node
 rospy.init_node('leddar')
+
+try:
+	import minimalmodbus
+except:
+	rospy.logerr('Fail to import minimalmodbus, leddarM16 will not be available')
+	sys.exit(0)
+	
 pub = rospy.Publisher('/leddarM16', LaserScan,queue_size = 10)
 
 # init serial connection
