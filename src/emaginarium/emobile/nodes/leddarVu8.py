@@ -32,12 +32,19 @@ pub = rospy.Publisher('/leddarVu8', LaserScan,queue_size = 10)
 # init serial connection
 minimalmodbus.BAUDRATE = 115200
 lSerialPort = rospy.get_param('/leddarVu8/serialPort')
-m = minimalmodbus.Instrument(lSerialPort,1,'rtu')
-# necessary hardware pause
-time.sleep(1)
-
+m = None
+try:
+	m = minimalmodbus.Instrument(lSerialPort,1,'rtu')
+	# necessary hardware pause
+	time.sleep(1)
+except:
+	rospy.logerr('Fail to open com with vu8')
+	
 t=rospy.Time.now()
 while not rospy.is_shutdown():
+	if m is None:
+		time.sleep(0.1)
+		continue
 	#read the sensor
 	# read register from 16 to 16+8
 	t_old = t
