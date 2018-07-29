@@ -1,45 +1,58 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+
+import emobile.msg
+import emaginarium_common.msg
+import std_msgs
 import rospy
-from sensor_msgs.msg import LaserScan
-from numpy import pi
-
-# parameters
-
-
-# init ros node
-rospy.init_node('leddar')
-pub = rospy.Publisher('/leddar', LaserScan,queue_size = 10)
+import os
+import math
+from settings_store import settings_store_client
+import time
+import numpy as np
 
 
-while not rospy.is_shutdown():
-	#read the sensor
-	# read register from 16 to 16+8
-	t_old = t
-	t=rospy.Time.now()
-	lDist = m.read_registers(16,8,4)
-	for i in range(nBeams):
-		lDist[i] /= 100.0
+class CommandSettings(settings_store_client.SettingsBase):
 
-	# compose the message
-	msg = LaserScan()
-	# header
-	msg.header.stamp = t
-	msg.header.frame_id = "laser_frame"
-	# start, end and increment angle of the scan (rad)
-	msg.angle_min = -0.5*(opening*pi/180.0)
-	msg.angle_max = 0.5*(opening*pi/180.0)
-	msg.angle_increment = (opening*pi/180.0)/(nBeams-1)
-	# time between measure (s)
-	msg.time_increment = (t-t_old).nsecs/1000000000.0
-	# max and min range (meter)
-	msg.range_min = rangemin
-	msg.range_max = rangemax
-	# range (m)
-	msg.ranges = lDist
-	# intensity (?)
-	msg.intensities = [0.0]*8
+	def __init__(self):
+		settings_store_client.SettingsBase.__init__(self)
+		self.k=1.
+		self.registerAttributes([
+			('k','command/K','Gain'),
+			])
 
-	# send the message
-	pub.publish(msg)
+class ControlLaw():
+	
+	def __init__(self):
+		self.throttleGoal = 0
+		self.steeringGoal =0
+
+	def updatestickThrottle (self,param):
+		self.throttleGoal= param.data[3]
+
+		
+if __name__ == "__main__":
+	
+	os.getcwd()
+	rospy.init_node('command')
+
+	#creation instance settings pour les parametres modifiables
+	lSettings = CommandSettings()
+	
+	sRosPublisherSteering = rospy.Publisher('emobile/CommandSteering', emobile.msg.CommandSteering, queue_size=5)
+	sRosPublisherThrottle = rospy.Publisher('emobile/CommandThrottle', emobile.msg.CommandThrottle, queue_size=5)
+	
+	lControlLaw = ControlLaw()
+	sRosSuscriberThrottle = rospy.Subscriber('GamePadSticks', std_msgs.msg.Float32MultiArray,lControlLaw.updatestickThrottle)
+
+	
+	
+	while not rospy.core.is_shutdown():
+		
+		# we want 100Hz reresh rate
+		time.sleep(0.01)
+	
+		sRosPublisherThrottle.publish(emobile.msg.CommandThrottle(lControlLaw.throttleGoal))
+		
+

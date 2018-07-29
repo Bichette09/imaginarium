@@ -18,7 +18,8 @@ catkin_python_setup()
 
 add_message_files(
    FILES
-   Command.msg
+   CommandSteering.msg
+   CommandThrottle.msg
    Mustache.msg
    PointCloud.msg
 )
