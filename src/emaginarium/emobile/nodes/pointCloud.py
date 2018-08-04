@@ -41,12 +41,22 @@ class PointCloudConverter():
 	def Vu8PointCloud(self,scan):
 		angle = scan.angle_min
 		for i,dist in enumerate(scan.ranges):
-			angle += i*scan.angle_increment
-			self.xVu8[i] = dist*math.cos(angle)
-			self.yVu8[i] = dist*math.sin(angle)
+			angle += scan.angle_increment
+			lX = dist*math.cos(angle)
+			lY = dist*math.sin(angle)
+			
+			self.xVu8[i] = -lY + 0.09;
+			# dans le repère du leddar la profondeur est selon x
+			# le leddar regarde selon -y dans le repère du robot
+			self.yVu8[i] = -lX - 0.134
 			self.dVu8[i] = dist
-		self.rot(self.xVu8,self.yVu8,-pi/2)
-		self.translate(self.xVu8,self.yVu8,0.,0.)
+			
+		# for i in range(0,8):
+			
+		
+		# self.translate(self.xVu8,self.yVu8,-0.134,0.09)
+		#self.rot(self.xVu8,self.yVu8,-pi/2)
+		#self.translate(self.xVu8,self.yVu8,0.,0.)
 		self.sendPointCloud()
 		
 

@@ -24,7 +24,8 @@ function setMeasures(pX,pY)
 	sLastLeddarMeasures = []
 	for(var i = 0 ; i < pX.length ; ++i)
 	{
-		sLastLeddarMeasures.push([pX[i]*1000,pY[i]*1000]);
+		// invert x/y to map from robot axis to screen axis
+		sLastLeddarMeasures.push([pY[i]*1000,pX[i]*1000]);
 	}
 	sRequestRedraw = true;
 }
@@ -55,7 +56,7 @@ function redraw()
 	sCanvasHelper.ctx = ctx;
 	
 	// clear canvas 
-	sCanvasHelper.clear(8000.,8000.,0.70);
+	sCanvasHelper.clear(8000.,4000.,0.70);
 	sCanvasHelper.drawGrid(250.,'rgba(0, 0, 0, 0.2)',2);
 	sCanvasHelper.drawGrid(1000.0,'rgba(0, 0, 0, 0.2)',2);
 	

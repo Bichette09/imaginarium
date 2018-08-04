@@ -14,7 +14,7 @@ function onload()
 			"title":"vu8",
 			"y1":{
 				"unit":"cm",
-				"range":[-0.1,4.1],
+				"range":[-0.1,400.1],
 				"rostraces":[
 					
 				]
@@ -28,7 +28,8 @@ function onload()
 						"topicname":"/pointcloud",
 						"messagetype":"/emobile/PointCloud",
 						"messagefield":"distance",
-						"fieldindex":i
+						"fieldindex":i,
+						"scale":100.
 					});
 	}
 	
