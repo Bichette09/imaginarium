@@ -6,6 +6,16 @@
     }, 
     "command/K": {
         "description": "Gain", 
+        "inuse": false, 
+        "value": "1.0"
+    }, 
+    "command/Kprec": {
+        "description": "Gain of pre command", 
+        "inuse": true, 
+        "value": "1.0"
+    }, 
+    "command/Kprop": {
+        "description": "Gain of prop command", 
         "inuse": true, 
         "value": "1.0"
     }, 

@@ -67,6 +67,11 @@ function onload()
 						"topicname":"/emobile/CommandSteering",
 						"messagetype":"/emobile/CommandSteering",
 						"messagefield":"steering"
+					},{
+						"name":"final angle",
+						"topicname":"/emobile/CommandSteering",
+						"messagetype":"/emobile/CommandSteering",
+						"messagefield":"finalAngle"
 					}
 				]
 			}
