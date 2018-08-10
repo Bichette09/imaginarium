@@ -13,6 +13,7 @@ function resizeCanvans()
 
 
 var sLastLeddarMeasures = [];
+var sSideLine = [0.,0.];
 var sWheelAngle = 0.;
 
 var sWheelLocation = [[-110,0.],[+110,0.],[-110,265.],[110,265.]]
@@ -30,12 +31,21 @@ function setMeasures(pX,pY)
 	sRequestRedraw = true;
 }
 
-function setWheelAngle(pAngle)
+function setCommandSteering(pMsg)
 {
-	if(sWheelAngle == pAngle)
-		return;
-	sWheelAngle = pAngle;
-	sRequestRedraw = true;
+	if(sWheelAngle != pMsg.steering)
+	{
+		sWheelAngle = pMsg.steering;
+		sRequestRedraw = true;
+	}
+	var lSideLine = [pMsg.a,pMsg.b]
+	if(lSideLine[0] == 0 && lSideLine[1] == 0)
+		lSideLine = undefined;
+	if(sSideLine != lSideLine)
+	{
+		sSideLine = lSideLine;
+		sRequestRedraw = true;
+	}
 }
 
 
@@ -86,6 +96,12 @@ function redraw()
 		var lMeasuredPos = sLastLeddarMeasures[i];
 		sCanvasHelper.drawCircle(lMeasuredPos[0],lMeasuredPos[1],30,'rgba(0,128,0,0.7)','black',1);
 	}
+	
+	// draw debug line
+	if(sSideLine != undefined)
+	{
+		sCanvasHelper.drawLine(sSideLine[0],sSideLine[1],'red',1);
+	}
 }
 
 
@@ -100,7 +116,7 @@ function onload()
 	});
 	
 	sRosCtx.startListeningTopic('pointcloud','emobile/PointCloud',function(data){setMeasures(data.x1,data.y1);});
-	sRosCtx.startListeningTopic('emobile/CommandSteering','emobile/CommandSteering',function(data){setWheelAngle(data.steering);});
+	sRosCtx.startListeningTopic('emobile/CommandSteering','emobile/CommandSteering',function(data){setCommandSteering(data);});
 	
 	redraw();
 	setInterval(updateDraw, 30);

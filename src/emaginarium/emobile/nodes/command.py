@@ -45,22 +45,23 @@ class ControlLaw():
 		vU8_X=self.ledarDistX0[0:8]
 		vU8_Y=self.ledarDistY0[0:8]
 		
-		resFit = 0.
+		lA = 0.
+		lB = 0.
 		try:
 			resFit = np.polyfit(np.array(vU8_X),np.array(vU8_Y),1)
 			rospy.logwarn(resFit)
-			resFit = resFit[0]
-			
+			lA = resFit[0]
+			lB = resFit[1]
 		except:
 			pass
 		
 		
-		lAngle=math.atan(resFit)*57.3
+		lAngle=math.atan(lA)*57.3
 		if not np.isfinite(lAngle):
 			return None
 		if self.ledarDistY0[7] > self.ledarDistY0[0]:
 			lAngle = -lAngle
-		return lAngle
+		return (lAngle,lA,lB)
 		
 		
 if __name__ == "__main__":
@@ -83,7 +84,7 @@ if __name__ == "__main__":
 		
 		# we want 100Hz reresh rate
 		time.sleep(0.01)
-		lFinalAngle = lControlLaw.computeAngleToBorders()
+		(lFinalAngle,lA,lB) = lControlLaw.computeAngleToBorders()
 		sRosPublisherThrottle.publish(emobile.msg.CommandThrottle(lControlLaw.throttleGoal))
-		sRosPublisherSteering.publish(emobile.msg.CommandSteering(lControlLaw.steeringGoal,lFinalAngle))
+		sRosPublisherSteering.publish(emobile.msg.CommandSteering(lControlLaw.steeringGoal,lFinalAngle,lA,lB))
 
