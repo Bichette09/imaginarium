@@ -76,7 +76,7 @@
     }, 
     "mouse/updateperiod": {
         "description": "minimum period in sec between two mouse update", 
-        "inuse": true, 
+        "inuse": false, 
         "value": "0.1"
     }, 
     "oled_display/mBrightness": {

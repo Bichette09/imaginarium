@@ -227,6 +227,11 @@ function Graph( pParams) {
 						lY = lY[pTrace.fieldindex];
 					}
 					
+					if(pTrace.scale !== undefined)
+					{
+						lY *= pTrace.scale;
+					}
+					
 					if(lX !== undefined && lY !== undefined)
 					{
 						pTrace.mPendingDataX.push(lX);

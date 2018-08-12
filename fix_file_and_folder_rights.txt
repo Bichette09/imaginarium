@@ -1,0 +1,8 @@
+# reset folder rights to default 
+sudo find . -type d -exec chmod 755 {} +
+# reset file rights to default
+sudo find . -type f -exec chmod 644 {} +
+# set x flag for specific files
+find . -regex .*/nodes/.*\.py -exec chmod +100 {} +
+find . -regex .*/setup\.py -exec chmod +100 {} +
+find . -regex .*/.*\.bash -exec chmod +100 {} +

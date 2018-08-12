@@ -4,6 +4,7 @@ var sCanvasHelper = {
 	canvas : undefined,
 	unitToPxScale : undefined,
 	pxToUnitScale : undefined,
+	/* [xmin,ymin,xmax,ymax]*/
 	boundMeter : [],
 	boundPx : [],
 	
@@ -103,8 +104,26 @@ var sCanvasHelper = {
 		// avoid that next call to stroke redraw our path
 		this.ctx.beginPath();
 		
-	}
+	},
 	
+	/** draw a line of equation y = ax+b
+	*/
+	drawLine : function(pA, pB, pColor, pWidth)
+	{
+		let lX0 = this.boundMeter[0];
+		let lY0 = pA * lX0 + pB;
+		let lX1 = this.boundMeter[2];
+		let lY1 = pA * lX1 + pB;
+		this.ctx.beginPath();
+		this.ctx.moveTo(lX0*this.unitToPxScale,lY0*this.unitToPxScale);
+		this.ctx.lineTo(lX1*this.unitToPxScale,lY1*this.unitToPxScale);
+		this.ctx.closePath();
+		this.ctx.lineWidth = pWidth;
+		this.ctx.strokeStyle = pColor;
+		this.ctx.stroke();
+		// avoid that next call to stroke redraw our path
+		this.ctx.beginPath();
+	}
 
 	
 };

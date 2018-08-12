@@ -1,0 +1,3 @@
+<launch>
+	<node name="mustache" pkg="emobile" type="mustache.py"/node>
+</launch>

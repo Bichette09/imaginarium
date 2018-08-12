@@ -5,6 +5,7 @@ import rospy
 import pigpio
 import time
 import emaginarium.msg
+import emaginarium_common.msg
 from settings_store import settings_store_client
 import os
 
@@ -117,7 +118,7 @@ if __name__ == "__main__":
 	
 	sRosSuscriberSpeed = rospy.Subscriber('emaginarium/Speed', emaginarium.msg.Speed,lCommandThrust.updateSpeed)
 	sRosSuscriberSpeed = rospy.Subscriber('emaginarium/SpeedTarget', emaginarium.msg.SpeedTarget,lCommandThrust.updateSpeedTarget)
-	sRosSuscriberSpeed = rospy.Subscriber('GamePadButtons', emaginarium.msg.GamePadButtons,lCommandThrust.updatexbox)
+	sRosSuscriberSpeed = rospy.Subscriber('GamePadButtons', emaginarium_common.msg.GamePadButtons,lCommandThrust.updatexbox)
 	rospy.spin() # Attente de la mise à jour de la valeur de Speed pour executer updateSpeed
 	
 		

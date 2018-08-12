@@ -1,0 +1,3 @@
+<launch>
+	<node name="pointCloud" pkg="emobile" type="pointCloud.py"></node>
+</launch>

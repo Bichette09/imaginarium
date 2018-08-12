@@ -16,18 +16,21 @@ find_package(catkin REQUIRED COMPONENTS
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 catkin_python_setup()
 
-# add_message_files(
-   # FILES
-   
-# )
+add_message_files(
+   FILES
+   CommandSteering.msg
+   CommandThrottle.msg
+   Mustache.msg
+   PointCloud.msg
+)
 #add_service_files(
 #   FILES
 #)
 
-# generate_messages(
-   # DEPENDENCIES
-   # std_msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   std_msgs
+)
 
 catkin_package(
    # LIBRARIES 
