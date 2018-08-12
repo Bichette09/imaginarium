@@ -36,7 +36,7 @@
 		
 	</include>
 	<!-- nosewheel command -->
-	<!--<include file="$(find emaginarium)/launch/commandNosewheel.launch" > 
+	<include file="$(find emaginarium)/launch/commandNosewheel.launch" > 
 		<arg name="serialPort" value="/dev/dynamixel"/>
-	</include>-->
+	</include>
 </launch>

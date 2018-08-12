@@ -4,10 +4,11 @@ import serial
 
 class ArduinoFloatArrayReader(object):
 
-	def __init__(self,pSerialPort,pArrayLength,pSpeed,pName):
+	def __init__(self,pSerialPort,pArrayLength,pSpeed,pScaleFactor,pName):
 		self.__mSerialPort = None
 		self.__mPlotError = True
 		self.__mName = pName
+		self.__mScaleFactor = pScaleFactor
 		self.mExpectedResLength = pArrayLength
 		try:
 			self.__mSerialPort = serial.Serial(pSerialPort, baudrate=pSpeed,timeout=1) #Arduino
@@ -29,7 +30,7 @@ class ArduinoFloatArrayReader(object):
 				lVal = float(i)
 				if lVal is None:
 					raise Exception('invalid val ' + str(a) + ' ' + self.__mName)
-				lMeasures.append(lVal*10.) 
+				lMeasures.append(lVal*self.__mScaleFactor) 
 			if len(lMeasures) != self.mExpectedResLength:
 				raise Exception()
 			self.__mPlotError = True

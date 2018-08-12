@@ -1,8 +1,18 @@
 {
     "commandNosewheel/Kp": {
         "description": "", 
-        "inuse": true, 
+        "inuse": false, 
         "value": "1"
+    }, 
+    "commandNosewheel/Kprec": {
+        "description": "Gain of pre command", 
+        "inuse": true, 
+        "value": "1.0"
+    }, 
+    "commandNosewheel/Kprop": {
+        "description": "Gain of prop command", 
+        "inuse": true, 
+        "value": ".03"
     }, 
     "commandThrust/Kp": {
         "description": "", 

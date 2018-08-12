@@ -52,7 +52,9 @@ class ControlLaw():
 		self.ultrasonDist = [0]*10
 		self.ultrasoundDistX0 = [0]*10
 		self.ultrasoundDistY0 = [0]*10
-
+		self.lidarDist = [0]
+		self.lidarDistX0 = [0]
+		self.lidarDistY0 = [0]
 		# retrait du capteur arriere (cm)
 		self.rd = 1.9
 		self.ld = 1.6
@@ -67,6 +69,11 @@ class ControlLaw():
 		self.ultrasonDist = param.distance
 		self.ultrasoundDistX0 = param.x0
 		self.ultrasoundDistY0 = param.y0
+
+	def onNewTinyLidar(self,param):
+		self.lidarDist = param.distance
+		self.lidarDistX0 = param.x0
+		self.lidarDistY0 = param.y0
 	
 	def updateAntenna(self,param):
 		self.antennaStatus = param.status
@@ -131,6 +138,7 @@ if __name__ == "__main__":
 	lControlLaw = ControlLaw()
 	sRosSuscriberUltra = rospy.Subscriber('emaginarium/Ultrasound', emaginarium.msg.Ultrasound,lControlLaw.onNewUltrasound)
 	sRosSuscriberSpeed = rospy.Subscriber('emaginarium/Speed', emaginarium.msg.Speed,lControlLaw.onNewSpeed)
+	sRosSuscriberLiDar = rospy.Subscriber('emaginarium/TinyLidar', emaginarium.msg.TinyLidar,lControlLaw.onNewTinyLidar)
 	
 	
 	#init
@@ -156,43 +164,27 @@ if __name__ == "__main__":
 
 		if lControlLaw.ultrasonDist is not None:
 			lRightDist = 0.
-			for i in range(0,4):		
+			for i in [0,2,3]:		
 				if	lControlLaw.ultrasonDist[i] > 0:
 					if lRightDist > 0:
 						lRightDist = min(lRightDist,lControlLaw.ultrasonDist[i])
 					else:
 						lRightDist = lControlLaw.ultrasonDist[i]
 			lLeftDist = 0.
-			for i in range(6,10):		
+			for i in [9,7,6]:		
 				if	lControlLaw.ultrasonDist[i] > 0:
 					if lLeftDist > 0:
 						lLeftDist = min(lLeftDist,lControlLaw.ultrasonDist[i])
 					else:
 						lLeftDist = lControlLaw.ultrasonDist[i]
 				
-			lFrontDist = 0.
-			for i in range(3,7):		
-				if	lControlLaw.ultrasonDist[i] > 0:
-					if lFrontDist > 0:
-						lFrontDist = min(lFrontDist,lControlLaw.ultrasonDist[i])
-					else:
-						lFrontDist = lControlLaw.ultrasonDist[i]
-
-			# angle between robot and runway
-			# lRightAngle = 0.
-			# if lControlLaw.ultrasonDist[1]>0. and lControlLaw.ultrasonDist[0]>0.:
-				# lRightAngle = -1.5-math.atan((lControlLaw.ultrasonDist[1]-(lControlLaw.ultrasonDist[0]+lControlLaw.rd))/lControlLaw.rL)*180/math.pi
-			# lLeftAngle = 0.
-			# if lControlLaw.ultrasonDist[8]>0. and lControlLaw.ultrasonDist[9]>0.:
-				# lLeftAngle =  math.atan((lControlLaw.ultrasonDist[8]-(lControlLaw.ultrasonDist[9]+lControlLaw.ld))/lControlLaw.lL)*180/math.pi
-			
+			lFrontDist = lControlLaw.lidarDist[0];
+			if lFrontDist <= 600 and lFrontDist>0:
+				lLastSpeedTarget = 0.
+			else:
+				lLastSpeedTarget = 1.
 			
 			(lFinalAngle, lLeftAngle,lRightAngle) = lControlLaw.computeAngleToBorders()
-			
-			#print "rightAngle:"+str(lRightAngle)+"\t leftAngle:"+str(lLeftAngle)
-			#print "Dist8:"+str(lCommandNosewheel.ultrasonDist[8])+"\t Dist9:"+str(lCommandNosewheel.ultrasonDist[9])
-			#print "Dist1:"+str(lCommandNosewheel.ultrasonDist[1])+"\t Dist0:"+str(lCommandNosewheel.ultrasonDist[0])
-
 				
 			# compute angle			
 			lWheelAngle = 0.
@@ -202,20 +194,10 @@ if __name__ == "__main__":
 				#Proportional term
 				lProp= erreur* lSettings.kprop
 				#precommande (moyenne des directions des bords)
-				#lPrec = 0.5*lRightAngle+0.5*lLeftAngle
-				# if lLeftAngle is not None and lRightAngle is not None:
-					# if lRightAngle>0 and lLeftAngle>0:					
-						# lPrec = 1.0*min(lRightAngle,lLeftAngle)
-					# elif lRightAngle<0 and lLeftAngle<0:					
-						# lPrec = 1.0*max(lRightAngle,lLeftAngle)
-					# else:
-						# lPrec = 0.0
-				# else:
-					# lPrec = 0.0
-				
+				lPrec = lFinalAngle*lSettings.kprec
 				# synthese of all terms
 				lWheelAngle = lPrec + lProp
-				lPrec = lFinalAngle*lSettings.kprec
+
 				
 				lWheelAngle = max(-30,min(30,lWheelAngle))
 			elif lLeftDist == 0 and lRightDist != 0:
