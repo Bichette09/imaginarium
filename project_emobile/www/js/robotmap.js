@@ -13,7 +13,6 @@ function resizeCanvans()
 
 
 var sLastLeddarMeasures = [];
-var sSideLine = [0.,0.];
 var sWheelAngle = 0.;
 
 var sWheelLocation = [[-110,0.],[+110,0.],[-110,265.],[110,265.]]
@@ -38,15 +37,8 @@ function setCommandSteering(pMsg)
 		sWheelAngle = pMsg.steering;
 		sRequestRedraw = true;
 	}
-	var lSideLine = [pMsg.a,pMsg.b]
-	if(lSideLine[0] == 0 && lSideLine[1] == 0)
-		lSideLine = undefined;
-	if(sSideLine != lSideLine)
-	{
-		sSideLine = lSideLine;
-		sRequestRedraw = true;
-	}
 }
+
 
 
 function updateDraw()
@@ -97,11 +89,8 @@ function redraw()
 		sCanvasHelper.drawCircle(lMeasuredPos[0],lMeasuredPos[1],30,'rgba(0,128,0,0.7)','black',1);
 	}
 	
-	// draw debug line
-	if(sSideLine != undefined)
-	{
-		sCanvasHelper.drawLine(sSideLine[0],sSideLine[1],'red',1);
-	}
+	sCanvasHelper.drawDebug2dPrimitives();
+	
 }
 
 
@@ -117,6 +106,7 @@ function onload()
 	
 	sRosCtx.startListeningTopic('pointcloud','emobile/PointCloud',function(data){setMeasures(data.x1,data.y1);});
 	sRosCtx.startListeningTopic('emobile/CommandSteering','emobile/CommandSteering',function(data){setCommandSteering(data);});
+	sRosCtx.startListeningTopic('emobile/Debug2dPrimitive','emaginarium_common/Debug2dPrimitive',function(data){ if(sCanvasHelper.addDebug2dPrimitive(data)) sRequestRedraw = true;});
 	
 	redraw();
 	setInterval(updateDraw, 30);

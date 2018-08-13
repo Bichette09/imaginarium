@@ -1,7 +1,7 @@
 {
     "commandNosewheel/Kp": {
         "description": "", 
-        "inuse": true, 
+        "inuse": false, 
         "value": "1"
     }, 
     "commandThrust/Kp": {

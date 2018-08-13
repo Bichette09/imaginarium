@@ -74,6 +74,7 @@ if __name__ == "__main__":
 	
 	sRosPublisherSteering = rospy.Publisher('emobile/CommandSteering', emobile.msg.CommandSteering, queue_size=5)
 	sRosPublisherThrottle = rospy.Publisher('emobile/CommandThrottle', emobile.msg.CommandThrottle, queue_size=5)
+	sRosPublisherDebug2dPrimitives = rospy.Publisher('emobile/Debug2dPrimitive', emaginarium_common.msg.Debug2dPrimitive, queue_size=5)
 	
 	lControlLaw = ControlLaw()
 	sRosSuscriberThrottle = rospy.Subscriber('GamePadSticks', std_msgs.msg.Float32MultiArray,lControlLaw.updatestick)
@@ -86,5 +87,5 @@ if __name__ == "__main__":
 		time.sleep(0.01)
 		(lFinalAngle,lA,lB) = lControlLaw.computeAngleToBorders()
 		sRosPublisherThrottle.publish(emobile.msg.CommandThrottle(lControlLaw.throttleGoal))
-		sRosPublisherSteering.publish(emobile.msg.CommandSteering(lControlLaw.steeringGoal,lFinalAngle,lA,lB))
-
+		sRosPublisherSteering.publish(emobile.msg.CommandSteering(lControlLaw.steeringGoal,lFinalAngle))
+		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('sideline','line','red',[lA,lB]))
