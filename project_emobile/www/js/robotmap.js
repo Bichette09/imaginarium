@@ -31,9 +31,11 @@ function setMeasures(pX,pY)
 
 function setCommandSteering(pMsg)
 {
+	lAngle = pMsg.steering*35
 	if(sWheelAngle != pMsg.steering)
 	{
-		sWheelAngle = pMsg.steering;
+		sWheelAngle = lAngle;
+		console.log(lAngle);
 		sRequestRedraw = true;
 	}
 }
@@ -104,7 +106,7 @@ function onload()
 	});
 	
 	sRosCtx.startListeningTopic('pointcloud','emobile/PointCloud',function(data){setMeasures(data.x1,data.y1);});
-	sRosCtx.startListeningTopic('emobile/CommandSteering','emobile/CommandSteering',function(data){setCommandSteering(data);});
+	sRosCtx.startListeningTopic('/emobile/CommandSteering','emobile/CommandSteering',function(data){setCommandSteering(data);});
 	sRosCtx.startListeningTopic('emobile/Debug2dPrimitive','emaginarium_common/Debug2dPrimitive',function(data){ if(sCanvasHelper.addDebug2dPrimitive(data)) sRequestRedraw = true;});
 	
 	sCanvasHelper.setUnitAndFrameTransform(1000.,true);

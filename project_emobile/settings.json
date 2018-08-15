@@ -6,7 +6,7 @@
     }, 
     "command/D": {
         "description": "Commanded distance from the side", 
-        "inuse": true, 
+        "inuse": false, 
         "value": "0.75"
     }, 
     "command/K": {
@@ -26,7 +26,7 @@
     }, 
     "command/L": {
         "description": "Prediction distance", 
-        "inuse": true, 
+        "inuse": false, 
         "value": "2.0"
     }, 
     "hardware_monitor/update_period": {

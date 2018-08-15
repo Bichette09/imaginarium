@@ -59,12 +59,21 @@ class PointCloudConverter():
 		
 
 	def M16PointCloud(self,scan):
-		angle = scan.angle_min
-		for i,dist in enumerate(scan.ranges):
-			angle += i*scan.angle_increment
-			self.xM16[i] = dist*math.cos(angle)
-			self.yM16[i] = dist*math.sin(angle)
-			self.dM16[i] = dist
+	
+		lDistIdx = [[7,8],[6,9],[5,10],[4,11],[3,12],[2,13],[1,14],[0,15]]
+		for i in range(0,8):
+			for s, si in zip([-1.,1.],[0,1]):
+				lIdx = lDistIdx[i][si]
+				lAngle = 0 + s * (i + 0.5) * scan.angle_increment
+				dist = scan.ranges[lIdx]
+				lX = dist*math.cos(lAngle)
+				lY = dist*math.sin(lAngle)
+				
+				self.xM16[lIdx] = lX + 0.0265 + 0.097;
+				# dans le repère du leddar la profondeur est selon x
+				# le leddar regarde selon -y dans le repère du robot
+				self.yM16[lIdx] = lY
+				self.dM16[lIdx] = dist
 		self.sendPointCloud()
 
 	

@@ -2,18 +2,16 @@
 # coding: utf-8
 
 
-
 import time
+import sys
 import rospy
 from sensor_msgs.msg import LaserScan
 from numpy import pi
-import sys
-
 
 
 # parameters
 # opening of the sensor (deg)
-opening = 100
+opening = 95
 # number of beams
 nBeams = 16
 # range (m)
@@ -29,12 +27,20 @@ except:
 	rospy.logerr('Fail to import minimalmodbus, leddarM16 will not be available')
 	sys.exit(0)
 	
-pub = rospy.Publisher('/leddarM16', LaserScan,queue_size = 10)
+pub = rospy.Publisher('/leddarM16', LaserScan,queue_size = 1)
 
 # init serial connection
-minimalmodbus.BAUDRATE = 115200
 lSerialPort = rospy.get_param('/leddarM16/serialPort')
-m = minimalmodbus.Instrument(lSerialPort,1,'rtu')
+
+m = minimalmodbus.Instrument(lSerialPort,1)
+m.serial.baudrate = 115200
+m.serial.bytesize = 8
+m.serial.stopbits = 1
+m.serial.timeout = 1
+m.serial.parity = 'N'
+m.mode = minimalmodbus.MODE_RTU
+
+
 # necessary hardware pause
 time.sleep(1)
 
@@ -47,7 +53,6 @@ while not rospy.is_shutdown():
 	lDist = m.read_registers(16,16,4)
 	for i in range(nBeams):
 		lDist[i] /= 100.0
-
 	# compose the message
 	msg = LaserScan()
 	# header
