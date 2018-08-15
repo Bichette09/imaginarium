@@ -47,16 +47,16 @@ class ControlLaw():
 		
 		lA = 0.
 		lB = 0.
+		lAngle=0.
 		try:
 			resFit = np.polyfit(np.array(vU8_X),np.array(vU8_Y),1)
 			rospy.logwarn(resFit)
 			lA = resFit[0]
 			lB = resFit[1]
+			lAngle=math.atan(lA)*57.3
 		except:
 			pass
-		
-		
-		lAngle=math.atan(lA)*57.3
+				
 		if not np.isfinite(lAngle):
 			return None
 		if self.ledarDistY0[7] > self.ledarDistY0[0]:

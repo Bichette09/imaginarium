@@ -11,7 +11,7 @@ from numpy import pi
 
 # parameters
 # opening of the sensor (deg)
-opening = 90
+opening = 95
 # number of beams
 nBeams = 8
 # range
