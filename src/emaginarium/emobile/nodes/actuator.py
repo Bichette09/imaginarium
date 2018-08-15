@@ -39,7 +39,7 @@ class Actuator(object):
 		if self.__mGpio is None:
 			rospy.logerr('Fail to open gpio, actuator will not work properly')
 		else:
-			rospy.loginfo('Powertrain is ready')
+			rospy.logwarn('Powertrain is ready')
 
 	def updateThrottleTarget(self, param):
 		self.mGoalThrottle = min(max(-1.,param.throttle),1.)
@@ -73,9 +73,12 @@ class Actuator(object):
 
  	def updatexbox (self,param):
 		if '|B|' in param.data:
-			self.__mIsEnable = False
+			lEnable = False
 			if '|Y|' in param.data:
-				self.__mIsEnable = True
+				lEnable = True
+			if self.__mIsEnable != lEnable:
+				rospy.logwarn('Actuator is %s' % ('enable' if lEnable else 'disable'))
+				self.__mIsEnable = lEnable
 			self.updateThrottle()
 
 

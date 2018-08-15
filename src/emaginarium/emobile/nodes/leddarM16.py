@@ -44,6 +44,8 @@ m.mode = minimalmodbus.MODE_RTU
 # necessary hardware pause
 time.sleep(1)
 
+lRate = rospy.Rate(42)
+
 t=rospy.Time.now()
 while not rospy.is_shutdown():
 	#read the sensor
@@ -74,3 +76,5 @@ while not rospy.is_shutdown():
 
 	# send the message
 	pub.publish(msg)
+	
+	lRate.sleep()

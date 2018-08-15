@@ -29,6 +29,8 @@ except:
 
 pub = rospy.Publisher('/leddarVu8', LaserScan,queue_size = 1)
 
+lRate = rospy.Rate(42)
+
 # init serial connection
 minimalmodbus.BAUDRATE = 115200
 lSerialPort = rospy.get_param('/leddarVu8/serialPort')
@@ -74,3 +76,5 @@ while not rospy.is_shutdown():
 
 	# send the message
 	pub.publish(msg)
+	
+	lRate.sleep()
