@@ -75,7 +75,7 @@ class Actuator(object):
 		if '|B|' in param.data:
 			self.__mIsEnable = False
 			if '|Y|' in param.data:
-				self.__mIsEnable = True				
+				self.__mIsEnable = True
 			self.updateThrottle()
 
 

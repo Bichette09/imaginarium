@@ -7,6 +7,7 @@ var sCanvasHelper = {
 	/* [xmin,ymin,xmax,ymax]*/
 	boundMeter : [],
 	boundPx : [],
+	debug2dPrimitives : {},
 	
 	clear : function(pMinWidthMeter, pMinHeightMeter, pCenterYPercent)
 	{
@@ -104,6 +105,32 @@ var sCanvasHelper = {
 		// avoid that next call to stroke redraw our path
 		this.ctx.beginPath();
 		
+	},
+	
+	addDebug2dPrimitive : function(pData)
+	{
+		if(this.debug2dPrimitives[pData.name] != undefined && this.debug2dPrimitives[pData.name] == pData)
+		{
+			return false;
+		}
+		
+		this.debug2dPrimitives[pData.name] = pData;
+		return true;
+	},
+	
+	drawDebug2dPrimitives : function()
+	{
+		for(var k in this.debug2dPrimitives)
+		{
+			var lData = this.debug2dPrimitives[k]
+			if (lData.data.length == 0)
+				continue;
+			if(lData.type == 'line')
+			{
+				this.drawLine(lData.data[0],lData.data[1],lData.color,2)
+			}
+			
+		}
 	},
 	
 	/** draw a line of equation y = ax+b
