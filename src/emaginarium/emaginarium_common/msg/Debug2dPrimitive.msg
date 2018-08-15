@@ -7,6 +7,7 @@ string type
 string color
 # primitive def, if empty primitive will be cleared
 # - line : [a,b] => y = ax + b
+# - circle : [x,y,radius]
 float32[] data
 
 

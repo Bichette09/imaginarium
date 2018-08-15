@@ -13,9 +13,9 @@
 	<include file="$(find emobile)/launch/leddarVu8.launch" > 
 		<arg name="serialPort" value="/dev/leddarvu8"/>
 	</include>
-	<include file="$(find emobile)/launch/leddarM16.launch" > 
-		<arg name="serialPort" value="/dev/ttyAMA0"/>
-	</include>
+	<!--<include file="$(find emobile)/launch/leddarM16.launch" > 
+		<arg name="serialPort" value="/dev/leddarm16"/>
+	</include>-->
 	<include file="$(find emobile)/launch/pointCloud.launch" > 
 	</include>
 	<include file="$(find emobile)/launch/command.launch" > 

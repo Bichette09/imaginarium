@@ -4,6 +4,11 @@
         "inuse": true, 
         "value": "0.4"
     }, 
+    "command/D": {
+        "description": "Commanded distance from the side", 
+        "inuse": true, 
+        "value": "0.75"
+    }, 
     "command/K": {
         "description": "Gain", 
         "inuse": false, 
@@ -11,13 +16,18 @@
     }, 
     "command/Kprec": {
         "description": "Gain of pre command", 
-        "inuse": true, 
+        "inuse": false, 
         "value": "1.0"
     }, 
     "command/Kprop": {
         "description": "Gain of prop command", 
-        "inuse": true, 
+        "inuse": false, 
         "value": "1.0"
+    }, 
+    "command/L": {
+        "description": "Prediction distance", 
+        "inuse": true, 
+        "value": "2.0"
     }, 
     "hardware_monitor/update_period": {
         "description": "hardware state read interval", 

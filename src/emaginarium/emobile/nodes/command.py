@@ -16,11 +16,11 @@ class CommandSettings(settings_store_client.SettingsBase):
 
 	def __init__(self):
 		settings_store_client.SettingsBase.__init__(self)
-		self.kprop=1.
-		self.kprec=1.
+		self.L=2.
+		self.D=0.75
 		self.registerAttributes([
-			('kprop','command/Kprop','Gain of prop command'),
-			('kprec','command/Kprec','Gain of pre command')
+			('L','command/L','Prediction distance'),
+			('D','command/D','Commanded distance from the side')
 			])
 
 class ControlLaw():
@@ -34,7 +34,7 @@ class ControlLaw():
 
 	def updatestick(self,param):
 		self.throttleGoal= param.data[3]
-		self.steeringGoal= param.data[0]
+		#self.steeringGoal= param.data[0]
 		
 	def onNewLedar(self,param):
 		self.ledarDist = param.distance
@@ -50,7 +50,6 @@ class ControlLaw():
 		lAngle=0.
 		try:
 			resFit = np.polyfit(np.array(vU8_X),np.array(vU8_Y),1)
-			rospy.logwarn(resFit)
 			lA = resFit[0]
 			lB = resFit[1]
 			lAngle=math.atan(lA)*57.3
@@ -72,20 +71,28 @@ if __name__ == "__main__":
 	#creation instance settings pour les parametres modifiables
 	lSettings = CommandSettings()
 	
-	sRosPublisherSteering = rospy.Publisher('emobile/CommandSteering', emobile.msg.CommandSteering, queue_size=5)
-	sRosPublisherThrottle = rospy.Publisher('emobile/CommandThrottle', emobile.msg.CommandThrottle, queue_size=5)
-	sRosPublisherDebug2dPrimitives = rospy.Publisher('emobile/Debug2dPrimitive', emaginarium_common.msg.Debug2dPrimitive, queue_size=5)
+	sRosPublisherSteering = rospy.Publisher('emobile/CommandSteering', emobile.msg.CommandSteering, queue_size=1)
+	sRosPublisherThrottle = rospy.Publisher('emobile/CommandThrottle', emobile.msg.CommandThrottle, queue_size=1)
+	sRosPublisherDebug2dPrimitives = rospy.Publisher('emobile/Debug2dPrimitive', emaginarium_common.msg.Debug2dPrimitive, queue_size=1)
 	
 	lControlLaw = ControlLaw()
 	sRosSuscriberThrottle = rospy.Subscriber('GamePadSticks', std_msgs.msg.Float32MultiArray,lControlLaw.updatestick)
 	sRosSuscriberLedar = rospy.Subscriber('/pointcloud', emobile.msg.PointCloud,lControlLaw.onNewLedar)
 	
+	lWheelAnglec = 0.
 	
 	while not rospy.core.is_shutdown():
 		
 		# we want 100Hz reresh rate
 		time.sleep(0.01)
 		(lFinalAngle,lA,lB) = lControlLaw.computeAngleToBorders()
+		
+		# Predictive command
+		lWheelAnglec=math.atan((lA*lSettings.L+lSettings.D*math.sin(lFinalAngle/57.3))/(lSettings.L+lSettings.D*math.cos(lFinalAngle/57.3)-0.265))*57.3
+		lWheelAnglec = max(-35,min(35,lWheelAnglec))
+			#Command normalisation
+		lControlLaw.steeringGoal=lWheelAnglec/35
+
 		sRosPublisherThrottle.publish(emobile.msg.CommandThrottle(lControlLaw.throttleGoal))
-		sRosPublisherSteering.publish(emobile.msg.CommandSteering(lControlLaw.steeringGoal,lFinalAngle))
+		sRosPublisherSteering.publish(emobile.msg.CommandSteering(lControlLaw.steeringGoal))
 		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('sideline','line','red',[lA,lB]))
