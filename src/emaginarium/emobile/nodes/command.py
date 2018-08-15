@@ -42,13 +42,21 @@ class ControlLaw():
 		self.ledarDistY0 = param.y1
 
 	def computeAngleToBorders(self):
-		vU8_X=self.ledarDistX0[0:8]
-		vU8_Y=self.ledarDistY0[0:8]
+		# remove null measures
+		vU8_X = []
+		vU8_Y = []
+		for (x,y,d) in zip(self.ledarDistX0[0:8],self.ledarDistY0[0:8],self.ledarDist):
+			if d > 0.001:
+				# ignore measures that are too close
+				vU8_X.append(x)
+				vU8_Y.append(y)
 		
 		lA = 0.
 		lB = 0.
 		lAngle=0.
 		try:
+			if len(vU8_X) == 0:
+				raise Exception()
 			resFit = np.polyfit(np.array(vU8_X),np.array(vU8_Y),1)
 			lA = resFit[0]
 			lB = resFit[1]
@@ -58,10 +66,8 @@ class ControlLaw():
 				
 		if not np.isfinite(lAngle):
 			return None
-		if self.ledarDistY0[7] > self.ledarDistY0[0]:
-			lAngle = -lAngle
 		return (lAngle,lA,lB)
-		
+
 		
 if __name__ == "__main__":
 	
@@ -86,13 +92,21 @@ if __name__ == "__main__":
 		# we want 100Hz reresh rate
 		time.sleep(0.01)
 		(lFinalAngle,lA,lB) = lControlLaw.computeAngleToBorders()
+
+
 		
 		# Predictive command
-		lWheelAnglec=math.atan((lA*lSettings.L+lSettings.D*math.sin(lFinalAngle/57.3))/(lSettings.L+lSettings.D*math.cos(lFinalAngle/57.3)-0.265))*57.3
+		#objectivePointX=lSettings.L+lSettings.D*math.cos(lFinalAngle/57.3)
+		objectivePointX=lSettings.L
+		#objectivePointY=lA*lSettings.L+lB-lSettings.D*math.sin(lFinalAngle/57.3)
+		objectivePointY=lA*lSettings.L+lB+lSettings.D
+		lWheelAnglec=math.atan(objectivePointY/(objectivePointX-0.265))*57.3
 		lWheelAnglec = max(-35,min(35,lWheelAnglec))
-			#Command normalisation
+		
+		#Command normalisation
 		lControlLaw.steeringGoal=lWheelAnglec/35
 
 		sRosPublisherThrottle.publish(emobile.msg.CommandThrottle(lControlLaw.throttleGoal))
 		sRosPublisherSteering.publish(emobile.msg.CommandSteering(lControlLaw.steeringGoal))
 		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('sideline','line','red',[lA,lB]))
+		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('targetPoint','circle','green',[objectivePointX,objectivePointY,0.05]))

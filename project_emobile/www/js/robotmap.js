@@ -31,7 +31,7 @@ function setMeasures(pX,pY)
 
 function setCommandSteering(pMsg)
 {
-	lAngle = pMsg.steering*35
+	lAngle = pMsg.steering*-35
 	if(sWheelAngle != pMsg.steering)
 	{
 		sWheelAngle = lAngle;
@@ -87,7 +87,7 @@ function redraw()
 	for(var i = 0 ; i < sLastLeddarMeasures.length ; ++i)
 	{
 		var lMeasuredPos = sLastLeddarMeasures[i];
-		sCanvasHelper.drawCircle(lMeasuredPos[0],lMeasuredPos[1],0.030,'rgba(0,128,0,0.7)','black',1,true);
+		sCanvasHelper.drawCircle(lMeasuredPos[0],lMeasuredPos[1],0.030, i < 8 ? 'rgba(0,128,0,0.7)' : 'rgba(0,0,128,0.7)','black',1,true);
 	}
 	
 	sCanvasHelper.drawDebug2dPrimitives(true);

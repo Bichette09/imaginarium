@@ -4,9 +4,11 @@
 import rospy
 from sensor_msgs.msg import LaserScan
 from emobile.msg import PointCloud
+import numpy
 from numpy import pi
 import math
-
+import warnings
+warnings.simplefilter('ignore', numpy.RankWarning)
 
 class PointCloudConverter():
 	
@@ -44,15 +46,19 @@ class PointCloudConverter():
 		for i in range(0,4):
 			for s, si in zip([-1.,1.],[0,1]):
 				lIdx = lDistIdx[i][si]
-				lAngle = 0 + s * (i + 0.5) * scan.angle_increment
 				dist = scan.ranges[lIdx]
-				lX = dist*math.cos(lAngle)
-				lY = dist*math.sin(lAngle)
 				
-				self.xVu8[lIdx] = -lY + 0.09;
-				# dans le repère du leddar la profondeur est selon x
-				# le leddar regarde selon -y dans le repère du robot
-				self.yVu8[lIdx] = -lX - 0.134
+				if dist > 0.001:
+					lAngle = 0 + s * (i + 0.5) * scan.angle_increment
+					lX = dist*math.cos(lAngle)
+					lY = dist*math.sin(lAngle)
+					self.xVu8[lIdx] = -lY + 0.09;
+					# dans le repère du leddar la profondeur est selon x
+					# le leddar regarde selon -y dans le repère du robot
+					self.yVu8[lIdx] = -lX - 0.134
+				else:
+					self.xVu8[lIdx] = 0.
+					self.yVu8[lIdx] = 0.
 				self.dVu8[lIdx] = dist
 
 		self.sendPointCloud()
@@ -64,15 +70,20 @@ class PointCloudConverter():
 		for i in range(0,8):
 			for s, si in zip([-1.,1.],[0,1]):
 				lIdx = lDistIdx[i][si]
-				lAngle = 0 + s * (i + 0.5) * scan.angle_increment
 				dist = scan.ranges[lIdx]
-				lX = dist*math.cos(lAngle)
-				lY = dist*math.sin(lAngle)
 				
-				self.xM16[lIdx] = lX + 0.0265 + 0.097;
-				# dans le repère du leddar la profondeur est selon x
-				# le leddar regarde selon -y dans le repère du robot
-				self.yM16[lIdx] = lY
+				if dist > 0.001:
+					lAngle = 0 + s * (i + 0.5) * scan.angle_increment
+					lX = dist*math.cos(lAngle)
+					lY = dist*math.sin(lAngle)
+				
+					self.xM16[lIdx] = lX + 0.0265 + 0.097;
+					# dans le repère du leddar la profondeur est selon x
+					# le leddar regarde selon -y dans le repère du robot
+					self.yM16[lIdx] = lY
+				else:
+					self.xM16[lIdx] = 0.
+					self.yM16[lIdx] = 0.
 				self.dM16[lIdx] = dist
 		self.sendPointCloud()
 
