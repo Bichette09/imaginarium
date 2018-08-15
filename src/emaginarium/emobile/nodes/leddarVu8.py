@@ -27,7 +27,7 @@ except:
 	rospy.logerr('Fail to import minimalmodbus, leddarVu8 will not be available')
 	sys.exit(0)
 
-pub = rospy.Publisher('/leddarVu8', LaserScan,queue_size = 10)
+pub = rospy.Publisher('/leddarVu8', LaserScan,queue_size = 1)
 
 # init serial connection
 minimalmodbus.BAUDRATE = 115200
