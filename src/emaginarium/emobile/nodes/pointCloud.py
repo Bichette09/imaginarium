@@ -52,10 +52,10 @@ class PointCloudConverter():
 					lAngle = 0 + s * (i + 0.5) * scan.angle_increment
 					lX = dist*math.cos(lAngle)
 					lY = dist*math.sin(lAngle)
-					self.xVu8[lIdx] = -lY + 0.09;
+					self.xVu8[lIdx] = lX + 0.0265 + 0.097;
 					# dans le repère du leddar la profondeur est selon x
 					# le leddar regarde selon -y dans le repère du robot
-					self.yVu8[lIdx] = -lX - 0.134
+					self.yVu8[lIdx] = -lY
 				else:
 					self.xVu8[lIdx] = 0.
 					self.yVu8[lIdx] = 0.
@@ -77,10 +77,10 @@ class PointCloudConverter():
 					lX = dist*math.cos(lAngle)
 					lY = dist*math.sin(lAngle)
 				
-					self.xM16[lIdx] = lX + 0.0265 + 0.097;
+					self.xM16[lIdx] = lY + 0.09;
 					# dans le repère du leddar la profondeur est selon x
 					# le leddar regarde selon -y dans le repère du robot
-					self.yM16[lIdx] = lY
+					self.yM16[lIdx] = -lX - 0.134
 				else:
 					self.xM16[lIdx] = 0.
 					self.yM16[lIdx] = 0.
