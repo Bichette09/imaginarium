@@ -102,10 +102,14 @@ class StateDeclarator:
 	def __init__(self):
 		self.__mStates = dict()
 		# wait until setting store is up
-		rospy.wait_for_service('/settings_store/declareandget',2.)
-		self.__mRosPublisher = rospy.Publisher('settings_store/StateChange', settings_store.msg.Change, queue_size=2)
-	
+		rospy.wait_for_service('/settings_store/setstates',2.)
+		self.__mServiceSetStates = rospy.ServiceProxy('/settings_store/setstates', settings_store.srv.setstates)
+		self.__mPreviousValues = dict()
 	
 	def setState(self, pName, pValue):
-		# just emit a change
-		self.__mRosPublisher.publish(settings_store.msg.Change(pName,str(pValue),'',True))
+		if pName in self.__mPreviousValues and self.__mPreviousValues[pName] == pValue:
+			return
+		self.__mPreviousValues[pName] = pValue
+		lServiceReq = settings_store.srv.setstatesRequest([pName], [str(pValue)])
+		lResponse = self.__mServiceSetStates(lServiceReq)
+		rospy.logwarn('send %s %s '% (pName,str(pValue)))

@@ -1,0 +1,6 @@
+# this service is used to retrieve current value of multiple states
+# list of states requested if empty all states will be returned
+string[] names
+string[] values
+---
+bool error

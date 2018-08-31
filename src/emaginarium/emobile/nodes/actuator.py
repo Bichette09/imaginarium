@@ -36,12 +36,14 @@ class Actuator(object):
 		self.pinT=pinT
 		self.pinS=pinS
 		self.__mIsEnable = False
+		self.__mStateDeclarator.setState("actuator/enable",self.__mIsEnable)
+				
 		time.sleep(5)
 		if self.__mGpio is None:
-			self.__mStateDeclarator.setState("actuator/gpio",False)
+			self.__mStateDeclarator.setState("init/actuator",False)
 			rospy.logerr('Fail to open gpio, actuator will not work properly')
 		else:
-			self.__mStateDeclarator.setState("actuator/gpio",True)
+			self.__mStateDeclarator.setState("init/actuator",True)
 			rospy.logwarn('Powertrain is ready')
 
 	def updateThrottleTarget(self, param):

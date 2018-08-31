@@ -7,6 +7,7 @@ import sys
 import rospy
 from sensor_msgs.msg import LaserScan
 from numpy import pi
+from settings_store import settings_store_client
 
 
 # parameters
@@ -20,26 +21,29 @@ rangemax = 15.0
 
 # init ros node
 rospy.init_node('leddar')
+lStateDeclarator = settings_store_client.StateDeclarator()
 
-try:
-	import minimalmodbus
-except:
-	rospy.logerr('Fail to import minimalmodbus, leddarM16 will not be available')
-	sys.exit(0)
-	
 pub = rospy.Publisher('/leddarM16', LaserScan,queue_size = 1)
 
 # init serial connection
 lSerialPort = rospy.get_param('/leddarM16/serialPort')
 
-m = minimalmodbus.Instrument(lSerialPort,1)
-m.serial.baudrate = 115200
-m.serial.bytesize = 8
-m.serial.stopbits = 1
-m.serial.timeout = 1
-m.serial.parity = 'N'
-m.mode = minimalmodbus.MODE_RTU
+m = None
+try:
+	import minimalmodbus
 
+	m = minimalmodbus.Instrument(lSerialPort,1)
+	m.serial.baudrate = 115200
+	m.serial.bytesize = 8
+	m.serial.stopbits = 1
+	m.serial.timeout = 1
+	m.serial.parity = 'N'
+	m.mode = minimalmodbus.MODE_RTU
+	lStateDeclarator.setState('init/m16',True)
+except:
+	rospy.logerr('Fail to open com with m16 or import minimalmodbus')
+	lStateDeclarator.setState('init/m16',False)
+	
 
 # necessary hardware pause
 time.sleep(1)
@@ -48,6 +52,9 @@ lRate = rospy.Rate(42)
 
 t=rospy.Time.now()
 while not rospy.is_shutdown():
+	if m is None:
+		time.sleep(0.1)
+		continue
 	#read the sensor
 	# read register from 16 to 16+16
 	t_old = t

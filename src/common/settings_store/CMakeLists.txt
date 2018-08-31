@@ -27,6 +27,7 @@ add_service_files(
 	multiget.srv
 	set.srv
 	getstates.srv
+	setstates.srv
 )
 
 generate_messages(

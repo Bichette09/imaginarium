@@ -102,7 +102,9 @@ namespace settings_store
 		
 	private:
 		ros::NodeHandle & 	mNodeHandle;
-		ros::Publisher		mPublisher;
+		ros::ServiceClient	mSetStatesService;
+		
+		std::map<std::string,std::string> mPreviousValues;
 	};
 }
 
