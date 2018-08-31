@@ -287,7 +287,6 @@ function onSettingChanged(pMsg)
 
 function onStateChanged(pMsg)
 {
-	console.log(pMsg);
 	if(addOrUpdateState(pMsg.name,pMsg.value))
 	{
 		sortsettings();
@@ -298,7 +297,6 @@ function onStateChanged(pMsg)
 
 function onseparatorclicked(pName)
 {
-	// console.log(pName);
 	$('#' + pName + 'container').toggle();
 	if(pName == "params" && $('#' + pName + 'container').attr('paramretrieved') === undefined)
 	{
