@@ -22,6 +22,7 @@ class ActuatorSettings(settings_store_client.SettingsBase):
 
 class Actuator(object):
 	def __init__(self,pinT,pinS):
+		self.__mStateDeclarator = settings_store_client.StateDeclarator()
 		self.throttles = 0
 		self.steering = 0
 		self.settings = ActuatorSettings()
@@ -37,8 +38,10 @@ class Actuator(object):
 		self.__mIsEnable = False
 		time.sleep(5)
 		if self.__mGpio is None:
+			self.__mStateDeclarator.setState("actuator/gpio",False)
 			rospy.logerr('Fail to open gpio, actuator will not work properly')
 		else:
+			self.__mStateDeclarator.setState("actuator/gpio",True)
 			rospy.logwarn('Powertrain is ready')
 
 	def updateThrottleTarget(self, param):
@@ -77,6 +80,7 @@ class Actuator(object):
 			if '|Y|' in param.data:
 				lEnable = True
 			if self.__mIsEnable != lEnable:
+				self.__mStateDeclarator.setState("actuator/enable",lEnable)
 				rospy.logwarn('Actuator is %s' % ('enable' if lEnable else 'disable'))
 				self.__mIsEnable = lEnable
 			self.updateThrottle()
@@ -87,7 +91,7 @@ if __name__ == "__main__":
 	os.getcwd()
 	rospy.init_node('actuator')
 
-	lActuator = Actuator(rospy.get_param('/actuator/pinT'),rospy.get_param('/actuator/pinS'))	
+	lActuator = Actuator(rospy.get_param('/actuator/pinT'),rospy.get_param('/actuator/pinS'))
 	sRosSuscriberSpeed = rospy.Subscriber('GamePadButtons', emaginarium_common.msg.GamePadButtons,lActuator.updatexbox)
 	sRosSuscriberThrottle = rospy.Subscriber('emobile/CommandThrottle', emobile.msg.CommandThrottle,lActuator.updateThrottleTarget)
 	sRosSuscriberSteering = rospy.Subscriber('emobile/CommandSteering', emobile.msg.CommandSteering,lActuator.updateSteeringTarget)

@@ -102,4 +102,11 @@ namespace settings_store
 		}
 	}
 	
+	template <typename T>
+	void StateDeclarator::setState(const std::string & pName, const T & pValue)
+	{
+		std::stringstream lStream;
+		lStream<<pValue;
+		setStateStr(pName,lStream.str());
+	}
 }

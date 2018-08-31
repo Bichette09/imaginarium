@@ -94,4 +94,18 @@ class SettingsBase:
 		if not pParam.name in self.__mAttributes:
 			return
 		self.__setAttrValFromStr(pParam.name,pParam.value)
+
+# use this class to declare a state, states are not persistent and are not synchronized with the store
+# states are used to report informations to the front-end
+class StateDeclarator:
 	
+	def __init__(self):
+		self.__mStates = dict()
+		# wait until setting store is up
+		rospy.wait_for_service('/settings_store/declareandget',2.)
+		self.__mRosPublisher = rospy.Publisher('settings_store/StateChange', settings_store.msg.Change, queue_size=2)
+	
+	
+	def setState(self, pName, pValue):
+		# just emit a change
+		self.__mRosPublisher.publish(settings_store.msg.Change(pName,str(pValue),'',True))

@@ -11,6 +11,7 @@ import json
 import os
 
 sSettings = {}
+sStates = {}
 sRosPublisher = None
 
 def loadSettings(pFileName):
@@ -127,6 +128,26 @@ def handle_delete(req):
 		emitChange(None)
 	return settings_store.srv.deleteResponse(lError)
 
+def on_state_change(pParam):
+	sStates[pParam.name] = pParam.value
+	
+def handle_get_states(req):
+	lNames = []
+	lVals = []
+	
+	lRequestedNames = req.requestednames
+	if len(lRequestedNames) == 0:
+		lRequestedNames = sorted(sStates.keys())
+
+	for lName in lRequestedNames:
+		lNames.append(lName)
+		if lName in sStates:
+			lVals.append(sStates[lName])
+		else:
+			lVals.append('')
+			
+	return settings_store.srv.getstatesResponse(lNames,lVals)
+	
 if __name__ == "__main__":
 	import os
 	os.getcwd()
@@ -144,6 +165,9 @@ if __name__ == "__main__":
 	
 	sRosPublisher = rospy.Publisher('settings_store/Change', settings_store.msg.Change, queue_size=1000)
 	
+	sStateChangeSubscriber = rospy.Subscriber('settings_store/StateChange',settings_store.msg.Change,on_state_change)
+
+	lServiceGet = rospy.Service('settings_store/getstates', settings_store.srv.getstates, handle_get_states)
 	lServiceGet = rospy.Service('settings_store/set', settings_store.srv.set, handle_set)
 	lServiceGet = rospy.Service('settings_store/multiget', settings_store.srv.multiget, handle_multiget)
 	lServiceGet = rospy.Service('settings_store/delete', settings_store.srv.delete, handle_delete)

@@ -11,6 +11,7 @@
 
 // settings_store
 #include <settings_store/settings_store_client.h>
+#include <settings_store/Change.h>
 
 // hardware_monitor
 #include <hardware_monitor/HardwareInfo.h>

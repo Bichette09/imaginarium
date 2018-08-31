@@ -222,3 +222,26 @@ std::string SettingsBase::SettingInfo::getValueAsString() const
 		}
 	}
 }
+
+StateDeclarator::StateDeclarator(ros::NodeHandle & pNodeHandle)
+	: mNodeHandle(pNodeHandle)
+{
+	mPublisher = mNodeHandle.advertise<settings_store::Change>("settings_store/StateChange", 2);
+
+}
+
+StateDeclarator::~StateDeclarator()
+{
+}
+
+void StateDeclarator::setStateStr(const std::string & pName, const std::string & pValue)
+{
+	settings_store::Change lMsg;
+	lMsg.name = pName;
+	lMsg.value = pValue;
+	lMsg.description = std::string();
+	lMsg.inuse = true;
+	
+	mPublisher.publish(lMsg);
+}
+		

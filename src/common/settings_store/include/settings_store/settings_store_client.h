@@ -88,6 +88,22 @@ namespace settings_store
 		ros::Subscriber		mChangeTopic;
 		ros::ServiceClient	mDeclareAndGetService;
 	};
+	
+	class StateDeclarator
+	{
+	public:
+		StateDeclarator(ros::NodeHandle & pNodeHandle);
+		~StateDeclarator();
+		
+		template <typename T>
+		void setState(const std::string & pName, const T & pValue);
+		
+		void setStateStr(const std::string & pName, const std::string & pValue);
+		
+	private:
+		ros::NodeHandle & 	mNodeHandle;
+		ros::Publisher		mPublisher;
+	};
 }
 
 #include <settings_store/settings_store_client.inl>
