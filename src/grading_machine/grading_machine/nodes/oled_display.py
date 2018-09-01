@@ -27,6 +27,7 @@ class Display():
 		
 		parser = cmdline.create_parser(description='luma.examples arguments')
 		args = parser.parse_args([])
+		self.__mStateDeclarator = settings_store_client.StateDeclarator()
 		
 		# fc-list | grep Vera
 		self.__mFontName = {}
@@ -51,9 +52,11 @@ class Display():
 			
 			rospy.Subscriber('/oled_display/draw_rect',grading_machine.msg.DisplayDrawRect,self.__onDrawRect)
 			rospy.Subscriber('/oled_display/draw_text',grading_machine.msg.DisplayDrawText,self.__onDrawText)
+			self.__mStateDeclarator.setState('i2c_display','ok')
 		except:
 			self.__mDevice = None
 			rospy.logerr('Fail to initialize i2c oled display')
+			self.__mStateDeclarator.setState('i2c_display','error')
 		
 		
 	

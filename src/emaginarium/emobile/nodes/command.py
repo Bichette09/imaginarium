@@ -90,7 +90,7 @@ class ControlLaw():
 		vU8_Y.append(lA*lSettings.L+lB+lSettings.D)
 		vU8_dist.append(np.sqrt((lSettings.L)**2+(lA*lSettings.L+lB+lSettings.D)**2))
 		dist_mean=np.sum(vU8_dist)/nb_not_null
-		rospy.logwarn('mean '+str(dist_mean))
+		# rospy.logwarn('mean '+str(dist_mean))
 		indexes = [i for i,j in enumerate(vU8_dist) if (j < dist_mean and j != 0)]
 		if len(vU8_X) != 0:
 			for i in indexes:
@@ -99,14 +99,14 @@ class ControlLaw():
 					vU8_dist[i-1]= vU8_dist[i-1] - delta_mean
 				if (i+1) <8:
 					vU8_dist[i+1]= vU8_dist[i+1] - delta_mean
-			rospy.logwarn('vu8_dist :'+str(vU8_dist))
-			rospy.logwarn('ledar_dist :'+str(self.ledarDist[0:8]))
+			# rospy.logwarn('vu8_dist :'+str(vU8_dist))
+			# rospy.logwarn('ledar_dist :'+str(self.ledarDist[0:8]))
 			i_obj = vU8_dist.index(max(vU8_dist))	
-			rospy.logwarn('x :'+str(vU8_X)+' y :'+str(vU8_Y))
+			# rospy.logwarn('x :'+str(vU8_X)+' y :'+str(vU8_Y))
 			
 			self.x_obj=vU8_X[i_obj]
 			self.y_obj=vU8_Y[i_obj]
-			rospy.logwarn('i : '+ str(i_obj)+ ' obj :'+str(self.x_obj)+' yobj :'+str(self.y_obj))
+			# rospy.logwarn('i : '+ str(i_obj)+ ' obj :'+str(self.x_obj)+' yobj :'+str(self.y_obj))
 		return lA,lB
 		
 		

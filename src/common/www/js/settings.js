@@ -216,15 +216,20 @@ function addOrUpdateState(pName,pValue)
 	var lValueLowered = pValue.toLowerCase();
 	
 	var lDisplayIcon = undefined;
-	if(lValueLowered == 'true' || lValueLowered == 'on' || lValueLowered == 'ok')
+	if(lValueLowered == 'true' || lValueLowered == 'on' || lValueLowered == 'ok' || lValueLowered == 'enable' || lValueLowered == 'enabled')
 	{
 		lDisplayIcon = 'check_circle_outline';
 		lDisplayColor = 'green';
 	}
-	else if(lValueLowered == 'false' || lValueLowered == 'off' || lValueLowered == 'error')
+	else if(lValueLowered == 'false' || lValueLowered == 'off' || lValueLowered == 'error' || lValueLowered == 'warning')
 	{
 		lDisplayIcon = 'error';
-		lDisplayColor = 'red';
+		lDisplayColor = lValueLowered == 'warning' ? 'orange' : 'red';
+	}
+	else if(lValueLowered == 'disable' || lValueLowered == 'disabled')
+	{
+		lDisplayIcon = 'highlight_off';
+		lDisplayColor = 'orange';
 	}
 	
 	if(lDisplayIcon !== undefined)

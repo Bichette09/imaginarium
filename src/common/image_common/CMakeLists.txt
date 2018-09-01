@@ -66,10 +66,9 @@ include_directories(
 )
 
 ## Declare a C++ library
+file(GLOB_RECURSE IMAGE_COMMON_FILES src *.cpp)
 add_library(image_common
-	src/camera_frame_provider.cpp
-	src/frame_interface.cpp
-	src/thread_interface.cpp
+	${IMAGE_COMMON_FILES}
 )
 
 ## Add cmake target dependencies of the library

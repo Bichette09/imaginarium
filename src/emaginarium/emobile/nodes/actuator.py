@@ -36,7 +36,7 @@ class Actuator(object):
 		self.pinT=pinT
 		self.pinS=pinS
 		self.__mIsEnable = False
-		self.__mStateDeclarator.setState("actuator/enable",self.__mIsEnable)
+		self.__mStateDeclarator.setState("actuator/enable","disable")
 				
 		time.sleep(5)
 		if self.__mGpio is None:
@@ -82,7 +82,7 @@ class Actuator(object):
 			if '|Y|' in param.data:
 				lEnable = True
 			if self.__mIsEnable != lEnable:
-				self.__mStateDeclarator.setState("actuator/enable",lEnable)
+				self.__mStateDeclarator.setState("actuator/enable",('enable' if lEnable else 'disable'))
 				rospy.logwarn('Actuator is %s' % ('enable' if lEnable else 'disable'))
 				self.__mIsEnable = lEnable
 			self.updateThrottle()

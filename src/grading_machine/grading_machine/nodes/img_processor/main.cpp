@@ -6,8 +6,6 @@
 
 // ros
 #include "ros/ros.h"
-#include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
 #include "std_msgs/String.h"
  
 // settings_store
@@ -18,6 +16,7 @@
 
 #include "grading_machine/ImgProcessorStat.h"
 #include "image_common/camera_frame_provider.h"
+#include "image_common/frame_debugger.h"
 #include "img/filter_worker.h"
 #include "img/extract_worker.h"
 #include "areatracker.h"
@@ -88,12 +87,8 @@ int main(int argc, char ** argv)
 		cv::setNumThreads(1);
 		
 		ros::NodeHandle n;
-		image_transport::ImageTransport it(n);
-		image_transport::Publisher lPubY = it.advertise("Y_image", 1);
-		image_transport::Publisher lPubU = it.advertise("U_image", 1);
-		image_transport::Publisher lPubV = it.advertise("V_image", 1);
-		image_transport::Publisher lPubM = it.advertise("M_image", 1);
-		image_transport::Publisher lPubA = it.advertise("A_image", 1);
+		
+		
 		ros::Publisher lPubStat = n.advertise<grading_machine::ImgProcessorStat>("grading_machine/ImgProcessorStat",10);
 		
 		cv::Mat lTmp, lRGB, lYUV;
@@ -101,6 +96,7 @@ int main(int argc, char ** argv)
 		ros::Rate lLoopRate(1);
 		
 		GradingMachineCppSettings lSettings(n);
+		FrameDebugger lFrameDebugger(n,lSettings.mDebugImgChannels);
 		
 		
 		
@@ -156,36 +152,18 @@ int main(int argc, char ** argv)
 				
 				lAreaTracker.addNewFrame(lFrame);
 				
-				if( lSettings.mDebugImgChannels.find("y") != std::string::npos)
-				{
-					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[Frame::Y]).toImageMsg();
-					lPubY.publish(lMsg);
-				}
-				if( lSettings.mDebugImgChannels.find("u") != std::string::npos)
-				{
-					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[Frame::U]).toImageMsg();
-					lPubU.publish(lMsg);
-				}
-				if( lSettings.mDebugImgChannels.find("v") != std::string::npos)
-				{
-					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[Frame::V]).toImageMsg();
-					lPubV.publish(lMsg);
-				}
-				if( lSettings.mDebugImgChannels.find("m") != std::string::npos)
-				{
-					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lFrame[Frame::BackgroundMask]).toImageMsg();
-					lPubM.publish(lMsg);
-				}
-				if( lSettings.mDebugImgChannels.find("a") != std::string::npos)
+				lFrameDebugger.setImage('y',lFrame[Frame::Y]);
+				lFrameDebugger.setImage('u',lFrame[Frame::U]);
+				lFrameDebugger.setImage('v',lFrame[Frame::V]);
+				lFrameDebugger.setImage('m',lFrame[Frame::BackgroundMask]);
+				if( lSettings.mDebugImgChannels.find('a') != std::string::npos)
 				{
 					
 					cv::bitwise_and(lFrame[Frame::Y],lFrame[Frame::BackgroundMask],lTmp);
 					lDetectionManager.computeDebugFrame(lTmp,lFrame);
-					sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", lTmp).toImageMsg();
-					lPubA.publish(lMsg);
-					
+					lFrameDebugger.setImage('a',lTmp);
 				}
-				
+
 			}
 			
 			ros::spinOnce();
