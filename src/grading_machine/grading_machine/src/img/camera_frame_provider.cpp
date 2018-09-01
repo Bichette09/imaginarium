@@ -1,4 +1,4 @@
-#include "camera_worker.h"
+#include "camera_frame_provider.h"
 
 // raspicam lib
 #ifdef USE_RASPICAM_LIB
@@ -8,7 +8,7 @@
 // ros
 #include "ros/ros.h"
 
-CameraWorker::Parameters::Parameters(int pRequestedWidth, int pRequestedHeight, int pFps)
+CameraFrameProvider::Parameters::Parameters(int pRequestedWidth, int pRequestedHeight, int pFps)
 	: mWidth( std::max(320,std::min(320 * (int)std::floor(pRequestedWidth/320.),3200)))
 	, mHeight( std::max(240,std::min(240 * (int)std::floor(pRequestedWidth/240.),2400)))
 	, mHalfWidth(mWidth / 2)
@@ -20,11 +20,11 @@ CameraWorker::Parameters::Parameters(int pRequestedWidth, int pRequestedHeight, 
 {
 }
 
-CameraWorker::Parameters::~Parameters()
+CameraFrameProvider::Parameters::~Parameters()
 {
 }
 
-CameraWorker::CameraWorker(Parameters pParams)
+CameraFrameProvider::CameraFrameProvider(Parameters pParams)
 	: mParameters(pParams)
 	, mIsError(false)
 	, mBuffer(NULL)
@@ -63,7 +63,7 @@ CameraWorker::CameraWorker(Parameters pParams)
 	mFullY = cv::Mat(mParameters.mHeight,mParameters.mWidth,CV_8UC1);
 }
 
-CameraWorker::~CameraWorker()
+CameraFrameProvider::~CameraFrameProvider()
 {
 #ifdef USE_RASPICAM_LIB
 	delete mCameraHandle;
@@ -73,24 +73,12 @@ CameraWorker::~CameraWorker()
 	mBuffer = NULL;
 }
 
-void CameraWorker::EnsureMatSizeAndType(Frame & pFrame, const Parameters & pParams)
+void CameraFrameProvider::EnsureMatSizeAndType(FrameInterface & pFrame, const Parameters & pParams)
 {
-	// ensure that mat have the right format
-	if(pFrame[Frame::Y].type() != CV_8UC1 || pFrame[Frame::Y].size[1] != pParams.mHalfWidth || pFrame[Frame::Y].size[0] != pParams.mHalfHeight)
-	{
-		pFrame[Frame::Y] = cv::Mat(pParams.mHalfHeight,pParams.mHalfWidth,CV_8UC1);
-	}
-	if(pFrame[Frame::U].type() != CV_8UC1 || pFrame[Frame::U].size[1] != pParams.mHalfWidth || pFrame[Frame::U].size[0] != pParams.mHalfHeight)
-	{
-		pFrame[Frame::U] = cv::Mat(pParams.mHalfHeight,pParams.mHalfWidth,CV_8UC1);
-	}
-	if(pFrame[Frame::V].type() != CV_8UC1 || pFrame[Frame::V].size[1] != pParams.mHalfWidth || pFrame[Frame::V].size[0] != pParams.mHalfHeight)
-	{
-		pFrame[Frame::V] = cv::Mat(pParams.mHalfHeight,pParams.mHalfWidth,CV_8UC1);
-	}
+	pFrame.ensureSizeAndType(pParams.mHalfWidth,pParams.mHalfHeight);
 }
 
-bool CameraWorker::computeNextResult(Frame & pRes)
+bool CameraFrameProvider::getNextFrame(FrameInterface & pRes)
 {
 #ifdef USE_RASPICAM_LIB
 	if(mIsError)
@@ -101,11 +89,11 @@ bool CameraWorker::computeNextResult(Frame & pRes)
 	mCameraHandle->grab();
 	mCameraHandle->retrieve ( mBuffer );
 
-	pRes.setTimestamp(Frame::F_GrabDone);
+	pRes.setGrabTimestamp();
 	memcpy(mFullY.data,mBuffer,mParameters.mPixelCount);
-	cv::resize(mFullY,pRes[Frame::Y],cv::Size(mParameters.mHalfWidth,mParameters.mHalfHeight));
-	memcpy(pRes[Frame::U].data,mBuffer + mParameters.mPixelCount, mParameters.mQuarterPixelCount);
-	memcpy(pRes[Frame::V].data,mBuffer + mParameters.mPixelCount +  mParameters.mQuarterPixelCount, mParameters.mQuarterPixelCount);
+	cv::resize(mFullY,pRes.editY(),cv::Size(mParameters.mHalfWidth,mParameters.mHalfHeight));
+	memcpy(pRes.editU().data,mBuffer + mParameters.mPixelCount, mParameters.mQuarterPixelCount);
+	memcpy(pRes.editV().data,mBuffer + mParameters.mPixelCount +  mParameters.mQuarterPixelCount, mParameters.mQuarterPixelCount);
 	
 	return true;
 #else
@@ -113,3 +101,12 @@ bool CameraWorker::computeNextResult(Frame & pRes)
 #endif	
 }
 
+int CameraFrameProvider::getFrameWidth() const
+{
+	return mParameters.mHalfWidth;
+}
+
+int CameraFrameProvider::getFrameHeight() const
+{
+	return mParameters.mHalfHeight;
+}

@@ -1,10 +1,11 @@
 #pragma once
 
+#include "frame.h"
 #include "frame_processor.h"
 
 class FilterWorker;
 
-class ExtractWorker : public FrameProcessor::WorkerInterface
+class ExtractWorker : public WorkerInterface<Frame>
 {
 public:
 	
@@ -26,7 +27,7 @@ protected:
 	virtual bool computeNextResult(Frame & pRes);
 private:
 	FilterWorker & 				mFilterWorker;
-	FrameProcessor *			mFilterThread;
+	FrameProcessor<Frame> *		mFilterThread;
 	const Parameters &			mParameters;
 	
 	cv::Mat mLabels;

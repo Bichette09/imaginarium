@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "frame_processor.h"
+#include "frame_interface.h"
 
 // std
 
@@ -10,9 +10,11 @@ namespace raspicam
 	class RaspiCam;
 }
 
-class CameraWorker : public FrameProcessor::WorkerInterface
+class CameraFrameProvider : public FrameProvider
 {
 public:
+	
+	
 	
 	struct Parameters
 	{
@@ -35,16 +37,18 @@ public:
 	/** pWidth should be a multiple of 320
 	*	pHeight should be a multiple of 240
 	*/
-	CameraWorker(Parameters pParams);
-	virtual ~CameraWorker();
+	CameraFrameProvider(Parameters pParams);
+	virtual ~CameraFrameProvider();
 	
 	
-	static void EnsureMatSizeAndType(Frame & pFrame, const Parameters & pParams);
+	static void EnsureMatSizeAndType(FrameInterface & pFrame, const Parameters & pParams);
 	
 	const Parameters	mParameters;
 
-protected:
-	virtual bool computeNextResult(Frame & pRes);
+	virtual bool getNextFrame(FrameInterface & pRes);
+	virtual int getFrameWidth() const;
+	virtual int getFrameHeight() const;
+	
 private:
 	raspicam::RaspiCam *	mCameraHandle;
 	unsigned char *			mBuffer;

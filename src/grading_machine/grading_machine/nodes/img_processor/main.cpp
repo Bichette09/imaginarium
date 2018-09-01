@@ -17,7 +17,7 @@
 #include "opencv2/opencv.hpp"
 
 #include "grading_machine/ImgProcessorStat.h"
-#include "img/camera_worker.h"
+#include "img/camera_frame_provider.h"
 #include "img/filter_worker.h"
 #include "img/extract_worker.h"
 #include "areatracker.h"
@@ -104,10 +104,10 @@ int main(int argc, char ** argv)
 		
 		
 		
-		CameraWorker lCameraWorker(CameraWorker::Parameters(1600,1680,12));
-		FilterWorker lFilterWorker(lCameraWorker,lSettings.mFilterParameters);
+		CameraFrameProvider lCameraFrameProvider(CameraFrameProvider::Parameters(1600,1680,12));
+		FilterWorker lFilterWorker(lCameraFrameProvider,lSettings.mFilterParameters);
 		ExtractWorker lExtractWorker(lFilterWorker,lSettings.mExtractParameters);
-		FrameProcessor lExtractThread(lExtractWorker);
+		FrameProcessor<Frame> lExtractThread(lExtractWorker);
 		
 		Frame lFrame;
 		

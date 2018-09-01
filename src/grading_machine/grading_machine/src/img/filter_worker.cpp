@@ -1,6 +1,6 @@
 #include "filter_worker.h"
 
-#include "camera_worker.h"
+#include "frame_provider_worker.h"
 
 // ros
 #include "ros/ros.h"
@@ -131,17 +131,17 @@ private:
 };
 
 
-FilterWorker::FilterWorker(CameraWorker & pCameraWorker, const Parameters & pParameters)
+FilterWorker::FilterWorker(FrameProvider & pFrameProvider, const Parameters & pParameters)
 	: mCameraThread(NULL)
-	, mCameraWorker(pCameraWorker)
+	, mFrameProviderWorker(pFrameProvider)
 	, mParameters(pParameters)
 {
-	mCameraThread = new FrameProcessor(mCameraWorker);
+	mCameraThread = new FrameProcessor<Frame>(mFrameProviderWorker);
 	
 	mMorphoKernel5x5 = cv::getStructuringElement(cv::MORPH_RECT,cv::Size(5,5));
-	mTmpA = cv::Mat(mCameraWorker.mParameters.mHalfHeight,mCameraWorker.mParameters.mHalfWidth,CV_8UC1);
-	mTmpB = cv::Mat(mCameraWorker.mParameters.mHalfHeight,mCameraWorker.mParameters.mHalfWidth,CV_8UC1);
-	mTmpC = cv::Mat(mCameraWorker.mParameters.mHalfHeight,mCameraWorker.mParameters.mHalfWidth,CV_8UC1);
+	mTmpA = cv::Mat(pFrameProvider.getFrameHeight(),pFrameProvider.getFrameWidth(),CV_8UC1);
+	mTmpB = cv::Mat(pFrameProvider.getFrameHeight(),pFrameProvider.getFrameWidth(),CV_8UC1);
+	mTmpC = cv::Mat(pFrameProvider.getFrameHeight(),pFrameProvider.getFrameWidth(),CV_8UC1);
 	
 	mUCompanion = new FilterThreadCompanion(mParameters.mUParam,mMorphoKernel5x5);
 	mVCompanion = new FilterThreadCompanion(mParameters.mVParam,mMorphoKernel5x5);

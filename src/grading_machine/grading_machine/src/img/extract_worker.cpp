@@ -19,7 +19,7 @@ ExtractWorker::ExtractWorker(FilterWorker & pFilterWorker, const Parameters & pP
 	, mParameters(pParameters)
 	
 {
-	mFilterThread = new FrameProcessor(mFilterWorker);
+	mFilterThread = new FrameProcessor<Frame>(mFilterWorker);
 }
 
 ExtractWorker::~ExtractWorker()

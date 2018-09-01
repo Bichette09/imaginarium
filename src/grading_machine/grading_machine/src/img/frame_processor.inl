@@ -1,19 +1,18 @@
-#include "frame_processor.h"
-
-// ros
-#include "ros/ros.h"
 
 #define USE_THREAD
 
-FrameProcessor::WorkerInterface::WorkerInterface()
+template <typename FrameType>
+WorkerInterface<FrameType>::WorkerInterface()
 {
 }
 
-FrameProcessor::WorkerInterface::~WorkerInterface()
+template <typename FrameType>
+WorkerInterface<FrameType>::~WorkerInterface()
 {
 }
 
-FrameProcessor::FrameProcessor(WorkerInterface & pWorker)
+template <typename FrameType>
+FrameProcessor<FrameType>::FrameProcessor(WorkerInterface<FrameType> & pWorker)
 	: mQuit(false)
 	, mGotNewResult(false)
 	, mWorker(pWorker)
@@ -23,7 +22,8 @@ FrameProcessor::FrameProcessor(WorkerInterface & pWorker)
 #endif
 }
 
-FrameProcessor::~FrameProcessor()
+template <typename FrameType>
+FrameProcessor<FrameType>::~FrameProcessor()
 {
 #ifdef USE_THREAD
 	{
@@ -35,7 +35,8 @@ FrameProcessor::~FrameProcessor()
 #endif
 }
 
-bool FrameProcessor::getNextFrame(Frame & pFrame)
+template <typename FrameType>
+bool FrameProcessor<FrameType>::getNextFrame(FrameType & pFrame)
 {
 #ifdef USE_THREAD
 	std::unique_lock<std::mutex> lLock(mMutex);
@@ -60,8 +61,8 @@ bool FrameProcessor::getNextFrame(Frame & pFrame)
 #endif
 }
 
-
-void FrameProcessor::run()
+template <typename FrameType>
+void FrameProcessor<FrameType>::run()
 {
 	while(!mQuit)
 	{
