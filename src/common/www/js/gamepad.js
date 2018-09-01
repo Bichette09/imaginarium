@@ -111,7 +111,9 @@ function onConnect(pGamePad){
 	let lIsXBox = false;
 	lIsXBox = lIsXBox || (lGamePadIdLc.indexOf('xbox') != -1 && lGamePadIdLc.indexOf('360') != -1);
 	lIsXBox = lIsXBox || (lGamePadIdLc.indexOf('vendor: 045e') != -1 && lGamePadIdLc.indexOf('product: 028e') != -1);
-	if( lIsXBox && pGamePad.buttons.length >= 16)
+	lIsXBox = lIsXBox || (lGamePadIdLc.indexOf('xinput') != -1);
+
+	if( lIsXBox && pGamePad.buttons.length >= 16 && pGamePad.axes.length >= 2)
 	{
 		lButtonLayout = sXBox360Layout;
 	}
