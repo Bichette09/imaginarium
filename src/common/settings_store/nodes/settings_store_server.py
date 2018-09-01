@@ -45,8 +45,13 @@ def loadSettings(pFileName):
 def saveSettings(pFileName,pSettings):
 	if pFileName is None:
 		return
+	# remove inuse field
+	lSettings = pSettings
+	for key in lSettings:
+		if 'inuse' in lSettings[key]:
+			del lSettings[key]['inuse']
 	with codecs.open(pFileName,'w+',encoding='utf8') as f:
-		json.dump(pSettings,f, sort_keys=True,indent=4)
+		json.dump(lSettings,f, sort_keys=True,indent=4)
 
 
 def emitChange(pField):
