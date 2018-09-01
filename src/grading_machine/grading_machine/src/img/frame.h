@@ -7,7 +7,7 @@
 #include <map>
 #include <chrono>
 
-#include "frame_interface.h"
+#include "image_common/frame_interface.h"
 
 struct AreaOfInterest
 {

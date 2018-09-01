@@ -1,6 +1,6 @@
 #pragma once
 
-#include "frame_processor.h"
+#include "image_common/frame_processor.h"
 
 // ros
 

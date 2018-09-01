@@ -1,6 +1,6 @@
 #pragma once
 
-#include "thread_interface.h"
+#include "image_common/thread_interface.h"
 
 // ros
 #include "ros/ros.h"

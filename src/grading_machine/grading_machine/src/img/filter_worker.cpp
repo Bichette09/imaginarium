@@ -1,7 +1,5 @@
 #include "filter_worker.h"
 
-#include "frame_provider_worker.h"
-
 // ros
 #include "ros/ros.h"
 

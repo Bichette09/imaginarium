@@ -1,7 +1,7 @@
 #pragma once
 
 #include "frame.h"
-#include "frame_processor.h"
+#include "image_common/frame_processor.h"
 
 class FilterWorker;
 

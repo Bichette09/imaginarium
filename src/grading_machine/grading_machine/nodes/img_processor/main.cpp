@@ -17,7 +17,7 @@
 #include "opencv2/opencv.hpp"
 
 #include "grading_machine/ImgProcessorStat.h"
-#include "img/camera_frame_provider.h"
+#include "image_common/camera_frame_provider.h"
 #include "img/filter_worker.h"
 #include "img/extract_worker.h"
 #include "areatracker.h"

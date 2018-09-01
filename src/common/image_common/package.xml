@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>grading_machine</name>
+  <name>image_common</name>
   <version>1.0.0</version>
-  <description>A python package </description>
+  <description>The image_common package</description>
 
   <maintainer email="bichette@pi.pi">bichette</maintainer>
 
@@ -10,22 +10,20 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   
-  <depend>rospy</depend>
   <depend>roscpp</depend>
-  <depend>cv_bridge</depend>
+  <depend>rospy</depend>
   <depend>std_msgs</depend>
-  <depend>settings_store</depend>
-  <depend>image_common</depend>
-  <depend>image_transport</depend>
+  
   
   <build_depend>message_generation</build_depend>
-  
+ 
   <exec_depend>message_runtime</exec_depend>
   
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
-
+	<cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lsettings_store"/>
   </export>
+  
 </package>

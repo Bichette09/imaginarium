@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(grading_machine)
+project(image_common)
 
 add_compile_options(-std=c++11)
 add_compile_options(-Wno-psabi)
@@ -8,15 +8,12 @@ add_compile_options(-Wno-psabi)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  message_generation
-  roscpp
-  rospy
-  std_msgs
-  settings_store
-  image_common
-  cv_bridge
-  image_transport
+	roscpp
+	rospy
+	message_generation
+	std_msgs
 )
+
 
 find_package( OpenCV REQUIRED )
 
@@ -35,28 +32,25 @@ endif()
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 catkin_python_setup()
 
-add_message_files(
-   FILES
-   DisplayDrawText.msg
-   DisplayDrawRect.msg
-   ImgProcessorStat.msg
-)
+# add_message_files(
+	# FILES
+	
+# )
 # add_service_files(
-   # FILES
-   # service.srv
+	# FILES
+	
 # )
 
-generate_messages(
-   DEPENDENCIES
-   std_msgs
-)
+# generate_messages(
+	# DEPENDENCIES
+	# std_msgs
+# )
 
 catkin_package(
-   CATKIN_DEPENDS 
-   LIBRARIES grading_machine
-   CATKIN_DEPENDS message_runtime std_msgs settings_store image_common cv_bridge image_transport
+	INCLUDE_DIRS include
+	LIBRARIES image_common
+	CATKIN_DEPENDS message_runtime std_msgs 
 )
-
 
 ###########
 ## Build ##
@@ -65,32 +59,30 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  src/
-  src/img
-  src/common
+	include
+	include/image_common
+	${catkin_INCLUDE_DIRS}
+	${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/settingsstore.cpp
-# )
+add_library(image_common
+	src/camera_frame_provider.cpp
+	src/frame_interface.cpp
+	src/thread_interface.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME} 
+# "${PROJECT_NAME}_generate_messages_cpp" 
+${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/settingsstore_node.cpp)
-file(GLOB_RECURSE IMG_PROCESSOR_FILES nodes/img_processor *.h *.inl *.cpp)
-add_executable(img_processor ${IMG_PROCESSOR_FILES})
-target_link_libraries(img_processor ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${RASPICAM_LIBS} )
-add_dependencies(img_processor grading_machine_generate_messages_cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -106,6 +98,7 @@ add_dependencies(img_processor grading_machine_generate_messages_cpp)
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${RASPICAM_LIBS} )
 
 #############
 ## Install ##
@@ -129,11 +122,11 @@ add_dependencies(img_processor grading_machine_generate_messages_cpp)
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/${PROJECT_NAME}/
+	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+	FILES_MATCHING PATTERN "*.h"
+	PATTERN ".svn" EXCLUDE
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

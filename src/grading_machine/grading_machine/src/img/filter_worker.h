@@ -1,8 +1,8 @@
 #pragma once
 
 #include "frame.h"
-#include "frame_processor.h"
-#include "frame_provider_worker.h"
+#include "image_common/frame_processor.h"
+#include "image_common/frame_provider_worker.h"
 
 class FilterThreadCompanion;
 class CameraFrameProvider;
