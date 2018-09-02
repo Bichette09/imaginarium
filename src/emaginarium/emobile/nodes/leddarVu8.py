@@ -7,11 +7,12 @@ import sys
 import rospy
 from sensor_msgs.msg import LaserScan
 from numpy import pi
+from settings_store import settings_store_client
 
 
 # parameters
 # opening of the sensor (deg)
-opening = 90
+opening = 95
 # number of beams
 nBeams = 8
 # range
@@ -21,24 +22,26 @@ rangemax = 15.0
 # init ros node
 rospy.init_node('leddar')
 
-try:
-	import minimalmodbus
-except:
-	rospy.logerr('Fail to import minimalmodbus, leddarVu8 will not be available')
-	sys.exit(0)
+lStateDeclarator = settings_store_client.StateDeclarator()
 
-pub = rospy.Publisher('/leddarVu8', LaserScan,queue_size = 10)
+pub = rospy.Publisher('/leddarVu8', LaserScan,queue_size = 1)
+
+lRate = rospy.Rate(42)
 
 # init serial connection
-minimalmodbus.BAUDRATE = 115200
 lSerialPort = rospy.get_param('/leddarVu8/serialPort')
 m = None
 try:
+	import minimalmodbus
+	minimalmodbus.BAUDRATE = 115200
+
 	m = minimalmodbus.Instrument(lSerialPort,1,'rtu')
 	# necessary hardware pause
 	time.sleep(1)
+	lStateDeclarator.setState('init/vu8',True)
 except:
-	rospy.logerr('Fail to open com with vu8')
+	rospy.logerr('Fail to open com with vu8 or import minimalmodbus')
+	lStateDeclarator.setState('init/vu8',False)
 	
 t=rospy.Time.now()
 while not rospy.is_shutdown():
@@ -74,3 +77,5 @@ while not rospy.is_shutdown():
 
 	# send the message
 	pub.publish(msg)
+	
+	lRate.sleep()

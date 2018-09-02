@@ -127,6 +127,19 @@
 	width: auto;*/
 }
 
+.statevalue {
+	font-size:1.0em;
+	/*background-color:green;*/
+	float:right;
+	margin-left:2em;
+	border:none;
+	background-color:rgb(240,240,240);
+	padding:0.3em;
+	border-radius:0.2em;
+	/*box-sizing: border-box;
+	width: auto;*/
+}
+
 input.settingvalue {
 	background-color:white;
 	height:1.1em;

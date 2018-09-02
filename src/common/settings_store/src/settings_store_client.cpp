@@ -5,6 +5,7 @@
 
 
 #include <settings_store/declareandget.h>
+#include <settings_store/setstates.h>
 
 using namespace settings_store;
 
@@ -222,3 +223,34 @@ std::string SettingsBase::SettingInfo::getValueAsString() const
 		}
 	}
 }
+
+StateDeclarator::StateDeclarator(ros::NodeHandle & pNodeHandle)
+	: mNodeHandle(pNodeHandle)
+{
+	ros::service::waitForService("/settings_store/setstates",5000);
+	mSetStatesService = mNodeHandle.serviceClient<settings_store::setstates>("/settings_store/setstates");
+	
+}
+
+StateDeclarator::~StateDeclarator()
+{
+}
+
+void StateDeclarator::setStateStr(const std::string & pName, const std::string & pValue)
+{
+	if(mPreviousValues.find(pName) != mPreviousValues.end() && mPreviousValues[pName] == pValue)
+		return;
+	mPreviousValues[pName]=pValue;
+	
+	settings_store::setstates lParam;
+	lParam.request.names.push_back(pName);
+	lParam.request.values.push_back(pValue);
+	
+	if(!mSetStatesService.call(lParam))
+	{
+		ROS_ERROR_STREAM("fail to call setstates service "<<pName<<"="<<pValue);
+		return;
+	}
+	
+}
+		

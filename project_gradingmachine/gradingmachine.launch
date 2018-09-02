@@ -15,15 +15,7 @@
 	
 	<!-- oled display -->
 	<node name="oled_display" pkg="grading_machine" type="oled_display.py" />
-	
-	
-	<!-- camera capture -->
-	<!--<include file="$(find grading_machine)/launch/picamera_capture.launch" > 
-		<arg name="width" value="0"/>
-		<arg name="height" value="0"/>
-	</include>-->
-	
-	
+		
 	<!-- web_video_server, a node to stream image topic to web client -->	
 	<node name="web_video_server" pkg="web_video_server" type="web_video_server">
 		<param name="port" value="8080"></param>

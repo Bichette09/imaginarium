@@ -94,4 +94,22 @@ class SettingsBase:
 		if not pParam.name in self.__mAttributes:
 			return
 		self.__setAttrValFromStr(pParam.name,pParam.value)
+
+# use this class to declare a state, states are not persistent and are not synchronized with the store
+# states are used to report informations to the front-end
+class StateDeclarator:
 	
+	def __init__(self):
+		self.__mStates = dict()
+		# wait until setting store is up
+		rospy.wait_for_service('/settings_store/setstates',2.)
+		self.__mServiceSetStates = rospy.ServiceProxy('/settings_store/setstates', settings_store.srv.setstates)
+		self.__mPreviousValues = dict()
+	
+	def setState(self, pName, pValue):
+		if pName in self.__mPreviousValues and self.__mPreviousValues[pName] == pValue:
+			return
+		self.__mPreviousValues[pName] = pValue
+		lServiceReq = settings_store.srv.setstatesRequest([pName], [str(pValue)])
+		lResponse = self.__mServiceSetStates(lServiceReq)
+		

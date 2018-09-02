@@ -7,6 +7,16 @@ var sCanvasHelper = {
 	/* [xmin,ymin,xmax,ymax]*/
 	boundMeter : [],
 	boundPx : [],
+	debug2dPrimitives : {},
+	
+	unitAndFrameTransformInvertXY : false,
+	unitAndFrameTransformScale : 1.,
+	
+	setUnitAndFrameTransform : function(pUnitScale, pInvertXY)
+	{
+		this.unitAndFrameTransformInvertXY = pInvertXY;
+		this.unitAndFrameTransformScale = pUnitScale;
+	},
 	
 	clear : function(pMinWidthMeter, pMinHeightMeter, pCenterYPercent)
 	{
@@ -40,42 +50,6 @@ var sCanvasHelper = {
 		return lRes;
 	},
 	
-	drawCircle : function (pX,pY,pRadius, pFillColor, pBorderColor, pBorderWidth)
-	{
-		this.ctx.beginPath();
-		this.ctx.arc(Math.round(pX*this.unitToPxScale), Math.round(pY*this.unitToPxScale), Math.round(pRadius*this.unitToPxScale), 0, 2 * Math.PI, false);
-		if( pFillColor !== undefined)
-		{
-			this.ctx.fillStyle = pFillColor;
-			this.ctx.fill();
-		}
-		
-		if(pBorderColor !== undefined)
-		{
-			this.ctx.lineWidth = pBorderWidth;
-			this.ctx.strokeStyle = pBorderColor;
-			this.ctx.stroke();
-		}
-	},
-
-	drawRectangle : function (pCenterX,pCenterY,pWidth,pHeight,pFillColor, pBorderColor, pBorderWidth)
-	{
-		this.ctx.beginPath();
-	
-		this.ctx.rect(Math.round((pCenterX - pWidth*0.5)*this.unitToPxScale), Math.round((pCenterY-pHeight*0.5)*this.unitToPxScale),Math.round(pWidth*this.unitToPxScale), Math.round(pHeight*this.unitToPxScale));
-		if(pFillColor !== undefined)
-		{
-			this.ctx.fillStyle = pFillColor;
-			this.ctx.fill();
-		}
-		if(pBorderColor !== undefined)
-		{
-			this.ctx.lineWidth = pBorderWidth;
-			this.ctx.strokeStyle = pBorderColor;
-			this.ctx.stroke();
-		}
-	},
-	
 	drawGrid : function(pStep, pColor, pWidth)
 	{
 		// this.ctx.lineWidth = 1.;
@@ -106,14 +80,65 @@ var sCanvasHelper = {
 		
 	},
 	
+	addDebug2dPrimitive : function(pData)
+	{
+		if(this.debug2dPrimitives[pData.name] != undefined && this.debug2dPrimitives[pData.name] == pData)
+		{
+			return false;
+		}
+		
+		this.debug2dPrimitives[pData.name] = pData;
+		return true;
+	},
+	
+	// invert x/y to map from robot axis to screen axis
+	//
+	// screen axis  invert axis            
+	// | y         | x
+	// |           |
+	// |           |
+	// |________x  |________y
+	//     
+	drawDebug2dPrimitives : function()
+	{
+		for(var k in this.debug2dPrimitives)
+		{
+			var lData = this.debug2dPrimitives[k]
+			if (lData.data.length == 0)
+				continue;
+			if(lData.type == 'line')
+			{
+				this.drawLine(lData.data[0],lData.data[1],lData.color,2,true)
+			}
+			else if(lData.type == 'circle')
+			{
+				this.drawCircle(lData.data[0],lData.data[1],lData.data[2],undefined,lData.color,2,true);
+			}
+		}
+	},
+	
 	/** draw a line of equation y = ax+b
 	*/
-	drawLine : function(pA, pB, pColor, pWidth)
+	drawLine : function(pA, pB, pColor, pWidth, pUseUnitAndFrameTransform)
 	{
 		let lX0 = this.boundMeter[0];
 		let lY0 = pA * lX0 + pB;
 		let lX1 = this.boundMeter[2];
 		let lY1 = pA * lX1 + pB;
+		if(pUseUnitAndFrameTransform === true)
+		{
+			lX0 *= this.unitAndFrameTransformScale;
+			lY0 *= this.unitAndFrameTransformScale;
+			lX1 *= this.unitAndFrameTransformScale;
+			lY1 *= this.unitAndFrameTransformScale;
+			if(this.unitAndFrameTransformInvertXY)
+			{
+				let lTmp = 0.
+				lTmp = lX0; lX0 = lY0; lY0 = lTmp;
+				lTmp = lX1; lX1 = lY1; lY1 = lTmp;
+			}
+		}
+		
 		this.ctx.beginPath();
 		this.ctx.moveTo(lX0*this.unitToPxScale,lY0*this.unitToPxScale);
 		this.ctx.lineTo(lX1*this.unitToPxScale,lY1*this.unitToPxScale);
@@ -123,8 +148,69 @@ var sCanvasHelper = {
 		this.ctx.stroke();
 		// avoid that next call to stroke redraw our path
 		this.ctx.beginPath();
-	}
+	},
 
+	drawCircle : function (pX,pY,pRadius, pFillColor, pBorderColor, pBorderWidth, pUseUnitAndFrameTransform)
+	{
+		if(pUseUnitAndFrameTransform)
+		{
+			pX *= this.unitAndFrameTransformScale;
+			pY *= this.unitAndFrameTransformScale;
+			pRadius *= this.unitAndFrameTransformScale;
+			if(this.unitAndFrameTransformInvertXY)
+			{
+				let lTmp = pX;
+				pX = pY;
+				pY = lTmp;
+			}
+		}
+		
+		this.ctx.beginPath();
+		this.ctx.arc(Math.round(pX*this.unitToPxScale), Math.round(pY*this.unitToPxScale), Math.round(pRadius*this.unitToPxScale), 0, 2 * Math.PI, false);
+		if( pFillColor !== undefined)
+		{
+			this.ctx.fillStyle = pFillColor;
+			this.ctx.fill();
+		}
+		
+		if(pBorderColor !== undefined)
+		{
+			this.ctx.lineWidth = pBorderWidth;
+			this.ctx.strokeStyle = pBorderColor;
+			this.ctx.stroke();
+		}
+	},
+
+	drawRectangle : function (pCenterX,pCenterY,pWidth,pHeight,pFillColor, pBorderColor, pBorderWidth, pUseUnitAndFrameTransform)
+	{
+		if(pUseUnitAndFrameTransform)
+		{
+			pCenterX *= this.unitAndFrameTransformScale;
+			pCenterY *= this.unitAndFrameTransformScale;
+			pWidth *= this.unitAndFrameTransformScale;
+			pHeight *= this.unitAndFrameTransformScale;
+			if(this.unitAndFrameTransformInvertXY)
+			{
+				let lTmp = 0.;
+				lTmp = pCenterX; pCenterX = pCenterY; pCenterY = lTmp;
+			}
+		}
+		
+		
+		this.ctx.beginPath();
 	
+		this.ctx.rect(Math.round((pCenterX - pWidth*0.5)*this.unitToPxScale), Math.round((pCenterY-pHeight*0.5)*this.unitToPxScale),Math.round(pWidth*this.unitToPxScale), Math.round(pHeight*this.unitToPxScale));
+		if(pFillColor !== undefined)
+		{
+			this.ctx.fillStyle = pFillColor;
+			this.ctx.fill();
+		}
+		if(pBorderColor !== undefined)
+		{
+			this.ctx.lineWidth = pBorderWidth;
+			this.ctx.strokeStyle = pBorderColor;
+			this.ctx.stroke();
+		}
+	}
 };
 

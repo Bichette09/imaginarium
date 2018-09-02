@@ -7,6 +7,6 @@
 # rule for leddar v8
 SUBSYSTEM=="tty", ATTRS{idVendor}=="28f1", ATTRS{serial}=="DI4800198", SYMLINK+="leddarvu8"
 
-# rule for leddar m16 (rs485/usb adaptor)
-SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{serial}=="FT1RX5HX", SYMLINK+="leddarm16"
+# rule for leddar m16 (uart/usb adaptor)
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{serial}=="AJ03C4Y5", SYMLINK+="leddarm16"
 

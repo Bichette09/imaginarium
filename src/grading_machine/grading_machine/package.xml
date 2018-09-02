@@ -15,6 +15,7 @@
   <depend>cv_bridge</depend>
   <depend>std_msgs</depend>
   <depend>settings_store</depend>
+  <depend>image_common</depend>
   <depend>image_transport</depend>
   
   <build_depend>message_generation</build_depend>

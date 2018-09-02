@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   settings_store
+  image_common
   cv_bridge
   image_transport
 )
@@ -28,7 +29,6 @@ else()
 	set(USE_RASPICAM_LIB OFF)
 	set(RASPICAM_LIBS )
 endif()
-
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -54,7 +54,7 @@ generate_messages(
 catkin_package(
    CATKIN_DEPENDS 
    LIBRARIES grading_machine
-   CATKIN_DEPENDS message_runtime std_msgs settings_store cv_bridge image_transport
+   CATKIN_DEPENDS message_runtime std_msgs settings_store image_common cv_bridge image_transport
 )
 
 

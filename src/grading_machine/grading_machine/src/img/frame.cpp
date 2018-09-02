@@ -78,3 +78,23 @@ void Frame::ComputeLatencyAndFps(const tTimestamp & pPreviousTs, const tTimestam
 	if(lElapsedTime > 0.)
 		pFps = 1./ lElapsedTime;
 }
+
+cv::Mat & Frame::editY()
+{
+	return mLayers[Frame::Y];
+}
+
+cv::Mat & Frame::editU()
+{
+	return mLayers[Frame::U];
+}
+
+cv::Mat & Frame::editV()
+{
+	return mLayers[Frame::V];
+}
+
+void Frame::setGrabTimestamp()
+{
+	setTimestamp(Frame::F_GrabDone);
+}

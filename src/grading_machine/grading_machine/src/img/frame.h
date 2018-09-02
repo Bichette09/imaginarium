@@ -7,6 +7,8 @@
 #include <map>
 #include <chrono>
 
+#include "image_common/frame_interface.h"
+
 struct AreaOfInterest
 {
 	AreaOfInterest();
@@ -40,7 +42,7 @@ typedef std::vector<AreaOfInterest> tAreas;
 typedef std::list<AreaOfInterest> tAreasList;
 
 
-class Frame
+class Frame : public FrameInterface
 {
 public:
 	
@@ -83,6 +85,10 @@ public:
 
 	bool mExtractSuccessfull;
 	
+	virtual cv::Mat & editY();
+	virtual cv::Mat & editU();
+	virtual cv::Mat & editV();
+	virtual void setGrabTimestamp();
 private:
 	
 	tLayers		mLayers;

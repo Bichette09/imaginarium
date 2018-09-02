@@ -1,27 +1,34 @@
 {
     "actuator/kTh": {
         "description": "kTh", 
-        "inuse": true, 
         "value": "0.4"
+    }, 
+    "command/D": {
+        "description": "Commanded distance from the side", 
+        "value": "0.75"
     }, 
     "command/K": {
         "description": "Gain", 
-        "inuse": false, 
         "value": "1.0"
     }, 
     "command/Kprec": {
         "description": "Gain of pre command", 
-        "inuse": true, 
         "value": "1.0"
     }, 
     "command/Kprop": {
         "description": "Gain of prop command", 
-        "inuse": true, 
         "value": "1.0"
+    }, 
+    "command/L": {
+        "description": "Prediction distance", 
+        "value": "3.0"
     }, 
     "hardware_monitor/update_period": {
         "description": "hardware state read interval", 
-        "inuse": true, 
         "value": "1"
+    }, 
+    "ligh_and_line_detector/debug_img_channels": {
+        "description": "which channels should be published for debug ? AYUVM", 
+        "value": "yuvm"
     }
 }

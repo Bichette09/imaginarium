@@ -1,10 +1,12 @@
 #pragma once
 
-#include "frame_processor.h"
+#include "frame.h"
+#include "image_common/frame_processor.h"
+#include "image_common/frame_provider_worker.h"
 
 class FilterThreadCompanion;
-class CameraWorker;
-class FilterWorker : public FrameProcessor::WorkerInterface
+
+class FilterWorker : public WorkerInterface<Frame>
 {
 public:
 
@@ -30,7 +32,7 @@ public:
 		bool	mErode;
 	};
 	
-	FilterWorker(CameraWorker & pCameraWorker, const Parameters & pParameters);
+	FilterWorker(FrameProvider & pFrameProvider, const Parameters & pParameters);
 	virtual ~FilterWorker();
 	
 	const Parameters &			mParameters;
@@ -38,8 +40,8 @@ public:
 protected:
 	virtual bool computeNextResult(Frame & pRes);
 private:
-	CameraWorker & 				mCameraWorker;
-	FrameProcessor *			mCameraThread;
+	FrameProviderWorker<Frame>	mFrameProviderWorker;
+	FrameProcessor<Frame> *		mCameraThread;
 	FilterThreadCompanion *		mUCompanion;
 	FilterThreadCompanion *		mVCompanion;
 	

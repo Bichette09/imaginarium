@@ -11,6 +11,7 @@ import json
 import os
 
 sSettings = {}
+sStates = {}
 sRosPublisher = None
 
 def loadSettings(pFileName):
@@ -44,8 +45,13 @@ def loadSettings(pFileName):
 def saveSettings(pFileName,pSettings):
 	if pFileName is None:
 		return
+	# remove inuse field
+	lSettings = pSettings
+	for key in lSettings:
+		if 'inuse' in lSettings[key]:
+			del lSettings[key]['inuse']
 	with codecs.open(pFileName,'w+',encoding='utf8') as f:
-		json.dump(pSettings,f, sort_keys=True,indent=4)
+		json.dump(lSettings,f, sort_keys=True,indent=4)
 
 
 def emitChange(pField):
@@ -127,6 +133,34 @@ def handle_delete(req):
 		emitChange(None)
 	return settings_store.srv.deleteResponse(lError)
 
+def on_state_change(pParam):
+	sStates[pParam.name] = pParam.value
+	
+def handle_get_states(req):
+	lNames = []
+	lVals = []
+	
+	lRequestedNames = req.requestednames
+	if len(lRequestedNames) == 0:
+		lRequestedNames = sorted(sStates.keys())
+
+	for lName in lRequestedNames:
+		lNames.append(lName)
+		if lName in sStates:
+			lVals.append(sStates[lName])
+		else:
+			lVals.append('')
+			
+	return settings_store.srv.getstatesResponse(lNames,lVals)
+
+def handle_set_states(req):
+	for (name,value) in zip(req.names,req.values):
+		if name in sStates and sStates[name] == value:
+			continue
+		sStates[name] = value
+		sRosStatePublisher.publish(settings_store.msg.Change(name,value,'',True))
+	return settings_store.srv.setstatesResponse(False)
+	
 if __name__ == "__main__":
 	import os
 	os.getcwd()
@@ -143,7 +177,12 @@ if __name__ == "__main__":
 	sSettings = loadSettings(lSettingsFile)
 	
 	sRosPublisher = rospy.Publisher('settings_store/Change', settings_store.msg.Change, queue_size=1000)
+	sRosStatePublisher = rospy.Publisher('settings_store/StateChange', settings_store.msg.Change, queue_size=1000)
 	
+	sStateChangeSubscriber = rospy.Subscriber('settings_store/StateChange',settings_store.msg.Change,on_state_change)
+
+	lServiceGet = rospy.Service('settings_store/getstates', settings_store.srv.getstates, handle_get_states)
+	lServiceGet = rospy.Service('settings_store/setstates', settings_store.srv.setstates, handle_set_states)
 	lServiceGet = rospy.Service('settings_store/set', settings_store.srv.set, handle_set)
 	lServiceGet = rospy.Service('settings_store/multiget', settings_store.srv.multiget, handle_multiget)
 	lServiceGet = rospy.Service('settings_store/delete', settings_store.srv.delete, handle_delete)

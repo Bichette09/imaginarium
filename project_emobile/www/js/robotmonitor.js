@@ -9,7 +9,7 @@ function onload()
 	
 	// create graphs
 	sGraphs.init('graphs');
-	
+	/*
 	lDistanceGraphConfig = {
 			"title":"vu8",
 			"y1":{
@@ -34,6 +34,7 @@ function onload()
 	}
 	
 	sGraphs.addGraph(lDistanceGraphConfig);
+	*/
 	/*
 	,
 					{
@@ -60,18 +61,14 @@ function onload()
 			},
 			"y2":{
 				"unit":"°",
-				"range":[-1.01,1.01],
+				"range":[-35.01,35.01],
 				"rostraces":[
 					{
 						"name":"wheel angle",
 						"topicname":"/emobile/CommandSteering",
 						"messagetype":"/emobile/CommandSteering",
-						"messagefield":"steering"
-					},{
-						"name":"final angle",
-						"topicname":"/emobile/CommandSteering",
-						"messagetype":"/emobile/CommandSteering",
-						"messagefield":"finalAngle"
+						"messagefield":"steering",
+						"scale":35
 					}
 				]
 			}

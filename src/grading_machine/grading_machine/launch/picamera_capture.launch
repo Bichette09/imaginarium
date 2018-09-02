@@ -1,8 +1,0 @@
-<launch>
-	<arg name="width" default="0"/>
-	<arg name="height" default="0"/>
-	<node name="picamera_capture" pkg="grading_machine" type="picamera_capture.py">
-		<param name="width" value="$(arg width)"/>
-		<param name="height" value="$(arg height)"/>
-	</node>
-</launch>
