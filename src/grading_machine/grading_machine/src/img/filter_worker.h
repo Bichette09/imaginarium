@@ -5,7 +5,7 @@
 #include "image_common/frame_provider_worker.h"
 
 class FilterThreadCompanion;
-class CameraFrameProvider;
+
 class FilterWorker : public WorkerInterface<Frame>
 {
 public:

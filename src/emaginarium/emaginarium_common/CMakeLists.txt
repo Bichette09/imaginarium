@@ -9,7 +9,22 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   settings_store
+  image_common
+  cv_bridge
+  image_transport
 )
+
+find_package( OpenCV REQUIRED )
+
+if(EXISTS "/usr/local/lib/libraspicam.so")
+	set(USE_RASPICAM_LIB ON)
+	set(RASPICAM_LIBS "-lraspicam" "-lmmal" "-lmmal_core")
+	add_definitions("-DUSE_RASPICAM_LIB")
+	link_directories("/opt/vc/lib/")
+else()
+	set(USE_RASPICAM_LIB OFF)
+	set(RASPICAM_LIBS )
+endif()
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -38,6 +53,9 @@ catkin_package(
    message_runtime 
    std_msgs
    settings_store
+   image_common
+   cv_bridge 
+   image_transport
 )
 
 ###########
@@ -65,6 +83,10 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/settingsstore_node.cpp)
+file(GLOB_RECURSE LIGHT_AND_LINE_DETECTOR_FILES nodes/light_and_line_detector *.h *.inl *.cpp)
+add_executable(light_and_line_detector ${LIGHT_AND_LINE_DETECTOR_FILES})
+target_link_libraries(light_and_line_detector ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${RASPICAM_LIBS} )
+add_dependencies(light_and_line_detector emobile_generate_messages_cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

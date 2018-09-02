@@ -1,7 +1,7 @@
 {
     "grading_machine/debug_img_channels": {
         "description": "which channels should be published for debug ? AYUVM", 
-        "value": "ay"
+        "value": "a"
     }, 
     "grading_machine/exclusion_percent_bottom": {
         "description": "percent (of height) of pixels ignore in bottom", 

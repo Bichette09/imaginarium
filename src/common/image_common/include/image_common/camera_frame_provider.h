@@ -19,6 +19,9 @@ public:
 	struct Parameters
 	{
 	public:
+		/** @param pRequestedWidth should be a multiple of 320
+		*	@param pRequestedWidth should be a multiple of 240
+		*/
 		Parameters(int pRequestedWidth, int pRequestedHeight, int pFps);
 		~Parameters();
 		

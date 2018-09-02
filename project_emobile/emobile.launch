@@ -25,4 +25,9 @@
 		<arg name="pinT" value="18"/>
 		<arg name="pinS" value="23"/>
 	</include>
+	<!-- web_video_server, a node to stream image topic to web client -->	
+	<node name="web_video_server" pkg="web_video_server" type="web_video_server">
+		<param name="port" value="8080"></param>
+		<param name="ros_threads" value="2"></param>
+	</node>	
 </launch>
