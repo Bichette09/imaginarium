@@ -94,7 +94,7 @@ if __name__ == "__main__":
 	rospy.init_node('actuator')
 
 	lActuator = Actuator(rospy.get_param('/actuator/pinT'),rospy.get_param('/actuator/pinS'))
-	sRosSuscriberSpeed = rospy.Subscriber('GamePadButtons', emaginarium_common.msg.GamePadButtons,lActuator.updatexbox)
+	sRosSuscriberSpeed = rospy.Subscriber('GamePadButtons', std_msgs.msg.String,lActuator.updatexbox)
 	sRosSuscriberThrottle = rospy.Subscriber('emobile/CommandThrottle', emobile.msg.CommandThrottle,lActuator.updateThrottleTarget)
 	sRosSuscriberSteering = rospy.Subscriber('emobile/CommandSteering', emobile.msg.CommandSteering,lActuator.updateSteeringTarget)
 	rospy.spin()

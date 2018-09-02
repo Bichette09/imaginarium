@@ -34,7 +34,6 @@ catkin_python_setup()
 add_message_files(
    FILES
    Gyro.msg
-   GamePadButtons.msg
    Debug2dPrimitive.msg
 )
 #add_service_files(

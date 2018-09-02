@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 	rospy
 	message_generation
 	std_msgs
+	settings_store
 )
 
 
@@ -49,7 +50,7 @@ catkin_python_setup()
 catkin_package(
 	INCLUDE_DIRS include
 	LIBRARIES image_common
-	CATKIN_DEPENDS message_runtime std_msgs 
+	CATKIN_DEPENDS message_runtime std_msgs settings_store
 )
 
 ###########

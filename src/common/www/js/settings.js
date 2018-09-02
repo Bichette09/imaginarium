@@ -231,6 +231,16 @@ function addOrUpdateState(pName,pValue)
 		lDisplayIcon = 'highlight_off';
 		lDisplayColor = 'orange';
 	}
+	else if(lValueLowered == 'play' || lValueLowered == 'run')
+	{
+		lDisplayIcon = 'play_circle_outline';
+		lDisplayColor = 'green';
+	}
+	else if(lValueLowered == 'pause' || lValueLowered == 'stop')
+	{
+		lDisplayIcon = 'pause_circle_outline';
+		lDisplayColor = 'blue';
+	}
 	
 	if(lDisplayIcon !== undefined)
 	{

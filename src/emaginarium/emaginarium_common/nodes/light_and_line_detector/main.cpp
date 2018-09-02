@@ -16,6 +16,7 @@
 
 #include "image_common/camera_frame_provider.h"
 #include "image_common/video_frame_provider.h"
+#include "image_common/pause_proxy_frame_provider.h"
 #include "image_common/frame_debugger.h"
 
 #include "thresholding_worker.h"
@@ -48,7 +49,7 @@ public:
 
 int main(int argc, char ** argv)
 {
-	ros::init(argc,argv,"grading_machine_cpp");
+	ros::init(argc,argv,"light_and_line_detector");
 	{
 		cv::setNumThreads(1);
 		
@@ -62,10 +63,11 @@ int main(int argc, char ** argv)
 		LightAndLineDetectorSettings lSettings(n);
 		FrameDebugger lFrameDebugger(n,lSettings.mDebugImgChannels);
 		
+		settings_store::StateDeclarator lStateDeclarator(n);
 		
-		
-		//CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*4,240*4,12));
-		VideoFrameProvider lFrameProvider(VideoFrameProvider::Parameters(640,480,24,"/home/pi/Untitled Project.avi"));
+		//CameraFrameProvider lFrameProviderA(CameraFrameProvider::Parameters(320*4,240*4,12));
+		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,24,"/home/pi/Untitled Project.avi"));
+		PauseProxyFrameProvider lFrameProvider(lFrameProviderA,n);
 		
 		ThresholdingWorker lThresholdingWorker(lFrameProvider,lSettings.mThresholdingParameters);
 		FrameProcessor<LightAndLineFrame> lThresholdingThread(lThresholdingWorker);

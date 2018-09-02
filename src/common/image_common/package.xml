@@ -13,6 +13,7 @@
   <depend>roscpp</depend>
   <depend>rospy</depend>
   <depend>std_msgs</depend>
+  <depend>settings_store</depend>
   
   
   <build_depend>message_generation</build_depend>
