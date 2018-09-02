@@ -7,12 +7,12 @@
     "commandNosewheel/Kprec": {
         "description": "Gain of pre command", 
         "inuse": true, 
-        "value": "1.0"
+        "value": "-1.0"
     }, 
     "commandNosewheel/Kprop": {
         "description": "Gain of prop command", 
         "inuse": true, 
-        "value": ".03"
+        "value": "0"
     }, 
     "commandThrust/Kp": {
         "description": "", 
