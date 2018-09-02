@@ -15,6 +15,7 @@
 #include "opencv2/opencv.hpp"
 
 #include "image_common/camera_frame_provider.h"
+#include "image_common/video_frame_provider.h"
 #include "image_common/frame_debugger.h"
 
 #include "thresholding_worker.h"
@@ -63,7 +64,8 @@ int main(int argc, char ** argv)
 		
 		
 		
-		CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*4,240*4,12));
+		//CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*4,240*4,12));
+		VideoFrameProvider lFrameProvider(VideoFrameProvider::Parameters(640,480,24,"/home/pi/Untitled Project.avi"));
 		
 		ThresholdingWorker lThresholdingWorker(lFrameProvider,lSettings.mThresholdingParameters);
 		FrameProcessor<LightAndLineFrame> lThresholdingThread(lThresholdingWorker);

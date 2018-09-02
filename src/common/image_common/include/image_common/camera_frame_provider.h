@@ -25,8 +25,12 @@ public:
 		Parameters(int pRequestedWidth, int pRequestedHeight, int pFps);
 		~Parameters();
 		
-		const int	mWidth;
-		const int	mHeight;
+		/** capture resolution of the camera (full for Y, half for UV)
+		*/
+		const int	mCaptureWidth;
+		const int	mCaptureHeight;
+		/** resolution that will be available for output, Y will be downscale to match UV resolution
+		*/
 		const int	mHalfWidth;
 		const int	mHalfHeight;
 		const int	mPixelCount;
@@ -37,9 +41,6 @@ public:
 		
 	};
 	
-	/** pWidth should be a multiple of 320
-	*	pHeight should be a multiple of 240
-	*/
 	CameraFrameProvider(Parameters pParams);
 	virtual ~CameraFrameProvider();
 	

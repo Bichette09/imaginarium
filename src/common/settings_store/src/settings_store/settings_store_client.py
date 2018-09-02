@@ -112,4 +112,4 @@ class StateDeclarator:
 		self.__mPreviousValues[pName] = pValue
 		lServiceReq = settings_store.srv.setstatesRequest([pName], [str(pValue)])
 		lResponse = self.__mServiceSetStates(lServiceReq)
-		rospy.logwarn('send %s %s '% (pName,str(pValue)))
+		

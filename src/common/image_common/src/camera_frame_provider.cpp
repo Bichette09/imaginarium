@@ -9,11 +9,11 @@
 #include "ros/ros.h"
 
 CameraFrameProvider::Parameters::Parameters(int pRequestedWidth, int pRequestedHeight, int pFps)
-	: mWidth( std::max(320,std::min(320 * (int)std::floor(pRequestedWidth/320.),3200)))
-	, mHeight( std::max(240,std::min(240 * (int)std::floor(pRequestedWidth/240.),2400)))
-	, mHalfWidth(mWidth / 2)
-	, mHalfHeight(mHeight / 2)
-	, mPixelCount(mWidth*mHeight)
+	: mCaptureWidth( std::max(320,std::min(320 * (int)std::floor(pRequestedWidth*2/320.),3200)))
+	, mCaptureHeight( std::max(240,std::min(240 * (int)std::floor(pRequestedWidth*2/240.),2400)))
+	, mHalfWidth(mCaptureWidth / 2)
+	, mHalfHeight(mCaptureHeight / 2)
+	, mPixelCount(mCaptureWidth*mCaptureHeight)
 	, mQuarterPixelCount(mHalfWidth*mHalfHeight)
 	, mFps(std::max(1,std::min(pFps,50)))
 	
@@ -36,7 +36,7 @@ CameraFrameProvider::CameraFrameProvider(Parameters pParams)
 	mCameraHandle->setFormat( raspicam::RASPICAM_FORMAT_YUV420);
 	// mCameraHandle->setAWB(raspicam::RASPICAM_AWB_FLASH);
 	// mCameraHandle->setExposure(raspicam::RASPICAM_EXPOSURE_SPOTLIGHT);
-	mCameraHandle->setCaptureSize(mParameters.mWidth,mParameters.mHeight);
+	mCameraHandle->setCaptureSize(mParameters.mCaptureWidth,mParameters.mCaptureHeight);
 	mCameraHandle->setFrameRate( mParameters.mFps );
 	
 	unsigned char * lBuffer = NULL;
@@ -53,14 +53,14 @@ CameraFrameProvider::CameraFrameProvider(Parameters pParams)
 		
 		mBuffer = new unsigned char[ lBufferSize];
 		ROS_INFO_STREAM("OpenCV version "<<CV_MAJOR_VERSION<<"."<<CV_MINOR_VERSION);
-		ROS_INFO_STREAM("CameraThread capture Y["<<mParameters.mWidth<<"x"<<mParameters.mHeight<<"] UV["<<mParameters.mHalfWidth<<"x"<<mParameters.mHalfHeight<<"] @"<<mParameters.mFps<<"fps");
+		ROS_INFO_STREAM("CameraThread capture Y["<<mParameters.mCaptureWidth<<"x"<<mParameters.mCaptureHeight<<"] UV["<<mParameters.mHalfWidth<<"x"<<mParameters.mHalfHeight<<"] @"<<mParameters.mFps<<"fps");
 	}
 #else
 	ROS_ERROR_STREAM("CameraThread not build with raspicam support");
 	mIsError = true;
 #endif
 	
-	mFullY = cv::Mat(mParameters.mHeight,mParameters.mWidth,CV_8UC1);
+	mFullY = cv::Mat(mParameters.mCaptureHeight,mParameters.mCaptureWidth,CV_8UC1);
 }
 
 CameraFrameProvider::~CameraFrameProvider()

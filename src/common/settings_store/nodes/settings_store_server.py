@@ -134,7 +134,6 @@ def handle_delete(req):
 	return settings_store.srv.deleteResponse(lError)
 
 def on_state_change(pParam):
-	rospy.logwarn('receive %s %s '% (pParam.name,str(pParam.value)))
 	sStates[pParam.name] = pParam.value
 	
 def handle_get_states(req):
