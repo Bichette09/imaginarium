@@ -13,14 +13,20 @@ class LightAndLineFrame : public FrameInterface
 {
 public:
 	
+	
+	
 	LightAndLineFrame();
 	virtual ~LightAndLineFrame();
 	
 	enum Layer
 	{
-		Y,
+		Y = 0,
 		U,
-		V
+		V,
+		Debug,
+		Debug2,
+		
+		LayerCount
 	};
 	typedef std::map<Layer,cv::Mat> tLayers;
 	enum TimeStampFence

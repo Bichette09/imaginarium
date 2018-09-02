@@ -1,7 +1,14 @@
 #include "light_and_line_frame.h"
 
+
+
+
 LightAndLineFrame::LightAndLineFrame()
 {
+	for(int i = 0 ; i < LayerCount ; ++i)
+	{
+		mLayers[(Layer)i] = cv::Mat();
+	}
 }
 
 LightAndLineFrame::~LightAndLineFrame()

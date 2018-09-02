@@ -16,6 +16,8 @@ FrameDebugger::~FrameDebugger()
 
 void FrameDebugger::setImage(char pName, const cv::Mat & pImage)
 {
+	if(pImage.empty())
+		return;
 	if(mFilterString.find(pName) == std::string::npos)
 	{
 		return;

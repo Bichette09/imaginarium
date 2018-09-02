@@ -28,7 +28,15 @@ public:
 		: settings_store::SettingsBase(pNodeHandle)
 		, mDebugImgChannels("yuvm")
 	{
+		mRedLightParameterString = mThresholdingParameters.mRedLightParameter.getStringFromValues();
+		mYellowLightParameterString = mThresholdingParameters.mYellowLightParameter.getStringFromValues();
+		mBlueLightParameterString = mThresholdingParameters.mBlueLightParameter.getStringFromValues();
+		
+		
 		registerAttribute<std::string>("ligh_and_line_detector/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? AYUVM");
+		registerAttribute<std::string>("ligh_and_line_detector/red_light",mRedLightParameterString,"Umin Umax Vmin Vmax MinPxCount RatioMin RatioMax");
+		registerAttribute<std::string>("ligh_and_line_detector/yellow_light",mYellowLightParameterString,"Umin Umax Vmin Vmax MinPxCount RatioMin RatioMax");
+		registerAttribute<std::string>("ligh_and_line_detector/blue_light",mBlueLightParameterString,"Umin Umax Vmin Vmax MinPxCount RatioMin RatioMax");
 		
 		declareAndRetrieveSettings();
 	}
@@ -39,10 +47,24 @@ public:
 	
 	virtual void onParameterChanged(const std::string & pSettingName)
 	{
-		
+		if(pSettingName.find("/red_light") != std::string::npos)
+		{
+			mThresholdingParameters.mRedLightParameter.setValuesFromString(mRedLightParameterString);
+		}
+		else if(pSettingName.find("/yellow_light") != std::string::npos)
+		{
+			mThresholdingParameters.mYellowLightParameter.setValuesFromString(mYellowLightParameterString);
+		}
+		else if(pSettingName.find("/blue_light") != std::string::npos)
+		{
+			mThresholdingParameters.mBlueLightParameter.setValuesFromString(mBlueLightParameterString);
+		}
 	}
 	
 	ThresholdingWorker::Parameters	mThresholdingParameters;
+	std::string						mRedLightParameterString;
+	std::string						mYellowLightParameterString;
+	std::string						mBlueLightParameterString;
 	std::string						mDebugImgChannels;
 };
 
@@ -66,7 +88,7 @@ int main(int argc, char ** argv)
 		settings_store::StateDeclarator lStateDeclarator(n);
 		
 		//CameraFrameProvider lFrameProviderA(CameraFrameProvider::Parameters(320*4,240*4,12));
-		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,24,"/home/pi/Untitled Project.avi"));
+		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(320,240,24,"/home/pi/Untitled Project.avi"));
 		PauseProxyFrameProvider lFrameProvider(lFrameProviderA,n);
 		
 		ThresholdingWorker lThresholdingWorker(lFrameProvider,lSettings.mThresholdingParameters);
@@ -86,7 +108,8 @@ int main(int argc, char ** argv)
 				lFrameDebugger.setImage('y',lFrame[LightAndLineFrame::Y]);
 				lFrameDebugger.setImage('u',lFrame[LightAndLineFrame::U]);
 				lFrameDebugger.setImage('v',lFrame[LightAndLineFrame::V]);
-				
+				lFrameDebugger.setImage('d',lFrame[LightAndLineFrame::Debug]);
+				lFrameDebugger.setImage('D',lFrame[LightAndLineFrame::Debug2]);
 			}
 			
 			ros::spinOnce();
