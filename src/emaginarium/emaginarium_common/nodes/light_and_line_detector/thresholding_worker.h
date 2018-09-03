@@ -20,15 +20,27 @@ public:
 		int	mVMin;
 		int mVMax;
 		int mYMin;
-		float mAspectRatioMin;
-		float mAspectRatioMax;
-		int mMinimumPixelCount;
+		/** downscale factor used to remove glitched detection after thresholding
+		*/
+		int mDownscaleFactor;
+		/** how many percent of pixels should be valid per downscale area, eg for a downscale of 4, there is 16px per area
+		*/
+		int mPercentOfValidPixelPerArea;
 	};
 
 
 	struct Parameters
 	{
 		Parameters();
+		
+		void setLightSearchArea(const std::string & pString);
+		std::string getLightSearchArea() const;
+		
+		int						mLightSearchAreaXMinPercent;
+		int						mLightSearchAreaXMaxPercent;
+		int						mLightSearchAreaYMinPercent;
+		int						mLightSearchAreaYMaxPercent;
+		bool					mOutputLightDetectionDebugInfo;
 		
 		ColorAreaDefinition		mRedLightParameter;
 		ColorAreaDefinition		mYellowLightParameter;
@@ -44,7 +56,8 @@ protected:
 	virtual bool computeNextResult(LightAndLineFrame & pRes);
 private:
 
-	void extractColorAreas(LightAndLineFrame & pFrame,const ColorAreaDefinition & pColorDef);
+	typedef std::vector<cv::Rect> tRects;
+	void extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi, const ColorAreaDefinition & pColorDef, tRects & pAreas);
 
 	FrameProviderWorker<LightAndLineFrame>	mFrameProviderWorker;
 	FrameProcessor<LightAndLineFrame> *		mCameraThread;

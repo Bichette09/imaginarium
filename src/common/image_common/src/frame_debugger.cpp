@@ -26,6 +26,6 @@ void FrameDebugger::setImage(char pName, const cv::Mat & pImage)
 	{
 		mPubs[pName] = mImageTransport.advertise(std::string(1,pName) + "_image", 1);
 	}
-	sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), "mono8", pImage).toImageMsg();
+	sensor_msgs::ImagePtr lMsg = cv_bridge::CvImage(std_msgs::Header(), pImage.channels() == 3 ? "bgr8" : "mono8", pImage).toImageMsg();
 	mPubs[pName].publish(lMsg);
 }

@@ -10,9 +10,8 @@ ThresholdingWorker::ColorAreaDefinition::ColorAreaDefinition()
 	, mVMin(0)
 	, mVMax(255)
 	, mYMin(170)
-	, mMinimumPixelCount(20)
-	, mAspectRatioMin(0.)
-	, mAspectRatioMax(1000.)
+	, mDownscaleFactor(4)
+	, mPercentOfValidPixelPerArea(33)
 {
 	
 }
@@ -27,9 +26,8 @@ void ThresholdingWorker::ColorAreaDefinition::setValuesFromString(const std::str
 		>>mVMin
 		>>mVMax
 		>>mYMin
-		>>mMinimumPixelCount
-		>>mAspectRatioMin
-		>>mAspectRatioMax;
+		>>mDownscaleFactor
+		>>mPercentOfValidPixelPerArea;
 	if(!lStream)
 	{
 		ROS_WARN_STREAM("Invalid parameters "<<pString);
@@ -46,15 +44,54 @@ std::string ThresholdingWorker::ColorAreaDefinition::getStringFromValues() const
 		<<mVMin<<" "
 		<<mVMax<<" "
 		<<mYMin<<" "
-		<<mMinimumPixelCount<<" "
-		<<mAspectRatioMin<<" "
-		<<mAspectRatioMax<<" ";
+		<<mDownscaleFactor<<" "
+		<<mPercentOfValidPixelPerArea<<" ";
 	return lStream.str();
 }
 
 ThresholdingWorker::Parameters::Parameters()
+	: mLightSearchAreaXMinPercent(50)
+	, mLightSearchAreaXMaxPercent(100)
+	, mLightSearchAreaYMinPercent(10)
+	, mLightSearchAreaYMaxPercent(90)
+	, mOutputLightDetectionDebugInfo(true)
 {
 	
+}
+
+void ThresholdingWorker::Parameters::setLightSearchArea(const std::string & pString)
+{
+	int lVals[4];
+	std::stringstream lStream(pString);
+	lStream
+		>>lVals[0]
+		>>lVals[1]
+		>>lVals[2]
+		>>lVals[3];
+		
+	if(!lStream)
+	{
+		ROS_WARN_STREAM("Invalid parameters "<<pString);
+	}
+	else
+	{
+		mLightSearchAreaXMinPercent = lVals[0];
+		mLightSearchAreaXMaxPercent = lVals[1];
+		mLightSearchAreaYMinPercent = lVals[2];
+		mLightSearchAreaYMaxPercent = lVals[3];
+	}
+}
+
+std::string ThresholdingWorker::Parameters::getLightSearchArea() const
+{
+	std::stringstream lStream;
+	lStream
+		<< mLightSearchAreaXMinPercent <<" "
+		<< mLightSearchAreaXMaxPercent <<" "
+		<< mLightSearchAreaYMinPercent <<" "
+		<< mLightSearchAreaYMaxPercent <<" "
+		;
+	return lStream.str();
 }
 
 ThresholdingWorker::ThresholdingWorker(FrameProvider & pFrameProvider, const Parameters & pParameters)
@@ -77,46 +114,79 @@ bool ThresholdingWorker::computeNextResult(LightAndLineFrame & pRes)
 		return false;
 	pRes.setTimestamp(LightAndLineFrame::F_ThresholdingStart);
 	
-	pRes[LightAndLineFrame::Debug] = pRes[LightAndLineFrame::Y].clone();
+	const cv::Mat lY =  pRes[LightAndLineFrame::Y];
+	cv::Rect lLightRoi( 
+		cv::Point(
+			lY.cols * mParameters.mLightSearchAreaXMinPercent / 100,
+			lY.rows * mParameters.mLightSearchAreaYMinPercent / 100),
+		cv::Point(
+			lY.cols * mParameters.mLightSearchAreaXMaxPercent / 100,
+			lY.rows * mParameters.mLightSearchAreaYMaxPercent / 100));
 	
-	extractColorAreas(pRes,mParameters.mRedLightParameter);
-	extractColorAreas(pRes,mParameters.mYellowLightParameter);
-	extractColorAreas(pRes,mParameters.mBlueLightParameter);
+	
+	tRects lRedAreas,lYellowAreas,lBlueAreas;
+	extractColorAreas(pRes,lLightRoi,mParameters.mRedLightParameter,lRedAreas);
+	extractColorAreas(pRes,lLightRoi,mParameters.mYellowLightParameter,lYellowAreas);
+	extractColorAreas(pRes,lLightRoi,mParameters.mBlueLightParameter,lBlueAreas);
+	
+	//pRes[LightAndLineFrame::Debug] = lY.clone();
+	
+	if(mParameters.mOutputLightDetectionDebugInfo)
+	{
+		std::vector<cv::Mat> lToMerge;
+		lToMerge.push_back(pRes[LightAndLineFrame::Y]);
+		lToMerge.push_back(pRes[LightAndLineFrame::U]);
+		lToMerge.push_back(pRes[LightAndLineFrame::V]);
+		cv::merge(lToMerge, pRes[LightAndLineFrame::Debug2]);
+		cvtColor(pRes[LightAndLineFrame::Debug2], pRes[LightAndLineFrame::Debug], cv::COLOR_YUV2BGR);
+		cv::rectangle(pRes[LightAndLineFrame::Debug],lLightRoi,cv::Scalar(255,255,255),2);
+		
+		for(int i = 0 ; i < lRedAreas.size() ; ++i)
+			cv::rectangle(pRes[LightAndLineFrame::Debug],lRedAreas[i],cv::Scalar(0,0,255),2);
+		for(int i = 0 ; i < lYellowAreas.size() ; ++i)
+			cv::rectangle(pRes[LightAndLineFrame::Debug],lYellowAreas[i],cv::Scalar(0,255,255),2);
+		for(int i = 0 ; i < lBlueAreas.size() ; ++i)
+			cv::rectangle(pRes[LightAndLineFrame::Debug],lBlueAreas[i],cv::Scalar(255,0,0),2);
+	}
 	
 	pRes.setTimestamp(LightAndLineFrame::F_ThresholdingDone);
 	
 	return true;
 }
 
-void ThresholdingWorker::extractColorAreas(LightAndLineFrame & pFrame,const ColorAreaDefinition & pColorDef)
+void ThresholdingWorker::extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi,const ColorAreaDefinition & pColorDef, tRects & pAreas)
 {
-	cv::threshold(pFrame.editU(), mTmpA,pColorDef.mUMin,255,cv::THRESH_BINARY);
-	cv::threshold(pFrame.editU(), mTmpB,pColorDef.mUMax,255,cv::THRESH_BINARY_INV);
+	const cv::Mat lU(pFrame.editU(),pLightSearchRoi);
+	cv::threshold(lU, mTmpA,pColorDef.mUMin,255,cv::THRESH_BINARY);
+	cv::threshold(lU, mTmpB,pColorDef.mUMax,255,cv::THRESH_BINARY_INV);
 	cv::bitwise_and(mTmpA,mTmpB,mTmpC);
 	// mTmpC contains U mask
 	
-	cv::threshold(pFrame.editV(), mTmpA,pColorDef.mVMin,255,cv::THRESH_BINARY);
-	cv::threshold(pFrame.editV(), mTmpB,pColorDef.mVMax,255,cv::THRESH_BINARY_INV);
+	const cv::Mat lV(pFrame.editV(),pLightSearchRoi);
+	cv::threshold(lV, mTmpA,pColorDef.mVMin,255,cv::THRESH_BINARY);
+	cv::threshold(lV, mTmpB,pColorDef.mVMax,255,cv::THRESH_BINARY_INV);
 	cv::bitwise_and(mTmpA,mTmpB,mTmpD);
 	// mTmpD contains V mask
 	
-	cv::threshold(pFrame.editY(), mTmpA,pColorDef.mYMin,255,cv::THRESH_BINARY);
+	const cv::Mat lY(pFrame.editV(),pLightSearchRoi);
+	cv::threshold(lY, mTmpA,pColorDef.mYMin,255,cv::THRESH_BINARY);
 	// mTmpA contains Y mask
 	
 	cv::bitwise_and(mTmpA,mTmpC,mTmpB);
 	cv::bitwise_and(mTmpB,mTmpD,mTmpA);
 	// mTmpA contains color mask
 	
-	const int lDownScaleFactor = 4;
-	cv::resize(mTmpA,mTmpB,cv::Size(),1./lDownScaleFactor,1./lDownScaleFactor,cv::INTER_AREA);
-	cv::threshold(mTmpB, mTmpA,50,255,cv::THRESH_BINARY);
-	
-	// remove small glitches
-	// first close groups, then remove small ones
-	//cv::morphologyEx(mTmpA,mTmpB,cv::MORPH_CLOSE,mMorphoKernel);
-	//cv::morphologyEx(mTmpB,mTmpA,cv::MORPH_OPEN,mMorphoKernel);
+	// we want to remove bad detections, we are looking for a big spot
+	// to avoid using big and slow kernels for CLOSE/OPEN
+	// we use a small hack by downsizing the image with INTER_AREA, which will compute average
+	// then we use a new threshold to keep only areas where they were enought white pixels
+	// then nice side effect connectedComponentsWithStats will run on a smaller image
+	const float lInvDownScaleFactor = 1. / pColorDef.mDownscaleFactor;
+	cv::resize(mTmpA,mTmpB,cv::Size(),lInvDownScaleFactor,lInvDownScaleFactor,cv::INTER_AREA);
+	const int lThreshold = (255 * pColorDef.mPercentOfValidPixelPerArea) / 100;
+	cv::threshold(mTmpB, mTmpA,lThreshold,255,cv::THRESH_BINARY);
+
 	// mTmpA contains final color mask
-	//pFrame[LightAndLineFrame::Debug] = mTmpA.clone();
 	int lGroupCount = cv::connectedComponentsWithStats (
 			mTmpA,
 			mLabels,
@@ -129,18 +199,11 @@ void ThresholdingWorker::extractColorAreas(LightAndLineFrame & pFrame,const Colo
 	{
 		for(int i = 1 ; i < lGroupCount ; ++i)
 		{
-			int lAABBMinX = mStats.at<int32_t>(i,cv::CC_STAT_LEFT) * lDownScaleFactor;
-			int lAABBMinY = mStats.at<int32_t>(i,cv::CC_STAT_TOP) * lDownScaleFactor;
-			int lAABBMaxX = lAABBMinX + mStats.at<int32_t>(i,cv::CC_STAT_WIDTH)* lDownScaleFactor;
-			int lAABBMaxY = lAABBMinY + mStats.at<int32_t>(i,cv::CC_STAT_HEIGHT)* lDownScaleFactor;
-			int lPixelCount = mStats.at<int32_t>(i,cv::CC_STAT_AREA)* lDownScaleFactor* lDownScaleFactor;
-			
-			if(lPixelCount < pColorDef.mMinimumPixelCount)
-				continue;
-			
-			cv::rectangle(pFrame[LightAndLineFrame::Debug],cv::Point(lAABBMinX-4,lAABBMinY-4),cv::Point(lAABBMaxX+4,lAABBMaxY+4),255,1);
-			cv::rectangle(pFrame[LightAndLineFrame::Debug],cv::Point(lAABBMinX-3,lAABBMinY-3),cv::Point(lAABBMaxX+3,lAABBMaxY+3),64,1);
-			cv::rectangle(pFrame[LightAndLineFrame::Debug],cv::Point(lAABBMinX-2,lAABBMinY-2),cv::Point(lAABBMaxX+2,lAABBMaxY+2),255,1);
+			pAreas.push_back( cv::Rect(
+				pLightSearchRoi.x + mStats.at<int32_t>(i,cv::CC_STAT_LEFT) * pColorDef.mDownscaleFactor,
+				pLightSearchRoi.y + mStats.at<int32_t>(i,cv::CC_STAT_TOP) * pColorDef.mDownscaleFactor,
+				mStats.at<int32_t>(i,cv::CC_STAT_WIDTH)* pColorDef.mDownscaleFactor,
+				mStats.at<int32_t>(i,cv::CC_STAT_HEIGHT)* pColorDef.mDownscaleFactor));
 		}
 	}
 	

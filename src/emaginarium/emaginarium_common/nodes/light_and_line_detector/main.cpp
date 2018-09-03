@@ -31,12 +31,14 @@ public:
 		mRedLightParameterString = mThresholdingParameters.mRedLightParameter.getStringFromValues();
 		mYellowLightParameterString = mThresholdingParameters.mYellowLightParameter.getStringFromValues();
 		mBlueLightParameterString = mThresholdingParameters.mBlueLightParameter.getStringFromValues();
-		
+		mLightSearchAreaString = mThresholdingParameters.getLightSearchArea();
 		
 		registerAttribute<std::string>("ligh_and_line_detector/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? AYUVM");
-		registerAttribute<std::string>("ligh_and_line_detector/red_light",mRedLightParameterString,"Umin Umax Vmin Vmax MinPxCount RatioMin RatioMax");
-		registerAttribute<std::string>("ligh_and_line_detector/yellow_light",mYellowLightParameterString,"Umin Umax Vmin Vmax MinPxCount RatioMin RatioMax");
-		registerAttribute<std::string>("ligh_and_line_detector/blue_light",mBlueLightParameterString,"Umin Umax Vmin Vmax MinPxCount RatioMin RatioMax");
+		registerAttribute<std::string>("ligh_and_line_detector/lightsearchareapercent",mLightSearchAreaString,"area in percent were light should be searched [xmin xmax ymin ymax]");
+		registerAttribute<std::string>("ligh_and_line_detector/red_light",mRedLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<std::string>("ligh_and_line_detector/yellow_light",mYellowLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<std::string>("ligh_and_line_detector/blue_light",mBlueLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<bool>("ligh_and_line_detector/light_debug_info",mThresholdingParameters.mOutputLightDetectionDebugInfo,"output detection info into d and D channels");
 		
 		declareAndRetrieveSettings();
 	}
@@ -59,9 +61,14 @@ public:
 		{
 			mThresholdingParameters.mBlueLightParameter.setValuesFromString(mBlueLightParameterString);
 		}
+		else if(pSettingName.find("/lightsearchareapercent") != std::string::npos)
+		{
+			mThresholdingParameters.setLightSearchArea(mLightSearchAreaString);
+		}
 	}
 	
 	ThresholdingWorker::Parameters	mThresholdingParameters;
+	std::string						mLightSearchAreaString;
 	std::string						mRedLightParameterString;
 	std::string						mYellowLightParameterString;
 	std::string						mBlueLightParameterString;

@@ -238,8 +238,14 @@ StateDeclarator::~StateDeclarator()
 
 void StateDeclarator::setStateStr(const std::string & pName, const std::string & pValue)
 {
+	mMutex.lock();
+	
 	if(mPreviousValues.find(pName) != mPreviousValues.end() && mPreviousValues[pName] == pValue)
+	{
+		mMutex.unlock();
 		return;
+	}
+		
 	mPreviousValues[pName]=pValue;
 	
 	settings_store::setstates lParam;
@@ -249,8 +255,9 @@ void StateDeclarator::setStateStr(const std::string & pName, const std::string &
 	if(!mSetStatesService.call(lParam))
 	{
 		ROS_ERROR_STREAM("fail to call setstates service "<<pName<<"="<<pValue);
+		mMutex.unlock();
 		return;
 	}
-	
+	mMutex.unlock();
 }
 		
