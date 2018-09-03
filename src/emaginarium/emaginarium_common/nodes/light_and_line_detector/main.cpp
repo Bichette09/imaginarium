@@ -88,6 +88,7 @@ int main(int argc, char ** argv)
 		
 		ros::NodeHandle n;
 		
+		ros::Publisher lMsgPublisher = n.advertise<std_msgs::String>("light_and_line_detector/event", 10);
 		
 		ros::Rate lLoopRate(1);
 		
@@ -127,6 +128,9 @@ int main(int argc, char ** argv)
 					if(lLightDetector.detectLightSequence(lSettings.mLightTimeWindowSec))
 					{
 						lLightDetector.clearDetector();
+						std_msgs::String lMsg;
+						lMsg.data = "start_light_sequence_detected";
+						lMsgPublisher.publish(lMsg);
 						ROS_WARN_STREAM("GOGOGOGO !");
 					}
 				}
