@@ -38,6 +38,19 @@ public:
 	typedef std::chrono::time_point<std::chrono::system_clock> tTimestamp;
 	typedef std::map<TimeStampFence,tTimestamp> tTimestamps;
 	
+	enum LightColor
+	{
+		LC_Blue = 0,
+		LC_Yellow,
+		LC_Red,
+		LC_Count
+	};
+	typedef std::vector<cv::Rect> tRects;
+	tRects & operator[](LightColor pColor);
+	const tRects & operator[](LightColor pColor) const;
+	cv::Rect & editLightSearchArea() ;
+	const cv::Rect & getLightSearchArea() const;
+	
 	void swap(LightAndLineFrame & pOther);
 	
 	cv::Mat & operator[](Layer pLayer);
@@ -54,4 +67,6 @@ private:
 	
 	tLayers		mLayers;
 	tTimestamps	mTimestamps;
+	tRects		mLightAreas[LC_Count];
+	cv::Rect	mLightSearchArea;
 };

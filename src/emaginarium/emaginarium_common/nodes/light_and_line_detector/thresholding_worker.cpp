@@ -54,7 +54,6 @@ ThresholdingWorker::Parameters::Parameters()
 	, mLightSearchAreaXMaxPercent(100)
 	, mLightSearchAreaYMinPercent(10)
 	, mLightSearchAreaYMaxPercent(90)
-	, mOutputLightDetectionDebugInfo(true)
 {
 	
 }
@@ -94,10 +93,11 @@ std::string ThresholdingWorker::Parameters::getLightSearchArea() const
 	return lStream.str();
 }
 
-ThresholdingWorker::ThresholdingWorker(FrameProvider & pFrameProvider, const Parameters & pParameters)
+ThresholdingWorker::ThresholdingWorker(FrameProvider & pFrameProvider, const Parameters & pParameters, const bool & pEnableLightDetection)
 	: mCameraThread(NULL)
 	, mFrameProviderWorker(pFrameProvider)
 	, mParameters(pParameters)
+	, mEnableLightDetection(pEnableLightDetection)
 {
 	mCameraThread = new FrameProcessor<LightAndLineFrame>(mFrameProviderWorker);
 	mMorphoKernel = cv::getStructuringElement(cv::MORPH_RECT,cv::Size(7,7));
@@ -115,47 +115,31 @@ bool ThresholdingWorker::computeNextResult(LightAndLineFrame & pRes)
 	pRes.setTimestamp(LightAndLineFrame::F_ThresholdingStart);
 	
 	const cv::Mat lY =  pRes[LightAndLineFrame::Y];
-	cv::Rect lLightRoi( 
+	const cv::Rect lLightRoi( 
 		cv::Point(
 			lY.cols * mParameters.mLightSearchAreaXMinPercent / 100,
 			lY.rows * mParameters.mLightSearchAreaYMinPercent / 100),
 		cv::Point(
 			lY.cols * mParameters.mLightSearchAreaXMaxPercent / 100,
 			lY.rows * mParameters.mLightSearchAreaYMaxPercent / 100));
+	pRes.editLightSearchArea() = lLightRoi;
+	extractColorAreas(pRes,lLightRoi,mParameters.mRedLightParameter,pRes[LightAndLineFrame::LC_Red]);
+	extractColorAreas(pRes,lLightRoi, mParameters.mYellowLightParameter,pRes[LightAndLineFrame::LC_Yellow]);
+	extractColorAreas(pRes,lLightRoi, mParameters.mBlueLightParameter,pRes[LightAndLineFrame::LC_Blue]);
 	
 	
-	tRects lRedAreas,lYellowAreas,lBlueAreas;
-	extractColorAreas(pRes,lLightRoi,mParameters.mRedLightParameter,lRedAreas);
-	extractColorAreas(pRes,lLightRoi,mParameters.mYellowLightParameter,lYellowAreas);
-	extractColorAreas(pRes,lLightRoi,mParameters.mBlueLightParameter,lBlueAreas);
-	
-	//pRes[LightAndLineFrame::Debug] = lY.clone();
-	
-	if(mParameters.mOutputLightDetectionDebugInfo)
-	{
-		std::vector<cv::Mat> lToMerge;
-		lToMerge.push_back(pRes[LightAndLineFrame::Y]);
-		lToMerge.push_back(pRes[LightAndLineFrame::U]);
-		lToMerge.push_back(pRes[LightAndLineFrame::V]);
-		cv::merge(lToMerge, pRes[LightAndLineFrame::Debug2]);
-		cvtColor(pRes[LightAndLineFrame::Debug2], pRes[LightAndLineFrame::Debug], cv::COLOR_YUV2BGR);
-		cv::rectangle(pRes[LightAndLineFrame::Debug],lLightRoi,cv::Scalar(255,255,255),2);
-		
-		for(int i = 0 ; i < lRedAreas.size() ; ++i)
-			cv::rectangle(pRes[LightAndLineFrame::Debug],lRedAreas[i],cv::Scalar(0,0,255),2);
-		for(int i = 0 ; i < lYellowAreas.size() ; ++i)
-			cv::rectangle(pRes[LightAndLineFrame::Debug],lYellowAreas[i],cv::Scalar(0,255,255),2);
-		for(int i = 0 ; i < lBlueAreas.size() ; ++i)
-			cv::rectangle(pRes[LightAndLineFrame::Debug],lBlueAreas[i],cv::Scalar(255,0,0),2);
-	}
 	
 	pRes.setTimestamp(LightAndLineFrame::F_ThresholdingDone);
 	
 	return true;
 }
 
-void ThresholdingWorker::extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi,const ColorAreaDefinition & pColorDef, tRects & pAreas)
+void ThresholdingWorker::extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi,const ColorAreaDefinition & pColorDef, LightAndLineFrame::tRects & pAreas)
 {
+	pAreas.clear();
+	if(!mEnableLightDetection)
+		return;
+	
 	const cv::Mat lU(pFrame.editU(),pLightSearchRoi);
 	cv::threshold(lU, mTmpA,pColorDef.mUMin,255,cv::THRESH_BINARY);
 	cv::threshold(lU, mTmpB,pColorDef.mUMax,255,cv::THRESH_BINARY_INV);

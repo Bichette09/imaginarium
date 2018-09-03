@@ -13,7 +13,7 @@ using namespace settings_store;
 SettingsBase::SettingsBase(ros::NodeHandle & pNodeHandle)
 	: mNodeHandle(pNodeHandle)
 {
-	ros::service::waitForService("/settings_store/declareandget",5000);
+	ros::service::waitForService("/settings_store/declareandget",10000);
 	mDeclareAndGetService = mNodeHandle.serviceClient<settings_store::declareandget>("/settings_store/declareandget");
 	mChangeTopic = mNodeHandle.subscribe("/settings_store/Change", 1000, &SettingsBase::onChange, this);
 }

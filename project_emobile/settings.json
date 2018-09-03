@@ -28,19 +28,27 @@
         "value": "1"
     }, 
     "ligh_and_line_detector/blue_light": {
-        "description": "Umin Umax Vmin Vmax MinPxCount RatioMin RatioMax", 
-        "value": "170 210 110 140 60 20 0 100"
+        "description": "Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "value": "170 210 110 140 60 6 20"
     }, 
     "ligh_and_line_detector/debug_img_channels": {
         "description": "which channels should be published for debug ? AYUVM", 
         "value": "yuvdD"
     }, 
+    "ligh_and_line_detector/light_debug_info": {
+        "description": "output detection info into d and D channels", 
+        "value": "true"
+    }, 
+    "ligh_and_line_detector/lightsearchareapercent": {
+        "description": "area in percent were light should be searched [xmin xmax ymin ymax]", 
+        "value": "60 100 5 70 "
+    }, 
     "ligh_and_line_detector/red_light": {
-        "description": "Umin Umax Vmin Vmax MinPxCount RatioMin RatioMax", 
-        "value": "100 120 160 210 100 20 0 100"
+        "description": "Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "value": "100 120 160 210 100 6 20"
     }, 
     "ligh_and_line_detector/yellow_light": {
-        "description": "Umin Umax Vmin Vmax MinPxCount RatioMin RatioMax", 
-        "value": "50 70 160 185 120 20 0 100"
+        "description": "Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "value": "50 70 160 185 120 6 20"
     }
 }

@@ -19,6 +19,12 @@ void LightAndLineFrame::swap(LightAndLineFrame & pOther)
 {
 	mLayers.swap(pOther.mLayers);
 	mTimestamps.swap(pOther.mTimestamps);
+	
+	for(int i = 0 ; i < LC_Count ; ++i)
+	{
+		mLightAreas[i].swap(pOther.mLightAreas[i]);
+	}
+	std::swap(mLightSearchArea, pOther.mLightSearchArea);
 }
 
 cv::Mat & LightAndLineFrame::operator[](Layer pLayer)
@@ -66,4 +72,24 @@ cv::Mat & LightAndLineFrame::editV()
 void LightAndLineFrame::setGrabTimestamp()
 {
 	setTimestamp(LightAndLineFrame::F_GrabDone);
+}
+
+LightAndLineFrame::tRects & LightAndLineFrame::operator[](LightColor pLightColor)
+{
+	return mLightAreas[pLightColor];
+}
+
+const LightAndLineFrame::tRects & LightAndLineFrame::operator[](LightColor pLightColor) const
+{
+	return mLightAreas[pLightColor];
+}
+
+cv::Rect & LightAndLineFrame::editLightSearchArea()
+{
+	return mLightSearchArea;
+}
+
+const cv::Rect & LightAndLineFrame::getLightSearchArea() const
+{
+	return mLightSearchArea;
 }

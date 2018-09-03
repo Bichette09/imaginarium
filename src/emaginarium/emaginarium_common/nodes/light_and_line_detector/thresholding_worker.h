@@ -28,7 +28,6 @@ public:
 		int mPercentOfValidPixelPerArea;
 	};
 
-
 	struct Parameters
 	{
 		Parameters();
@@ -40,14 +39,14 @@ public:
 		int						mLightSearchAreaXMaxPercent;
 		int						mLightSearchAreaYMinPercent;
 		int						mLightSearchAreaYMaxPercent;
-		bool					mOutputLightDetectionDebugInfo;
 		
 		ColorAreaDefinition		mRedLightParameter;
 		ColorAreaDefinition		mYellowLightParameter;
 		ColorAreaDefinition		mBlueLightParameter;
+		
 	};
 	
-	ThresholdingWorker(FrameProvider & pFrameProvider, const Parameters & pParameters);
+	ThresholdingWorker(FrameProvider & pFrameProvider, const Parameters & pParameters, const bool & pEnableLightDetection);
 	virtual ~ThresholdingWorker();
 	
 	const Parameters &			mParameters;
@@ -56,13 +55,15 @@ protected:
 	virtual bool computeNextResult(LightAndLineFrame & pRes);
 private:
 
-	typedef std::vector<cv::Rect> tRects;
-	void extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi, const ColorAreaDefinition & pColorDef, tRects & pAreas);
+	void extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi, const ColorAreaDefinition & pColorDef, LightAndLineFrame::tRects & pAreas);
 
+	const bool mEnableLightDetection;
+	
 	FrameProviderWorker<LightAndLineFrame>	mFrameProviderWorker;
 	FrameProcessor<LightAndLineFrame> *		mCameraThread;
 	
 	cv::Mat mTmpA,mTmpB,mTmpC,mTmpD;
 	cv::Mat mLabels,mCentroids,mStats;
 	cv::Mat mMorphoKernel;
+	
 };

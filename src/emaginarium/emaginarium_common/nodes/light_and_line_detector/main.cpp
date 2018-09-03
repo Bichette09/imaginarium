@@ -20,6 +20,7 @@
 #include "image_common/frame_debugger.h"
 
 #include "thresholding_worker.h"
+#include "light_detector.h"
 
 class LightAndLineDetectorSettings : public settings_store::SettingsBase
 {
@@ -27,6 +28,7 @@ public:
 	LightAndLineDetectorSettings(ros::NodeHandle & pNodeHandle)
 		: settings_store::SettingsBase(pNodeHandle)
 		, mDebugImgChannels("yuvm")
+		, mLightTimeWindowSec(10)
 	{
 		mRedLightParameterString = mThresholdingParameters.mRedLightParameter.getStringFromValues();
 		mYellowLightParameterString = mThresholdingParameters.mYellowLightParameter.getStringFromValues();
@@ -38,7 +40,8 @@ public:
 		registerAttribute<std::string>("ligh_and_line_detector/red_light",mRedLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
 		registerAttribute<std::string>("ligh_and_line_detector/yellow_light",mYellowLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
 		registerAttribute<std::string>("ligh_and_line_detector/blue_light",mBlueLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
-		registerAttribute<bool>("ligh_and_line_detector/light_debug_info",mThresholdingParameters.mOutputLightDetectionDebugInfo,"output detection info into d and D channels");
+		
+		registerAttribute<uint32_t>("ligh_and_line_detector/light_time_window",mLightTimeWindowSec,1,60,"max duration between red and blue light in sec");
 		
 		declareAndRetrieveSettings();
 	}
@@ -73,6 +76,7 @@ public:
 	std::string						mYellowLightParameterString;
 	std::string						mBlueLightParameterString;
 	std::string						mDebugImgChannels;
+	uint32_t						mLightTimeWindowSec;
 };
 
 
@@ -85,12 +89,12 @@ int main(int argc, char ** argv)
 		ros::NodeHandle n;
 		
 		
-		cv::Mat lTmp, lRGB, lYUV;
-		
 		ros::Rate lLoopRate(1);
 		
 		LightAndLineDetectorSettings lSettings(n);
 		FrameDebugger lFrameDebugger(n,lSettings.mDebugImgChannels);
+		
+		bool lEnableLightDetection = true;
 		
 		settings_store::StateDeclarator lStateDeclarator(n);
 		
@@ -98,7 +102,7 @@ int main(int argc, char ** argv)
 		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(320,240,24,"/home/pi/Untitled Project.avi"));
 		PauseProxyFrameProvider lFrameProvider(lFrameProviderA,n);
 		
-		ThresholdingWorker lThresholdingWorker(lFrameProvider,lSettings.mThresholdingParameters);
+		ThresholdingWorker lThresholdingWorker(lFrameProvider,lSettings.mThresholdingParameters,lEnableLightDetection);
 		FrameProcessor<LightAndLineFrame> lThresholdingThread(lThresholdingWorker);
 		
 		LightAndLineFrame lFrame;
@@ -106,12 +110,48 @@ int main(int argc, char ** argv)
 		LightAndLineFrame::tTimestamp lPreviousFrameTs = std::chrono::system_clock::now();
 		LightAndLineFrame::tTimestamp lStatStart;
 		
+		LightDetector lLightDetector(50,50);
+		cv::Mat lTmp;
 		
 		while(ros::ok())
 		{
 			if(lThresholdingThread.getNextFrame(lFrame))
 			{
+				if(lEnableLightDetection)
+				{
+					lLightDetector.addNewFrame(lFrame);
+					if(lSettings.mDebugImgChannels.find("D") != std::string::npos)
+					{
+						lLightDetector.createDebugImg(lFrame[LightAndLineFrame::Debug2],lSettings.mLightTimeWindowSec);
+					}
+					if(lLightDetector.detectLightSequence(lSettings.mLightTimeWindowSec))
+					{
+						lLightDetector.clearDetector();
+						ROS_WARN_STREAM("GOGOGOGO !");
+					}
+				}
 				
+				if(lSettings.mDebugImgChannels.find("d") != std::string::npos)
+				{
+					std::vector<cv::Mat> lToMerge;
+					lToMerge.push_back(lFrame[LightAndLineFrame::Y]);
+					lToMerge.push_back(lFrame[LightAndLineFrame::U]);
+					lToMerge.push_back(lFrame[LightAndLineFrame::V]);
+					cv::merge(lToMerge, lTmp);
+					cvtColor(lTmp, lFrame[LightAndLineFrame::Debug], cv::COLOR_YUV2BGR);
+					cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame.getLightSearchArea(),cv::Scalar(255,255,255),2);
+					
+					for(int i = 0 ; i < lFrame[LightAndLineFrame::LC_Red].size() ; ++i)
+						cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame[LightAndLineFrame::LC_Red][i],cv::Scalar(0,0,255),2);
+					for(int i = 0 ; i < lFrame[LightAndLineFrame::LC_Yellow].size() ; ++i)
+						cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame[LightAndLineFrame::LC_Yellow][i],cv::Scalar(0,255,255),2);
+					for(int i = 0 ; i < lFrame[LightAndLineFrame::LC_Blue].size() ; ++i)
+						cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame[LightAndLineFrame::LC_Blue][i],cv::Scalar(255,0,0),2);
+				}
+				
+				
+				
+
 				lFrameDebugger.setImage('y',lFrame[LightAndLineFrame::Y]);
 				lFrameDebugger.setImage('u',lFrame[LightAndLineFrame::U]);
 				lFrameDebugger.setImage('v',lFrame[LightAndLineFrame::V]);
