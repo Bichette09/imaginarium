@@ -34,16 +34,19 @@ public:
 		mRedLightParameterString = mThresholdingParameters.mRedLightParameter.getStringFromValues();
 		mYellowLightParameterString = mThresholdingParameters.mYellowLightParameter.getStringFromValues();
 		mBlueLightParameterString = mThresholdingParameters.mBlueLightParameter.getStringFromValues();
-		mLightSearchAreaString = mThresholdingParameters.getLightSearchArea();
+		mLightSearchAreaString = mThresholdingParameters.mLightSearchArea.getStringFromValues();
+		mLineSearchAreaString = mThresholdingParameters.mLineSearchArea.getStringFromValues();
+		mLineColorParameterString = mThresholdingParameters.mLineColorParameter.getStringFromValues();
 		
-		registerAttribute<std::string>("ligh_and_line_detector/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? AYUVdDL");
-		registerAttribute<std::string>("ligh_and_line_detector/lightsearchareapercent",mLightSearchAreaString,"area in percent were light should be searched [xmin xmax ymin ymax]");
-		registerAttribute<std::string>("ligh_and_line_detector/red_light",mRedLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
-		registerAttribute<std::string>("ligh_and_line_detector/yellow_light",mYellowLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
-		registerAttribute<std::string>("ligh_and_line_detector/blue_light",mBlueLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<std::string>("light_and_line_detector/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? yuvdDL");
+		registerAttribute<std::string>("light/searchareapercent",mLightSearchAreaString,"area in percent were light should be searched [xmin xmax ymin ymax]");
+		registerAttribute<std::string>("light/red",mRedLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<std::string>("light/yellow",mYellowLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<std::string>("light/blue",mBlueLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<uint32_t>("light/time_window",mLightTimeWindowSec,1,60,"max duration between red and blue light in sec");
 		
-		registerAttribute<uint32_t>("ligh_and_line_detector/light_time_window",mLightTimeWindowSec,1,60,"max duration between red and blue light in sec");
-		
+		registerAttribute<std::string>("line/searchareapercent",mLineSearchAreaString,"area in percent were line should be searched [xmin xmax ymin ymax]");
+		registerAttribute<std::string>("line/color",mLineColorParameterString,"area in percent were line should be searched [xmin xmax ymin ymax]");
 		declareAndRetrieveSettings();
 	}
 	
@@ -53,21 +56,29 @@ public:
 	
 	virtual void onParameterChanged(const std::string & pSettingName)
 	{
-		if(pSettingName.find("/red_light") != std::string::npos)
+		if(pSettingName.find("light/red") != std::string::npos)
 		{
 			mThresholdingParameters.mRedLightParameter.setValuesFromString(mRedLightParameterString);
 		}
-		else if(pSettingName.find("/yellow_light") != std::string::npos)
+		else if(pSettingName.find("light/yellow") != std::string::npos)
 		{
 			mThresholdingParameters.mYellowLightParameter.setValuesFromString(mYellowLightParameterString);
 		}
-		else if(pSettingName.find("/blue_light") != std::string::npos)
+		else if(pSettingName.find("light/blue") != std::string::npos)
 		{
 			mThresholdingParameters.mBlueLightParameter.setValuesFromString(mBlueLightParameterString);
 		}
-		else if(pSettingName.find("/lightsearchareapercent") != std::string::npos)
+		else if(pSettingName.find("light/searchareapercent") != std::string::npos)
 		{
-			mThresholdingParameters.setLightSearchArea(mLightSearchAreaString);
+			mThresholdingParameters.mLightSearchArea.setValuesFromString(mLightSearchAreaString);
+		}
+		else if(pSettingName.find("line/searchareapercent") != std::string::npos)
+		{
+			mThresholdingParameters.mLineSearchArea.setValuesFromString(mLineSearchAreaString);
+		}
+		else if(pSettingName.find("line/color") != std::string::npos)
+		{
+			mThresholdingParameters.mLineColorParameter.setValuesFromString(mLineColorParameterString);
 		}
 	}
 	
@@ -77,6 +88,8 @@ public:
 	std::string						mYellowLightParameterString;
 	std::string						mBlueLightParameterString;
 	std::string						mDebugImgChannels;
+	std::string						mLineSearchAreaString;
+	std::string						mLineColorParameterString;
 	uint32_t						mLightTimeWindowSec;
 };
 
