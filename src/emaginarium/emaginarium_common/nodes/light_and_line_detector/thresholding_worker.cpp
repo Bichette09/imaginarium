@@ -137,17 +137,33 @@ bool ThresholdingWorker::computeNextResult(LightAndLineFrame & pRes)
 {
 	if(!mCameraThread->getNextFrame(pRes))
 		return false;
-	pRes.setTimestamp(LightAndLineFrame::F_LightThresholdingStart);
 	
 	const cv::Mat lY =  pRes[LightAndLineFrame::Y];
-	const cv::Rect lLightRoi = mParameters.mLightSearchArea.getRoiRect(lY);
-	
-	pRes.editLightSearchArea() = lLightRoi;
-	extractColorAreas(pRes,lLightRoi,mParameters.mRedLightParameter,mLightTmpMatArray,pRes[LightAndLineFrame::LC_Red]);
-	extractColorAreas(pRes,lLightRoi, mParameters.mYellowLightParameter,mLightTmpMatArray,pRes[LightAndLineFrame::LC_Yellow]);
-	extractColorAreas(pRes,lLightRoi, mParameters.mBlueLightParameter,mLightTmpMatArray,pRes[LightAndLineFrame::LC_Blue]);
+	{
+		pRes.setTimestamp(LightAndLineFrame::F_LightThresholdingStart);
+		
+		const cv::Rect lLightRoi = mParameters.mLightSearchArea.getRoiRect(lY);
+		pRes.editLightSearchArea() = lLightRoi;
+		
+		extractColorAreas(pRes,lLightRoi,mParameters.mRedLightParameter,mLightTmpMatArray,pRes[LightAndLineFrame::LC_Red]);
+		extractColorAreas(pRes,lLightRoi, mParameters.mYellowLightParameter,mLightTmpMatArray,pRes[LightAndLineFrame::LC_Yellow]);
+		extractColorAreas(pRes,lLightRoi, mParameters.mBlueLightParameter,mLightTmpMatArray,pRes[LightAndLineFrame::LC_Blue]);
 
-	pRes.setTimestamp(LightAndLineFrame::F_LightThresholdingDone);
+		pRes.setTimestamp(LightAndLineFrame::F_LightThresholdingDone);
+	}
+	
+	{
+		pRes.setTimestamp(LightAndLineFrame::F_LineThresholdingStart);
+		
+		const cv::Rect lLineRoi = mParameters.mLineSearchArea.getRoiRect(lY);
+		pRes.editLineSearchArea() = lLineRoi;
+		
+		computeColorMask(pRes,lLineRoi,mParameters.mLineColorParameter,mLineTmpMatArray);
+		pRes[LightAndLineFrame::Debug2] = mLineTmpMatArray[TM_A].clone();
+		
+		pRes.setTimestamp(LightAndLineFrame::F_LightThresholdingDone);
+	}
+	
 	
 	return true;
 }
@@ -198,10 +214,10 @@ void ThresholdingWorker::computeColorMask(LightAndLineFrame & pFrame,const cv::R
 {
 	const cv::Mat lU(pFrame.editU(),pLightSearchRoi);
 	const cv::Mat lV(pFrame.editV(),pLightSearchRoi);
-	const cv::Mat lY(pFrame.editV(),pLightSearchRoi);
+	const cv::Mat lY(pFrame.editY(),pLightSearchRoi);
 	
-	cv::Mat const * const lSrc[6] = {&lU,&lU,&lV,&lV,&lY,&lY};
-	int const lThValue[6] = {pColorDef.mUMin,pColorDef.mUMax,pColorDef.mVMin,pColorDef.mVMax,pColorDef.mYMin,pColorDef.mYMax};
+	cv::Mat const * const lSrc[6] = {&lY,&lY,&lU,&lU,&lV,&lV};
+	int const lThValue[6] = {pColorDef.mYMin,pColorDef.mYMax,pColorDef.mUMin,pColorDef.mUMax,pColorDef.mVMin,pColorDef.mVMax};
 	int const lThType[6] = {cv::THRESH_BINARY,cv::THRESH_BINARY_INV,cv::THRESH_BINARY,cv::THRESH_BINARY_INV,cv::THRESH_BINARY,cv::THRESH_BINARY_INV};
 	
 	bool lIsFirstMask = true;
@@ -229,29 +245,11 @@ void ThresholdingWorker::computeColorMask(LightAndLineFrame & pFrame,const cv::R
 	
 	if(lIsFirstMask)
 	{
-		
+		ROS_WARN_STREAM("Invalid color thresholds");
 	}
 	else if(lAccumulationMat != TM_A)
 	{
 		cv::swap(pTmpMatArray[lAccumulationMat],pTmpMatArray[lNextAccumulationMat]);
 	}
 	
-	/*
-	cv::threshold(lU, pTmpMatArray[TM_C],pColorDef.mUMin,255,cv::THRESH_BINARY);
-	cv::threshold(lU, pTmpMatArray[TM_D],pColorDef.mUMax,255,cv::THRESH_BINARY_INV);
-	cv::bitwise_and(pTmpMatArray[TM_C],pTmpMatArray[TM_D],pTmpMatArray[TM_A]);
-	// TM_A contains U mask
-	
-	cv::threshold(lV, pTmpMatArray[TM_C],pColorDef.mVMin,255,cv::THRESH_BINARY);
-	cv::threshold(lV, pTmpMatArray[TM_D],pColorDef.mVMax,255,cv::THRESH_BINARY_INV);
-	cv::bitwise_and(pTmpMatArray[TM_C],pTmpMatArray[TM_A],pTmpMatArray[TM_B]);
-	cv::bitwise_and(pTmpMatArray[TM_D],pTmpMatArray[TM_B],pTmpMatArray[TM_A]);
-	// TM_A contains U & V mask
-	
-	cv::threshold(lY, pTmpMatArray[TM_C],pColorDef.mYMin,255,cv::THRESH_BINARY);
-	cv::threshold(lY, pTmpMatArray[TM_D],pColorDef.mYMax,255,cv::THRESH_BINARY_INV);
-	cv::bitwise_and(pTmpMatArray[TM_C],pTmpMatArray[TM_A],pTmpMatArray[TM_B]);
-	cv::bitwise_and(pTmpMatArray[TM_D],pTmpMatArray[TM_B],pTmpMatArray[TM_A]);
-	// TM_A contains U & V & Y mask
-	*/
 }

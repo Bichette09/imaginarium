@@ -46,7 +46,7 @@ public:
 		registerAttribute<uint32_t>("light/time_window",mLightTimeWindowSec,1,60,"max duration between red and blue light in sec");
 		
 		registerAttribute<std::string>("line/searchareapercent",mLineSearchAreaString,"area in percent were line should be searched [xmin xmax ymin ymax]");
-		registerAttribute<std::string>("line/color",mLineColorParameterString,"area in percent were line should be searched [xmin xmax ymin ymax]");
+		registerAttribute<std::string>("line/color",mLineColorParameterString,"Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
 		declareAndRetrieveSettings();
 	}
 	
@@ -110,7 +110,7 @@ int main(int argc, char ** argv)
 		LightAndLineDetectorSettings lSettings(n);
 		FrameDebugger lFrameDebugger(n,lSettings.mDebugImgChannels);
 		
-		bool lEnableLightDetection = false;
+		bool lEnableLightDetection = true;
 		
 		settings_store::StateDeclarator lStateDeclarator(n);
 		
@@ -171,6 +171,8 @@ int main(int argc, char ** argv)
 						cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame[LightAndLineFrame::LC_Yellow][i],cv::Scalar(0,255,255),2);
 					for(int i = 0 ; i < lFrame[LightAndLineFrame::LC_Blue].size() ; ++i)
 						cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame[LightAndLineFrame::LC_Blue][i],cv::Scalar(255,0,0),2);
+					
+					cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame.getLineSearchArea(),cv::Scalar(128,128,128),2);
 				}
 				
 				
@@ -198,13 +200,14 @@ int main(int argc, char ** argv)
 					lNextStat.latency += std::chrono::duration<float,std::milli>(lNow - lFrame[LightAndLineFrame::F_GrabDone]).count();
 					lNextStat.lightthresholding += std::chrono::duration<float,std::milli>(lFrame[LightAndLineFrame::F_LightThresholdingDone] - lFrame[LightAndLineFrame::F_LightThresholdingStart]).count();
 					lNextStat.lightanalyze += std::chrono::duration<float,std::milli>(lFrame[LightAndLineFrame::F_LightAnalyzeDone] - lFrame[LightAndLineFrame::F_LightAnalyzeStart]).count();
-					
+					lNextStat.linethresholding += std::chrono::duration<float,std::milli>(lFrame[LightAndLineFrame::F_LineThresholdingDone] - lFrame[LightAndLineFrame::F_LineThresholdingStart]).count();
 					if(std::chrono::duration<float>(lNow - lStatStart).count() > 0.25)
 					{
 						lNextStat.fps /= lStatCptr;
 						lNextStat.latency /= lStatCptr;
 						lNextStat.lightthresholding /= lStatCptr;
 						lNextStat.lightanalyze /= lStatCptr;
+						lNextStat.linethresholding /= lStatCptr;
 						lStatCptr = 0;
 						lPubStat.publish(lNextStat);
 						

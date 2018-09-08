@@ -96,6 +96,11 @@ function onload()
 						"topicname":"/light_and_line_detector/stats",
 						"messagetype":"/emaginarium_common/LightAndLineDetectionStats",
 						"messagefield":"lightanalyze"
+					},{
+						"name":"line_thresholding",
+						"topicname":"/light_and_line_detector/stats",
+						"messagetype":"/emaginarium_common/LightAndLineDetectionStats",
+						"messagefield":"linethresholding"
 					}
 				]
 			},

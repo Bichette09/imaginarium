@@ -25,6 +25,7 @@ void LightAndLineFrame::swap(LightAndLineFrame & pOther)
 		mLightAreas[i].swap(pOther.mLightAreas[i]);
 	}
 	std::swap(mLightSearchArea, pOther.mLightSearchArea);
+	std::swap(mLineSearchArea, pOther.mLineSearchArea);
 }
 
 cv::Mat & LightAndLineFrame::operator[](Layer pLayer)
@@ -92,4 +93,14 @@ cv::Rect & LightAndLineFrame::editLightSearchArea()
 const cv::Rect & LightAndLineFrame::getLightSearchArea() const
 {
 	return mLightSearchArea;
+}
+
+cv::Rect & LightAndLineFrame::editLineSearchArea()
+{
+	return mLineSearchArea;
+}
+
+const cv::Rect & LightAndLineFrame::getLineSearchArea() const
+{
+	return mLineSearchArea;
 }
