@@ -25,6 +25,7 @@ public:
 		V,
 		Debug,
 		Debug2,
+		LightStatus,
 		
 		LayerCount
 	};
@@ -32,8 +33,10 @@ public:
 	enum TimeStampFence
 	{
 		F_GrabDone = 0,
-		F_ThresholdingStart,
-		F_ThresholdingDone
+		F_LightThresholdingStart,
+		F_LightThresholdingDone,
+		F_LightAnalyzeStart,
+		F_LightAnalyzeDone
 	};
 	typedef std::chrono::time_point<std::chrono::system_clock> tTimestamp;
 	typedef std::map<TimeStampFence,tTimestamp> tTimestamps;

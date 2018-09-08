@@ -21,13 +21,14 @@
 
 #include "thresholding_worker.h"
 #include "light_detector.h"
+#include "emaginarium_common/LightAndLineDetectionStats.h"
 
 class LightAndLineDetectorSettings : public settings_store::SettingsBase
 {
 public:
 	LightAndLineDetectorSettings(ros::NodeHandle & pNodeHandle)
 		: settings_store::SettingsBase(pNodeHandle)
-		, mDebugImgChannels("yuvm")
+		, mDebugImgChannels("yuvdDL")
 		, mLightTimeWindowSec(10)
 	{
 		mRedLightParameterString = mThresholdingParameters.mRedLightParameter.getStringFromValues();
@@ -35,7 +36,7 @@ public:
 		mBlueLightParameterString = mThresholdingParameters.mBlueLightParameter.getStringFromValues();
 		mLightSearchAreaString = mThresholdingParameters.getLightSearchArea();
 		
-		registerAttribute<std::string>("ligh_and_line_detector/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? AYUVM");
+		registerAttribute<std::string>("ligh_and_line_detector/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? AYUVdDL");
 		registerAttribute<std::string>("ligh_and_line_detector/lightsearchareapercent",mLightSearchAreaString,"area in percent were light should be searched [xmin xmax ymin ymax]");
 		registerAttribute<std::string>("ligh_and_line_detector/red_light",mRedLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
 		registerAttribute<std::string>("ligh_and_line_detector/yellow_light",mYellowLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
@@ -89,6 +90,7 @@ int main(int argc, char ** argv)
 		ros::NodeHandle n;
 		
 		ros::Publisher lMsgPublisher = n.advertise<std_msgs::String>("light_and_line_detector/event", 10);
+		ros::Publisher lPubStat = n.advertise<emaginarium_common::LightAndLineDetectionStats>("light_and_line_detector/stats",1);
 		
 		ros::Rate lLoopRate(1);
 		
@@ -100,7 +102,7 @@ int main(int argc, char ** argv)
 		settings_store::StateDeclarator lStateDeclarator(n);
 		
 		//CameraFrameProvider lFrameProviderA(CameraFrameProvider::Parameters(320*4,240*4,12));
-		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(320,240,24,"/home/pi/Untitled Project.avi"));
+		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,24,"/home/pi/Untitled Project.avi"));
 		PauseProxyFrameProvider lFrameProvider(lFrameProviderA,n);
 		
 		ThresholdingWorker lThresholdingWorker(lFrameProvider,lSettings.mThresholdingParameters,lEnableLightDetection);
@@ -108,22 +110,26 @@ int main(int argc, char ** argv)
 		
 		LightAndLineFrame lFrame;
 		
-		LightAndLineFrame::tTimestamp lPreviousFrameTs = std::chrono::system_clock::now();
-		LightAndLineFrame::tTimestamp lStatStart;
-		
 		LightDetector lLightDetector(50,50);
 		cv::Mat lTmp;
+		
+		LightAndLineFrame::tTimestamp lPreviousFrameTs = std::chrono::system_clock::now();
+		LightAndLineFrame::tTimestamp lStatStart;
+		emaginarium_common::LightAndLineDetectionStats lNextStat;
+		int lStatCptr = 0;
 		
 		while(ros::ok())
 		{
 			if(lThresholdingThread.getNextFrame(lFrame))
 			{
+				lFrame.setTimestamp(LightAndLineFrame::F_LightAnalyzeStart);
 				if(lEnableLightDetection)
 				{
+					
 					lLightDetector.addNewFrame(lFrame);
-					if(lSettings.mDebugImgChannels.find("D") != std::string::npos)
+					if(lSettings.mDebugImgChannels.find("L") != std::string::npos)
 					{
-						lLightDetector.createDebugImg(lFrame[LightAndLineFrame::Debug2],lSettings.mLightTimeWindowSec);
+						lLightDetector.createDebugImg(lFrame[LightAndLineFrame::LightStatus],lSettings.mLightTimeWindowSec);
 					}
 					if(lLightDetector.detectLightSequence(lSettings.mLightTimeWindowSec))
 					{
@@ -134,6 +140,7 @@ int main(int argc, char ** argv)
 						ROS_WARN_STREAM("GOGOGOGO !");
 					}
 				}
+				lFrame.setTimestamp(LightAndLineFrame::F_LightAnalyzeDone);
 				
 				if(lSettings.mDebugImgChannels.find("d") != std::string::npos)
 				{
@@ -161,6 +168,35 @@ int main(int argc, char ** argv)
 				lFrameDebugger.setImage('v',lFrame[LightAndLineFrame::V]);
 				lFrameDebugger.setImage('d',lFrame[LightAndLineFrame::Debug]);
 				lFrameDebugger.setImage('D',lFrame[LightAndLineFrame::Debug2]);
+				lFrameDebugger.setImage('L',lFrame[LightAndLineFrame::LightStatus]);
+				
+				// update stats
+				{
+					if(lStatCptr == 0)
+					{
+						lStatStart = std::chrono::system_clock::now();
+						lNextStat = emaginarium_common::LightAndLineDetectionStats();
+					}
+					++lStatCptr;
+					
+					LightAndLineFrame::tTimestamp lNow = std::chrono::system_clock::now();
+					lNextStat.fps += 1.f/std::chrono::duration<float>(lNow - lPreviousFrameTs).count();
+					lPreviousFrameTs = lNow;
+					lNextStat.latency += std::chrono::duration<float,std::milli>(lNow - lFrame[LightAndLineFrame::F_GrabDone]).count();
+					lNextStat.lightthresholding += std::chrono::duration<float,std::milli>(lFrame[LightAndLineFrame::F_LightThresholdingDone] - lFrame[LightAndLineFrame::F_LightThresholdingStart]).count();
+					lNextStat.lightanalyze += std::chrono::duration<float,std::milli>(lFrame[LightAndLineFrame::F_LightAnalyzeDone] - lFrame[LightAndLineFrame::F_LightAnalyzeStart]).count();
+					
+					if(std::chrono::duration<float>(lNow - lStatStart).count() > 0.25)
+					{
+						lNextStat.fps /= lStatCptr;
+						lNextStat.latency /= lStatCptr;
+						lNextStat.lightthresholding /= lStatCptr;
+						lNextStat.lightanalyze /= lStatCptr;
+						lStatCptr = 0;
+						lPubStat.publish(lNextStat);
+						
+					}
+				}
 			}
 			
 			ros::spinOnce();

@@ -112,7 +112,7 @@ bool ThresholdingWorker::computeNextResult(LightAndLineFrame & pRes)
 {
 	if(!mCameraThread->getNextFrame(pRes))
 		return false;
-	pRes.setTimestamp(LightAndLineFrame::F_ThresholdingStart);
+	pRes.setTimestamp(LightAndLineFrame::F_LightThresholdingStart);
 	
 	const cv::Mat lY =  pRes[LightAndLineFrame::Y];
 	const cv::Rect lLightRoi( 
@@ -126,10 +126,8 @@ bool ThresholdingWorker::computeNextResult(LightAndLineFrame & pRes)
 	extractColorAreas(pRes,lLightRoi,mParameters.mRedLightParameter,pRes[LightAndLineFrame::LC_Red]);
 	extractColorAreas(pRes,lLightRoi, mParameters.mYellowLightParameter,pRes[LightAndLineFrame::LC_Yellow]);
 	extractColorAreas(pRes,lLightRoi, mParameters.mBlueLightParameter,pRes[LightAndLineFrame::LC_Blue]);
-	
-	
-	
-	pRes.setTimestamp(LightAndLineFrame::F_ThresholdingDone);
+
+	pRes.setTimestamp(LightAndLineFrame::F_LightThresholdingDone);
 	
 	return true;
 }

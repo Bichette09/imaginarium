@@ -32,12 +32,16 @@
         "value": "170 210 110 140 60 6 20"
     }, 
     "ligh_and_line_detector/debug_img_channels": {
-        "description": "which channels should be published for debug ? AYUVM", 
+        "description": "which channels should be published for debug ? AYUVdDL", 
         "value": "yuvdD"
     }, 
     "ligh_and_line_detector/light_debug_info": {
         "description": "output detection info into d and D channels", 
         "value": "true"
+    }, 
+    "ligh_and_line_detector/light_time_window": {
+        "description": "max duration between red and blue light in sec", 
+        "value": "10"
     }, 
     "ligh_and_line_detector/lightsearchareapercent": {
         "description": "area in percent were light should be searched [xmin xmax ymin ymax]", 
