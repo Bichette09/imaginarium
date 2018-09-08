@@ -110,7 +110,7 @@ int main(int argc, char ** argv)
 		LightAndLineDetectorSettings lSettings(n);
 		FrameDebugger lFrameDebugger(n,lSettings.mDebugImgChannels);
 		
-		bool lEnableLightDetection = true;
+		bool lEnableLightDetection = false;
 		
 		settings_store::StateDeclarator lStateDeclarator(n);
 		

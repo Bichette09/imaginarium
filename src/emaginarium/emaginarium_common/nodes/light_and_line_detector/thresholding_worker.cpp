@@ -196,24 +196,62 @@ void ThresholdingWorker::extractColorAreas(LightAndLineFrame & pFrame,const cv::
 
 void ThresholdingWorker::computeColorMask(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi, const ColorAreaDefinition & pColorDef, cv::Mat * pTmpMatArray)
 {
-	
 	const cv::Mat lU(pFrame.editU(),pLightSearchRoi);
+	const cv::Mat lV(pFrame.editV(),pLightSearchRoi);
+	const cv::Mat lY(pFrame.editV(),pLightSearchRoi);
+	
+	cv::Mat const * const lSrc[6] = {&lU,&lU,&lV,&lV,&lY,&lY};
+	int const lThValue[6] = {pColorDef.mUMin,pColorDef.mUMax,pColorDef.mVMin,pColorDef.mVMax,pColorDef.mYMin,pColorDef.mYMax};
+	int const lThType[6] = {cv::THRESH_BINARY,cv::THRESH_BINARY_INV,cv::THRESH_BINARY,cv::THRESH_BINARY_INV,cv::THRESH_BINARY,cv::THRESH_BINARY_INV};
+	
+	bool lIsFirstMask = true;
+	TmpMat lAccumulationMat = TM_A;
+	TmpMat lNextAccumulationMat = TM_B;
+	for(int i = 0 ; i < 6 ; ++i)
+	{
+		if( (lThType[i] == cv::THRESH_BINARY && lThValue[i] <= 0) ||
+			(lThType[i] == cv::THRESH_BINARY_INV && lThValue[i] >= 255))
+		{
+			continue;
+		}
+		cv::threshold(*lSrc[i], pTmpMatArray[lIsFirstMask ? lAccumulationMat : TM_C],lThValue[i],255,lThType[i]);
+		
+		if(lIsFirstMask)
+		{
+			lIsFirstMask = false;
+		}
+		else
+		{
+			cv::bitwise_and(pTmpMatArray[lAccumulationMat],pTmpMatArray[TM_C],pTmpMatArray[lNextAccumulationMat]);
+			std::swap(lAccumulationMat,lNextAccumulationMat);
+		}
+	}
+	
+	if(lIsFirstMask)
+	{
+		
+	}
+	else if(lAccumulationMat != TM_A)
+	{
+		cv::swap(pTmpMatArray[lAccumulationMat],pTmpMatArray[lNextAccumulationMat]);
+	}
+	
+	/*
 	cv::threshold(lU, pTmpMatArray[TM_C],pColorDef.mUMin,255,cv::THRESH_BINARY);
 	cv::threshold(lU, pTmpMatArray[TM_D],pColorDef.mUMax,255,cv::THRESH_BINARY_INV);
 	cv::bitwise_and(pTmpMatArray[TM_C],pTmpMatArray[TM_D],pTmpMatArray[TM_A]);
 	// TM_A contains U mask
 	
-	const cv::Mat lV(pFrame.editV(),pLightSearchRoi);
 	cv::threshold(lV, pTmpMatArray[TM_C],pColorDef.mVMin,255,cv::THRESH_BINARY);
 	cv::threshold(lV, pTmpMatArray[TM_D],pColorDef.mVMax,255,cv::THRESH_BINARY_INV);
 	cv::bitwise_and(pTmpMatArray[TM_C],pTmpMatArray[TM_A],pTmpMatArray[TM_B]);
 	cv::bitwise_and(pTmpMatArray[TM_D],pTmpMatArray[TM_B],pTmpMatArray[TM_A]);
 	// TM_A contains U & V mask
 	
-	const cv::Mat lY(pFrame.editV(),pLightSearchRoi);
 	cv::threshold(lY, pTmpMatArray[TM_C],pColorDef.mYMin,255,cv::THRESH_BINARY);
 	cv::threshold(lY, pTmpMatArray[TM_D],pColorDef.mYMax,255,cv::THRESH_BINARY_INV);
 	cv::bitwise_and(pTmpMatArray[TM_C],pTmpMatArray[TM_A],pTmpMatArray[TM_B]);
 	cv::bitwise_and(pTmpMatArray[TM_D],pTmpMatArray[TM_B],pTmpMatArray[TM_A]);
 	// TM_A contains U & V & Y mask
+	*/
 }

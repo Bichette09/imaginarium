@@ -85,7 +85,6 @@ private:
 		TM_A = 0,
 		TM_B,
 		TM_C,
-		TM_D,
 		
 		TM_a,
 		TM_b,
