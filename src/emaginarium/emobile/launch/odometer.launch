@@ -1,6 +1,6 @@
 <launch>
-	<arg name="pin" default=26/>
+	<arg name="pin" default="26"/>
 	<node name="odometer" pkg="emobile" type="odometer.py">
-		<param name="pin" value="$(arg pinT)"/>
+		<param name="pin" value="$(arg pin)"/>
 	</node>
 </launch>
