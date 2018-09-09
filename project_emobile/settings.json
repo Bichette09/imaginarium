@@ -29,11 +29,11 @@
     }, 
     "light/blue": {
         "description": "Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
-        "value": "60 255 170 210 110 140 6 20 "
+        "value": "60 255 170 210 110 140 | 6 20 "
     }, 
     "light/red": {
         "description": "Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
-        "value": "100 255 100 120 160 210 6 20 "
+        "value": "100 255 100 120 160 210 | 6 20 "
     }, 
     "light/searchareapercent": {
         "description": "area in percent were light should be searched [xmin xmax ymin ymax]", 
@@ -45,18 +45,18 @@
     }, 
     "light/yellow": {
         "description": "Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
-        "value": "120 255 50 70 160 185 6 20 "
+        "value": "120 255 50 70 160 185 | 6 20 "
     }, 
     "light_and_line_detector/debug_img_channels": {
         "description": "which channels should be published for debug ? yuvdDL", 
         "value": "yuvdDL"
     }, 
     "line/color": {
-        "description": "area in percent were line should be searched [xmin xmax ymin ymax]", 
-        "value": "110 255 125 138 118 130 "
+        "description": "Ymin Ymax Umin Umax Vmin Vmax", 
+        "value": "110 255 125 140 115 130 | 100 30 25 20"
     }, 
     "line/searchareapercent": {
         "description": "area in percent were line should be searched [xmin xmax ymin ymax]", 
-        "value": "0 100 40 95 "
+        "value": "0 100 50 90"
     }
 }
