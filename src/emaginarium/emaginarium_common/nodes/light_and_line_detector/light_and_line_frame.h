@@ -56,6 +56,10 @@ public:
 	cv::Rect & editLightSearchArea() ;
 	const cv::Rect & getLightSearchArea() const;
 	
+	typedef std::vector<cv::Vec4i> tLines;
+	tLines & editLines();
+	const tLines & getLines() const;
+	
 	cv::Rect & editLineSearchArea() ;
 	const cv::Rect & getLineSearchArea() const;
 	
@@ -78,4 +82,5 @@ private:
 	tRects		mLightAreas[LC_Count];
 	cv::Rect	mLightSearchArea;
 	cv::Rect	mLineSearchArea;
+	tLines		mLines;
 };

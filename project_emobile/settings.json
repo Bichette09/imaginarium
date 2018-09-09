@@ -53,10 +53,10 @@
     }, 
     "line/color": {
         "description": "area in percent were line should be searched [xmin xmax ymin ymax]", 
-        "value": "0 255 0 255 0 255 0 0 "
+        "value": "110 255 125 138 118 130 "
     }, 
     "line/searchareapercent": {
         "description": "area in percent were line should be searched [xmin xmax ymin ymax]", 
-        "value": "0 100 70 95 "
+        "value": "0 100 40 95 "
     }
 }

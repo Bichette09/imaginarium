@@ -8,12 +8,9 @@ class ThresholdingWorker : public WorkerInterface<LightAndLineFrame>
 {
 public:
 
-	struct ColorAreaDefinition
+	struct ColorFilterParameter
 	{
-		ColorAreaDefinition();
-		
-		void setValuesFromString(const std::string & pString);
-		std::string getStringFromValues() const;
+		ColorFilterParameter();
 		
 		int	mUMin;
 		int	mUMax;
@@ -21,6 +18,17 @@ public:
 		int mVMax;
 		int mYMin;
 		int mYMax;
+	};
+
+	struct LightColorAreaDefinition
+	{
+		LightColorAreaDefinition();
+		
+		void setValuesFromString(const std::string & pString);
+		std::string getStringFromValues() const;
+		
+		ColorFilterParameter mColorFilter;
+		
 		/** downscale factor used to remove glitched detection after thresholding
 		*/
 		int mDownscaleFactor;
@@ -29,6 +37,20 @@ public:
 		int mPercentOfValidPixelPerArea;
 	};
 	
+	struct LineDefinition
+	{
+		LineDefinition();
+		
+		void setValuesFromString(const std::string & pString);
+		std::string getStringFromValues() const;
+		
+		ColorFilterParameter	mColorFilter;
+		int						mCannyThreshold;
+		int						mHoughThreshold;
+		int						mMinLineLen;
+		int						mMaxLineGap;
+		
+	};
 	
 	struct SearchArea
 	{
@@ -52,13 +74,13 @@ public:
 		void setLightSearchArea(const std::string & pString);
 		std::string getLightSearchArea() const;
 		
-		SearchArea				mLightSearchArea;
-		ColorAreaDefinition		mRedLightParameter;
-		ColorAreaDefinition		mYellowLightParameter;
-		ColorAreaDefinition		mBlueLightParameter;
+		SearchArea					mLightSearchArea;
+		LightColorAreaDefinition	mRedLightParameter;
+		LightColorAreaDefinition	mYellowLightParameter;
+		LightColorAreaDefinition	mBlueLightParameter;
 		
-		SearchArea				mLineSearchArea;
-		ColorAreaDefinition		mLineColorParameter;
+		SearchArea					mLineSearchArea;
+		LineDefinition				mLineColorParameter;
 		
 	};
 	
@@ -71,9 +93,9 @@ protected:
 	virtual bool computeNextResult(LightAndLineFrame & pRes);
 private:
 
-	void extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi, const ColorAreaDefinition & pColorDef, cv::Mat * pTmpMatArray, LightAndLineFrame::tRects & pAreas);
+	void extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi, const LightColorAreaDefinition & pColorDef, cv::Mat * pTmpMatArray, LightAndLineFrame::tRects & pAreas);
 
-	void computeColorMask(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi,const ColorAreaDefinition & pColorDef, cv::Mat * pTmpMatArray);
+	void computeColorMask(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi,const ColorFilterParameter & pColorDef, cv::Mat * pTmpMatArray);
 	
 	const bool mEnableLightDetection;
 	
@@ -98,5 +120,8 @@ private:
 	
 	cv::Mat mLightTmpMatArray[TM_Count];
 	cv::Mat mLineTmpMatArray[TM_Count];
+	
+	cv::Mat mMorphoKernel3x3;
+	cv::Mat mMorphoKernel5x5;
 	
 };

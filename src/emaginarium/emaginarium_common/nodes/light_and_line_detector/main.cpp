@@ -40,13 +40,13 @@ public:
 		
 		registerAttribute<std::string>("light_and_line_detector/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? yuvdDL");
 		registerAttribute<std::string>("light/searchareapercent",mLightSearchAreaString,"area in percent were light should be searched [xmin xmax ymin ymax]");
-		registerAttribute<std::string>("light/red",mRedLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
-		registerAttribute<std::string>("light/yellow",mYellowLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
-		registerAttribute<std::string>("light/blue",mBlueLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<std::string>("light/red",mRedLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<std::string>("light/yellow",mYellowLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<std::string>("light/blue",mBlueLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea");
 		registerAttribute<uint32_t>("light/time_window",mLightTimeWindowSec,1,60,"max duration between red and blue light in sec");
 		
 		registerAttribute<std::string>("line/searchareapercent",mLineSearchAreaString,"area in percent were line should be searched [xmin xmax ymin ymax]");
-		registerAttribute<std::string>("line/color",mLineColorParameterString,"Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<std::string>("line/color",mLineColorParameterString,"Ymin Ymax Umin Umax Vmin Vmax | CanniTh HoughTh minLineLen maxLineGab");
 		declareAndRetrieveSettings();
 	}
 	
@@ -173,6 +173,13 @@ int main(int argc, char ** argv)
 						cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame[LightAndLineFrame::LC_Blue][i],cv::Scalar(255,0,0),2);
 					
 					cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame.getLineSearchArea(),cv::Scalar(128,128,128),2);
+					for(int i = 0 ; i < lFrame.getLines().size() ; ++i)
+					{
+						cv::line(lFrame[LightAndLineFrame::Debug],
+							cv::Point(lFrame.getLines()[i][0],lFrame.getLines()[i][1]),
+							cv::Point(lFrame.getLines()[i][2],lFrame.getLines()[i][3]),
+							cv::Scalar(255,0,0),2);
+					}
 				}
 				
 				

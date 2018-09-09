@@ -4,30 +4,43 @@
 #include "ros/ros.h"
 
 
-ThresholdingWorker::ColorAreaDefinition::ColorAreaDefinition()
+
+ThresholdingWorker::ColorFilterParameter::ColorFilterParameter()
 	: mUMin(0)
 	, mUMax(255)
 	, mVMin(0)
 	, mVMax(255)
 	, mYMin(170)
 	, mYMax(255)
-	, mDownscaleFactor(4)
+{
+}
+
+ThresholdingWorker::LightColorAreaDefinition::LightColorAreaDefinition()
+	: mDownscaleFactor(4)
 	, mPercentOfValidPixelPerArea(33)
 {
 	
 }
 
-void ThresholdingWorker::ColorAreaDefinition::setValuesFromString(const std::string & pString)
+void ThresholdingWorker::LightColorAreaDefinition::setValuesFromString(const std::string & pString)
 {
-	ColorAreaDefinition lBackup = *this;
+	LightColorAreaDefinition lBackup = *this;
 	std::stringstream lStream(pString);
 	lStream
-		>>mYMin
-		>>mYMax
-		>>mUMin
-		>>mUMax
-		>>mVMin
-		>>mVMax
+		>>mColorFilter.mYMin
+		>>mColorFilter.mYMax
+		>>mColorFilter.mUMin
+		>>mColorFilter.mUMax
+		>>mColorFilter.mVMin
+		>>mColorFilter.mVMax;
+	while(lStream)
+	{
+		char lTmp = ' ';
+		lStream>>lTmp;
+		if(lTmp == '|')
+			break;
+	}
+	lStream
 		>>mDownscaleFactor
 		>>mPercentOfValidPixelPerArea;
 	if(!lStream)
@@ -37,18 +50,79 @@ void ThresholdingWorker::ColorAreaDefinition::setValuesFromString(const std::str
 	}
 }
 
-std::string ThresholdingWorker::ColorAreaDefinition::getStringFromValues() const
+std::string ThresholdingWorker::LightColorAreaDefinition::getStringFromValues() const
 {
 	std::stringstream lStream;
 	lStream
-		<<mYMin<<" "
-		<<mYMax<<" "
-		<<mUMin<<" "
-		<<mUMax<<" "
-		<<mVMin<<" "
-		<<mVMax<<" "
+		<<mColorFilter.mYMin<<" "
+		<<mColorFilter.mYMax<<" "
+		<<mColorFilter.mUMin<<" "
+		<<mColorFilter.mUMax<<" "
+		<<mColorFilter.mVMin<<" "
+		<<mColorFilter.mVMax<<" "
+		<<"| "
 		<<mDownscaleFactor<<" "
 		<<mPercentOfValidPixelPerArea<<" ";
+	return lStream.str();
+}
+
+
+ThresholdingWorker::LineDefinition::LineDefinition()
+	: mCannyThreshold(64)
+	, mHoughThreshold(20)
+	, mMinLineLen(20)
+	, mMaxLineGap(20)
+{
+	
+}
+
+void ThresholdingWorker::LineDefinition::setValuesFromString(const std::string & pString)
+{
+	LineDefinition lBackup = *this;
+	std::stringstream lStream(pString);
+	lStream
+		>>mColorFilter.mYMin
+		>>mColorFilter.mYMax
+		>>mColorFilter.mUMin
+		>>mColorFilter.mUMax
+		>>mColorFilter.mVMin
+		>>mColorFilter.mVMax;
+	while(lStream)
+	{
+		char lTmp = ' ';
+		lStream>>lTmp;
+		if(lTmp == '|')
+			break;
+	}
+	lStream
+		>>mCannyThreshold
+		>>mHoughThreshold
+		>>mMinLineLen
+		>>mMaxLineGap
+		;
+	if(!lStream)
+	{
+		ROS_WARN_STREAM("Invalid parameters "<<pString);
+		*this = lBackup;
+	}
+}
+
+std::string ThresholdingWorker::LineDefinition::getStringFromValues() const
+{
+	std::stringstream lStream;
+	lStream
+		<<mColorFilter.mYMin<<" "
+		<<mColorFilter.mYMax<<" "
+		<<mColorFilter.mUMin<<" "
+		<<mColorFilter.mUMax<<" "
+		<<mColorFilter.mVMin<<" "
+		<<mColorFilter.mVMax<<" "
+		<<"| "
+		<<mCannyThreshold<<" "
+		<<mHoughThreshold<<" "
+		<<mMinLineLen<<" "
+		<<mMaxLineGap<<" "
+		;
 	return lStream.str();
 }
 
@@ -110,12 +184,12 @@ cv::Rect ThresholdingWorker::SearchArea::getRoiRect(const cv::Mat & pImg) const
 ThresholdingWorker::Parameters::Parameters()
 {
 	mLightSearchArea.setValuesFromString("50 100 10 90");
-	mRedLightParameter.setValuesFromString("100 255 100 120 160 210 6 20");
-	mYellowLightParameter.setValuesFromString("120 255 50 70 160 185 6 20");
-	mBlueLightParameter.setValuesFromString("60 255 170 210 110 140 6 20");
+	mRedLightParameter.setValuesFromString("100 255 100 120 160 210 | 6 20");
+	mYellowLightParameter.setValuesFromString("120 255 50 70 160 185 | 6 20");
+	mBlueLightParameter.setValuesFromString("60 255 170 210 110 140 | 6 20");
 	
 	mLineSearchArea.setValuesFromString("0 100 70 95");
-	mLineColorParameter.setValuesFromString("0 255 0 255 0 255 0 0");
+	mLineColorParameter.setValuesFromString("0 255 0 255 0 255 | 100 20 20 20 ");
 }
 
 
@@ -126,6 +200,8 @@ ThresholdingWorker::ThresholdingWorker(FrameProvider & pFrameProvider, const Par
 	, mEnableLightDetection(pEnableLightDetection)
 {
 	mCameraThread = new FrameProcessor<LightAndLineFrame>(mFrameProviderWorker);
+	mMorphoKernel3x3 = cv::getStructuringElement(cv::MORPH_RECT,cv::Size(3,3));
+	mMorphoKernel5x5 = cv::getStructuringElement(cv::MORPH_RECT,cv::Size(5,5));
 }
 
 ThresholdingWorker::~ThresholdingWorker()
@@ -158,23 +234,46 @@ bool ThresholdingWorker::computeNextResult(LightAndLineFrame & pRes)
 		const cv::Rect lLineRoi = mParameters.mLineSearchArea.getRoiRect(lY);
 		pRes.editLineSearchArea() = lLineRoi;
 		
-		computeColorMask(pRes,lLineRoi,mParameters.mLineColorParameter,mLineTmpMatArray);
+		// compute a mask based on line color
+		computeColorMask(pRes,lLineRoi,mParameters.mLineColorParameter.mColorFilter,mLineTmpMatArray);
+		// dilate this mask
+		cv::morphologyEx(mLineTmpMatArray[TM_A],mLineTmpMatArray[TM_a],cv::MORPH_DILATE,mMorphoKernel3x3);
+		// compute edges with a canny filter
+		const cv::Mat lSubY(pRes.editY(),lLineRoi);
+		cv::Canny(lSubY,mLineTmpMatArray[TM_B],mParameters.mLineColorParameter.mCannyThreshold,mParameters.mLineColorParameter.mCannyThreshold*3,3);
+		// compose mask and edges
+		cv::bitwise_and(mLineTmpMatArray[TM_B],mLineTmpMatArray[TM_a],mLineTmpMatArray[TM_A]);
+		
+		cv::HoughLinesP(mLineTmpMatArray[TM_A],pRes.editLines(),1,2*CV_PI/180, mParameters.mLineColorParameter.mHoughThreshold,mParameters.mLineColorParameter.mMinLineLen,mParameters.mLineColorParameter.mMaxLineGap);
+		LightAndLineFrame::tLines::iterator lIt = pRes.editLines().begin();
+		const LightAndLineFrame::tLines::iterator lItEnd = pRes.editLines().end();
+		for( ; lIt != lItEnd ; ++lIt)
+		{
+			cv::Vec4i & lLine = *lIt;
+			lLine[0] += lLineRoi.x;
+			lLine[1] += lLineRoi.y;
+			lLine[2] += lLineRoi.x;
+			lLine[3] += lLineRoi.y;
+		}
+		
 		pRes[LightAndLineFrame::Debug2] = mLineTmpMatArray[TM_A].clone();
 		
-		pRes.setTimestamp(LightAndLineFrame::F_LightThresholdingDone);
+		
+		
+		pRes.setTimestamp(LightAndLineFrame::F_LineThresholdingDone);
 	}
 	
 	
 	return true;
 }
 
-void ThresholdingWorker::extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi,const ColorAreaDefinition & pColorDef, cv::Mat * pTmpMatArray, LightAndLineFrame::tRects & pAreas)
+void ThresholdingWorker::extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi,const LightColorAreaDefinition & pColorDef, cv::Mat * pTmpMatArray, LightAndLineFrame::tRects & pAreas)
 {
 	pAreas.clear();
 	if(!mEnableLightDetection)
 		return;
 	
-	computeColorMask(pFrame,pLightSearchRoi,pColorDef,pTmpMatArray);
+	computeColorMask(pFrame,pLightSearchRoi,pColorDef.mColorFilter,pTmpMatArray);
 	// output is in TM_A
 	
 	// we want to remove bad detections, we are looking for a big spot
@@ -210,7 +309,7 @@ void ThresholdingWorker::extractColorAreas(LightAndLineFrame & pFrame,const cv::
 	
 }
 
-void ThresholdingWorker::computeColorMask(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi, const ColorAreaDefinition & pColorDef, cv::Mat * pTmpMatArray)
+void ThresholdingWorker::computeColorMask(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi, const ColorFilterParameter & pColorDef, cv::Mat * pTmpMatArray)
 {
 	const cv::Mat lU(pFrame.editU(),pLightSearchRoi);
 	const cv::Mat lV(pFrame.editV(),pLightSearchRoi);
