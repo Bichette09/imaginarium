@@ -66,4 +66,6 @@ input:checked + .topicentryspan {
 	min-height:4em;
 	width: 50%;
 	height: 100%;
+	image-rendering:crisp-edges;
+	image-rendering:pixelated;
 }

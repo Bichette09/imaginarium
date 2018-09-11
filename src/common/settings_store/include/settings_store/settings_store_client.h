@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <limits>
+#include <mutex>
 
 // ros
 #include "ros/ros.h"
@@ -105,6 +106,7 @@ namespace settings_store
 		ros::ServiceClient	mSetStatesService;
 		
 		std::map<std::string,std::string> mPreviousValues;
+		std::mutex			mMutex;
 	};
 }
 

@@ -8,14 +8,45 @@ class ThresholdingWorker : public WorkerInterface<LightAndLineFrame>
 {
 public:
 
+	struct ColorAreaDefinition
+	{
+		ColorAreaDefinition();
+		
+		void setValuesFromString(const std::string & pString);
+		std::string getStringFromValues() const;
+		
+		int	mUMin;
+		int	mUMax;
+		int	mVMin;
+		int mVMax;
+		int mYMin;
+		/** downscale factor used to remove glitched detection after thresholding
+		*/
+		int mDownscaleFactor;
+		/** how many percent of pixels should be valid per downscale area, eg for a downscale of 4, there is 16px per area
+		*/
+		int mPercentOfValidPixelPerArea;
+	};
+
 	struct Parameters
 	{
 		Parameters();
 		
+		void setLightSearchArea(const std::string & pString);
+		std::string getLightSearchArea() const;
+		
+		int						mLightSearchAreaXMinPercent;
+		int						mLightSearchAreaXMaxPercent;
+		int						mLightSearchAreaYMinPercent;
+		int						mLightSearchAreaYMaxPercent;
+		
+		ColorAreaDefinition		mRedLightParameter;
+		ColorAreaDefinition		mYellowLightParameter;
+		ColorAreaDefinition		mBlueLightParameter;
 		
 	};
 	
-	ThresholdingWorker(FrameProvider & pFrameProvider, const Parameters & pParameters);
+	ThresholdingWorker(FrameProvider & pFrameProvider, const Parameters & pParameters, const bool & pEnableLightDetection);
 	virtual ~ThresholdingWorker();
 	
 	const Parameters &			mParameters;
@@ -23,7 +54,16 @@ public:
 protected:
 	virtual bool computeNextResult(LightAndLineFrame & pRes);
 private:
+
+	void extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi, const ColorAreaDefinition & pColorDef, LightAndLineFrame::tRects & pAreas);
+
+	const bool mEnableLightDetection;
+	
 	FrameProviderWorker<LightAndLineFrame>	mFrameProviderWorker;
 	FrameProcessor<LightAndLineFrame> *		mCameraThread;
+	
+	cv::Mat mTmpA,mTmpB,mTmpC,mTmpD;
+	cv::Mat mLabels,mCentroids,mStats;
+	cv::Mat mMorphoKernel;
 	
 };
