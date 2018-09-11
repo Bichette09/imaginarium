@@ -21,15 +21,15 @@ if __name__ == "__main__":
 	sRosPublisher = rospy.Publisher('emaginarium/CommandNosewheel', emaginarium.msg.CommandNosewheel, queue_size=5)
 	dxl_io = pypot.dynamixel.DxlIO(rospy.get_param('/runwaydetector/serialPortDynamixel'))
 	pSerialPort = serial.Serial(rospy.get_param('/runwaydetector/serialPortLidar'), baudrate=115200,timeout=1)
-	
+	rospy.sleep(5)
 	r = rospy.Rate(50)
 	while not rospy.core.is_shutdown():
-		pSerialPort.write("REQ")
-		out = pSerialPort.readline().replace("'",'"')
+		pSerialPort.write('A')
+		out = pSerialPort.readline()
 		try:
 			lidars = json.loads(out)
 		except Exception as e:
-			print e
+			print e,out
 			lidars = {}
 		#print lidars
 		rightAngle = None
@@ -75,7 +75,7 @@ if __name__ == "__main__":
 			else:
 				y = 0.0
 			# filter
-			wheel = 0.50*wheel+0.50*(-180.0*np.arctan(y/avPhase)/np.pi)
+			wheel = 0.0*wheel+1.00*(-180.0*np.arctan(y/avPhase)/np.pi)
 			dxl_io.set_goal_position({1:wheel})
 		r.sleep()
 pSerialPort.close()

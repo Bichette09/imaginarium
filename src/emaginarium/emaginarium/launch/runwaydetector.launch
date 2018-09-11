@@ -1,0 +1,8 @@
+<launch>
+	<arg name="serialPortLidar" default="/dev/arduinoduemilanove"/>
+	<arg name="serialPortDynamixel" default="/dev/dynamixel"/>
+	<node name="runwaydetector" pkg="emaginarium" type="runwaydetector.py" output="screen">
+		<param name="serialPortLidar" value="$(arg serialPortLidar)"/>
+		<param name="serialPortDynamixel" value="$(arg serialPortDynamixel)"/>
+	</node>
+</launch>

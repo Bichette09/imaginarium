@@ -1,0 +1,6 @@
+<launch>
+	<arg name="serialPortLidar" default="/dev/arduinoduemilanove"/>
+	<node name="sidelidars" pkg="emaginarium" type="sidelidars.py" output="screen">
+		<param name="serialPortLidar" value="$(arg serialPortLidar)"/>
+	</node>
+</launch>
