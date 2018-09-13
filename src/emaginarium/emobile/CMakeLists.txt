@@ -22,6 +22,7 @@ add_message_files(
    CommandThrottle.msg
    Mustache.msg
    PointCloud.msg
+   Speed.msg
 )
 #add_service_files(
 #   FILES
