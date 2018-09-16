@@ -20,6 +20,9 @@
 	</include>
 	<include file="$(find emobile)/launch/command.launch" > 
 	</include>
+	<include file="$(find emobile)/launch/odometer.launch" >
+		<arg name="pin" value="26"/>
+	</include>
 	<!-- Actuator -->
 	<include file="$(find emobile)/launch/actuator.launch" > 
 		<arg name="pinT" value="18"/>

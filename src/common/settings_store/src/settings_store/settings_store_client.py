@@ -4,7 +4,8 @@
 import rospy
 import settings_store.msg
 import settings_store.srv
-
+import datetime
+import std_msgs
 
 
 
@@ -113,3 +114,48 @@ class StateDeclarator:
 		lServiceReq = settings_store.srv.setstatesRequest([pName], [str(pValue)])
 		lResponse = self.__mServiceSetStates(lServiceReq)
 		
+# this class will listen controller.html page to manage power status
+class PowerWatchdog:
+	def __init__(self, pStateDeclarator):
+		self.__mStateDeclarator = pStateDeclarator
+		self.__mIsPowerEnable = True
+		self.setPowerEnable(False)
+		self.__mGamePadSub = rospy.Subscriber('GamePadButtons', std_msgs.msg.String,self.__onGameBadButton)
+		self.__mGamePadSub = rospy.Subscriber('PowerHeartBeat', std_msgs.msg.Int32,self.__onHeartBeat)
+		self.__mEmergencyStopTs = None
+	
+		
+	def setPowerEnable(self, pEnable):
+		self.__setPowerEnable(pEnable,'code');
+		
+	def isPowerEnable(self):
+		if self.__mEmergencyStopTs != None and self.__mEmergencyStopTs < datetime.datetime.now():
+			self.__setPowerEnable(False,'lost heartbeat')
+		return self.__mIsPowerEnable
+	
+	def __setPowerEnable(self, pEnable, pMsg):
+		if self.__mIsPowerEnable == pEnable:
+			return
+		self.__mIsPowerEnable = pEnable
+		self.__mStateDeclarator.setState("powerstatus", "enable" if self.__mIsPowerEnable else "disable")
+		rospy.logwarn('Power is %s (source %s)' % (self.__mIsPowerEnable,pMsg))
+	
+	def __onGameBadButton(self,pParam):
+		if '|StopPower|' in pParam.data:
+			self.__setPowerEnable(False,'emergency stop')
+		elif '|StartPower|' in pParam.data:
+			self.__setPowerEnable(True,'power button')
+		elif '|B|' in pParam.data:
+			self.__setPowerEnable(False,'xbox')
+			if '|Y|' in pParam.data:
+				self.__setPowerEnable(True,'xbox')
+			
+	def __onHeartBeat(self, pParam):
+		if pParam.data < 0:
+			self.__mEmergencyStopTs = None
+			self.__setPowerEnable(False,'heartbeat page was closed')
+		elif pParam.data == 0:
+			self.__mEmergencyStopTs = datetime.datetime.now()
+			self.__setPowerEnable(False,'emergency stop')
+		else:
+			self.__mEmergencyStopTs = datetime.datetime.now() + datetime.timedelta(seconds=pParam.data)

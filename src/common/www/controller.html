@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset = "UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes"> 
+		<title>Controller</title>
+		
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"></link>
+		<link rel="icon" href="favicon.ico" type="image/x-icon"></link>
+		
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:600,400,300" rel="stylesheet" type="text/css"/>
+		<link rel="stylesheet" type="text/css" href="thirdparty/google-material-icons.css"></link>
+		
+		
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+		<link rel="stylesheet" type="text/css" href="css/controller.css">
+		
+		<script type="text/javascript" src="thirdparty/jquery-3.2.1.min.js"></script>
+		<script type="text/javascript" src="thirdparty/roslib-0.19.0.min.js"></script>
+		
+		<script type="text/javascript" src="js/rosmgr.js"></script>
+		<script type="text/javascript" src="js/controller.js"></script>
+		
+	</head>
+	<body onload='onload()' onunload='onunload()'>
+		<div class="titleroot">
+			<a class="link" href="../index.html"><div class="titlehome">home</div></a>
+			<div class="title">Controller</div>
+		</div>
+		<div class="separator"></div>
+		<div id="roserror" class="warning"><div class="linkicon">warning</div>Ros not connected</div>
+		<div id="watchdogroot" class="block">
+			<div id="powerwatchdogtitle" class="title">Power watchdog</div>
+			<div id="powerstatusroot"><div title="click to enable power" id="startbutton" class="button icongreen" onclick="startpower()">play_arrow</div><div id="powerstatustext">Status : </div><div id="powerstatusicon" class="button icongray">help_outline</div></div>
+			<div id="watchdogbutton" class="button iconorange" onclick='stopbutton()' title="emergency stop">highlight_off</div>
+		</div>
+		<div id="gamepadblock" class="block">
+			<div class="title">Gamepad inputs</div>
+			<div id="connectinfo" class="info"><div class="linkicon">info_outline</div>Connect the gamepad and press a button</div>
+			<div id="supporterror" class="error"><div class="linkicon">warning</div>No game pad support</div>
+			<div id="gamepadroot">
+				<div id="gamepadid"></div>
+				<div id="gamepadbuttoncontainer"></div>
+				<div id="gamepadaxescontainer"></div>
+			</div>
+		</div>
+	</body>
+</html>

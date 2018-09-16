@@ -6,6 +6,11 @@ var sGamePad = {
 	mLastStickCheckSum : undefined
 };
 
+var sPower = {
+	mIsEnable: false,
+	mAllowHeartbeat: false
+};
+
 function onProcessGamePad(){
 	let lGamePads = navigator.getGamepads();
 	let lGamePad = undefined;
@@ -157,4 +162,81 @@ function onload() {
 	$(window).on("gamepadconnected", onProcessGamePad);
 	$(window).on("gamepaddisconnected",onProcessGamePad);
 	
+	
+	sRosCtx.startListeningTopic('settings_store/StateChange','settings_store/Change',onStateChanged);
+	
+	sRosCtx.callService('/settings_store/getstates','settingsstore/getstates',{requestednames:['powerstatus']}, function(pResult) {
+		if(pResult.names.length == 1)
+		{
+			onStateChanged({'name':pResult.names[0],'value':pResult.values[0]})
+		}
+	})
+	
+	setInterval(sendHeartBeat,500);
+}
+
+function onunload() {
+	// send disable watch doc command
+	sRosCtx.writeMsg('/PowerHeartBeat','std_msgs/Int32',{data:-1});
+	sPower.mIsEnable = false;
+}
+
+function onStateChanged(pMsg)
+{
+	if(pMsg.name == 'powerstatus')
+	{
+		if(pMsg.value == 'enable')
+		{
+			$('#powerstatusicon').addClass('icongreen');
+			$('#powerstatusicon').removeClass('icongray');
+			$('#powerstatusicon').removeClass('iconred');
+			$('#powerstatusicon').text('flash_on');
+		}
+		else if(pMsg.value == 'disable')
+		{
+			$('#powerstatusicon').removeClass('icongreen');
+			$('#powerstatusicon').removeClass('icongray');
+			$('#powerstatusicon').addClass('iconred');
+			$('#powerstatusicon').text('flash_off');
+		}
+		else
+		{
+			$('#powerstatusicon').removeClass('icongreen');
+			$('#powerstatusicon').addClass('icongray');
+			$('#powerstatusicon').removeClass('iconred');
+			$('#powerstatusicon').text('help_outline');
+		
+		}
+
+	}
+	
+}
+
+function startpower()
+{
+	sPower.mIsEnable = true;
+	sPower.mAllowHeartbeat = true;
+	$("#watchdogstatustext").text("Watchdog is running");
+	$("#watchdogbutton").removeClass('iconred');
+	$("#watchdogbutton").addClass('iconorange');
+	sendHeartBeat();
+	sRosCtx.writeMsg('/GamePadButtons','std_msgs/String',{data:'|StartPower|'});
+	
+}
+
+function stopbutton()
+{
+	sPower.mIsEnable = false;
+	$("#watchdogstatustext").text("Watchdog emergency halt");
+	$("#watchdogbutton").addClass('iconred');
+	$("#watchdogbutton").removeClass('iconorange');
+	sendHeartBeat();
+	sRosCtx.writeMsg('/GamePadButtons','std_msgs/String',{data:'|StopPower|'});
+}
+
+function sendHeartBeat()
+{
+	if(!sPower.mAllowHeartbeat)
+		return;
+	sRosCtx.writeMsg('/PowerHeartBeat','std_msgs/Int32',{data: sPower.mIsEnable ? 2 : 0});
 }

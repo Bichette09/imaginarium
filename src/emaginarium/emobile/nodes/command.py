@@ -18,9 +18,13 @@ class CommandSettings(settings_store_client.SettingsBase):
 		settings_store_client.SettingsBase.__init__(self)
 		self.L=2.
 		self.D=0.75
+		self.distMin=0.10
+		self.distMoy=0.50
 		self.registerAttributes([
 			('L','command/L','Prediction distance'),
-			('D','command/D','Commanded distance from the side')
+			('D','command/D','Commanded distance from the side'),
+			('distMin','command/distMin','Distance minimum before stop'),
+			('distMoy','command/distMoy','Distance medium for slow speed')
 			])
 
 class ControlLaw():
@@ -33,10 +37,22 @@ class ControlLaw():
 		self.ledarDistY0 = [0]*24
 		self.x_obj = 0
 		self.y_obj = 0
+		self.coefADroite = 0
+		self.coefBDroite = 0
 
-	def updatestick(self,param):
-		self.throttleGoal= param.data[3]
-		#self.steeringGoal= param.data[0]
+	def computeThrottleObjective(self):
+		
+		vu8_dist=[j for i,j in enumerate(self.ledarDist[0:8]) if j != 0]
+		if len(vu8_dist) != 0:
+			if  min(vu8_dist) > lSettings.distMoy :
+				self.throttleGoal =1
+			elif min(vu8_dist) <= lSettings.distMoy and min(vu8_dist) > lSettings.distMin:
+				self.throttleGoal = 0.5
+			else:
+				self.throttleGoal =0
+		else:
+			self.throttleGoal =0
+
 		
 	def onNewLedar(self,param):
 		self.ledarDist = param.distance
@@ -68,7 +84,32 @@ class ControlLaw():
 				
 		if not np.isfinite(lAngle):
 			return None
-		return (lAngle,lA,lB)
+
+		self.coefADroite=lA
+		self.coefBDroite=lB
+
+		return (lAngle)
+	
+	def computeAttractivePoint(self):
+	# la fonction calcule les coordonnees x,y et d du point attractif en fonction des settings donnes
+		(lAngle)=self.computeAngleToBorders()
+		lXattractive = lSettings.L
+		lYattractive = self.coefADroite*lSettings.L+self.coefBDroite+lSettings.D
+		lDattractive = np.sqrt(lXattractive**2+lYattractive**2)
+
+		return (lXattractive, lYattractive,lDattractive)
+
+	def findIndexAttractive(self,lYlist,lYattrac):
+		lindexAttract = 0
+
+		# On cherche tous les index qui ont un y superieur a celui du point attractif
+		lindexes = [i for i,j in enumerate(lYlist) if (j <= lYattrac and j != 0)]
+
+		# On prend le plus petit index (on suppose que les points sont ranges de maniere croissante)	
+		if len(lindexes) != 0:
+			lindexAttract = min(lindexes)
+			
+		return (lindexAttract)
 
 	def computeObjectivePoint(self):
 		# remove null measures
@@ -77,7 +118,7 @@ class ControlLaw():
 		vU8_dist=[]
 		i_obj=0
 		nb_not_null = 0
-		(lAngle,lA,lB)=self.computeAngleToBorders()
+		(lXattractive, lYattractive, lDattractive)=self.computeAttractivePoint()
 		
 		for (x,y,d) in zip(self.ledarDistX0[0:8],self.ledarDistY0[0:8],self.ledarDist[0:8]):
 			# ignore measures that are too close
@@ -86,11 +127,19 @@ class ControlLaw():
 			vU8_dist.append(d)
 			if d > 0.001:
 				nb_not_null +=1
-		vU8_X.append(lSettings.L)
-		vU8_Y.append(lA*lSettings.L+lB+lSettings.D)
-		vU8_dist.append(np.sqrt((lSettings.L)**2+(lA*lSettings.L+lB+lSettings.D)**2))
+
+		# Calcul de la distance moyenne des points
 		dist_mean=np.sum(vU8_dist)/nb_not_null
-		# rospy.logwarn('mean '+str(dist_mean))
+
+		# On modifie les listes pour rajouter le point attracti
+		(lindexAttract)=self.findIndexAttractive(vU8_Y,lYattractive)
+
+		vU8_X.insert(lindexAttract,lXattractive)
+		vU8_Y.insert(lindexAttract,lYattractive)
+		vU8_dist.insert(lindexAttract,lDattractive)
+
+		#rospy.logwarn('x :'+str(vU8_X)+' y :'+str(vU8_Y))
+
 		indexes = [i for i,j in enumerate(vU8_dist) if (j < dist_mean and j != 0)]
 		if len(vU8_X) != 0:
 			for i in indexes:
@@ -102,13 +151,12 @@ class ControlLaw():
 			# rospy.logwarn('vu8_dist :'+str(vU8_dist))
 			# rospy.logwarn('ledar_dist :'+str(self.ledarDist[0:8]))
 			i_obj = vU8_dist.index(max(vU8_dist))	
-			# rospy.logwarn('x :'+str(vU8_X)+' y :'+str(vU8_Y))
+
 			
 			self.x_obj=vU8_X[i_obj]
 			self.y_obj=vU8_Y[i_obj]
 			# rospy.logwarn('i : '+ str(i_obj)+ ' obj :'+str(self.x_obj)+' yobj :'+str(self.y_obj))
-		return lA,lB
-		
+		return (lXattractive,lYattractive)
 		
 if __name__ == "__main__":
 	
@@ -123,7 +171,6 @@ if __name__ == "__main__":
 	sRosPublisherDebug2dPrimitives = rospy.Publisher('emobile/Debug2dPrimitive', emaginarium_common.msg.Debug2dPrimitive, queue_size=1)
 	
 	lControlLaw = ControlLaw()
-	sRosSuscriberThrottle = rospy.Subscriber('GamePadSticks', std_msgs.msg.Float32MultiArray,lControlLaw.updatestick)
 	sRosSuscriberLedar = rospy.Subscriber('/pointcloud', emobile.msg.PointCloud,lControlLaw.onNewLedar)
 	
 	lWheelAnglec = 0.
@@ -132,26 +179,24 @@ if __name__ == "__main__":
 		
 		# we want 100Hz reresh rate
 		time.sleep(0.01)
-		
-
-
-		
+				
 		# Predictive command
 		# Compute objective Point
-		(lA,lB)=lControlLaw.computeObjectivePoint()
-		#objectivePointX=lSettings.L
-		#objectivePointY=lA*lSettings.L+lB+lSettings.D
-		#objectivePointX=lSettings.L+lSettings.D*math.cos(lFinalAngle/57.3)
-		#objectivePointY=lA*lSettings.L+lB-lSettings.D*math.sin(lFinalAngle/57.3)
+		(lxAt,lyAt)=lControlLaw.computeObjectivePoint()
 
+		#Compute Wheel angle 
 		lWheelAnglec=math.atan(lControlLaw.y_obj/(lControlLaw.x_obj-0.265))*57.3
 		lWheelAnglec = max(-35,min(35,lWheelAnglec))
 		
 		#Command normalisation
 		lControlLaw.steeringGoal=lWheelAnglec/35
 
+		#Compute Speed goal
+		lControlLaw.computeThrottleObjective()
+
+
 		sRosPublisherThrottle.publish(emobile.msg.CommandThrottle(lControlLaw.throttleGoal))
 		sRosPublisherSteering.publish(emobile.msg.CommandSteering(lControlLaw.steeringGoal))
-		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('sideline','line','red',[lA,lB]))
+		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('sideline','line','red',[lControlLaw.coefADroite,lControlLaw.coefBDroite]))
 		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('targetPoint','circle','green',[lControlLaw.x_obj,lControlLaw.y_obj,0.05]))
-		#sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('targetPoint','circle','red',[0,0,dist_mean]))
+		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('targetPoint2','circle','red',[lxAt,lyAt,0.05]))

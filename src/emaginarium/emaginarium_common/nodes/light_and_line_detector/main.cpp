@@ -21,28 +21,32 @@
 
 #include "thresholding_worker.h"
 #include "light_detector.h"
+#include "emaginarium_common/LightAndLineDetectionStats.h"
 
 class LightAndLineDetectorSettings : public settings_store::SettingsBase
 {
 public:
 	LightAndLineDetectorSettings(ros::NodeHandle & pNodeHandle)
 		: settings_store::SettingsBase(pNodeHandle)
-		, mDebugImgChannels("yuvm")
+		, mDebugImgChannels("yuvdDL")
 		, mLightTimeWindowSec(10)
 	{
 		mRedLightParameterString = mThresholdingParameters.mRedLightParameter.getStringFromValues();
 		mYellowLightParameterString = mThresholdingParameters.mYellowLightParameter.getStringFromValues();
 		mBlueLightParameterString = mThresholdingParameters.mBlueLightParameter.getStringFromValues();
-		mLightSearchAreaString = mThresholdingParameters.getLightSearchArea();
+		mLightSearchAreaString = mThresholdingParameters.mLightSearchArea.getStringFromValues();
+		mLineSearchAreaString = mThresholdingParameters.mLineSearchArea.getStringFromValues();
+		mLineColorParameterString = mThresholdingParameters.mLineColorParameter.getStringFromValues();
 		
-		registerAttribute<std::string>("ligh_and_line_detector/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? AYUVM");
-		registerAttribute<std::string>("ligh_and_line_detector/lightsearchareapercent",mLightSearchAreaString,"area in percent were light should be searched [xmin xmax ymin ymax]");
-		registerAttribute<std::string>("ligh_and_line_detector/red_light",mRedLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
-		registerAttribute<std::string>("ligh_and_line_detector/yellow_light",mYellowLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
-		registerAttribute<std::string>("ligh_and_line_detector/blue_light",mBlueLightParameterString,"Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<std::string>("light_and_line_detector/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? yuvdDL");
+		registerAttribute<std::string>("light/searchareapercent",mLightSearchAreaString,"area in percent were light should be searched [xmin xmax ymin ymax]");
+		registerAttribute<std::string>("light/red",mRedLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<std::string>("light/yellow",mYellowLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<std::string>("light/blue",mBlueLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<uint32_t>("light/time_window",mLightTimeWindowSec,1,60,"max duration between red and blue light in sec");
 		
-		registerAttribute<uint32_t>("ligh_and_line_detector/light_time_window",mLightTimeWindowSec,1,60,"max duration between red and blue light in sec");
-		
+		registerAttribute<std::string>("line/searchareapercent",mLineSearchAreaString,"area in percent were line should be searched [xmin xmax ymin ymax]");
+		registerAttribute<std::string>("line/color",mLineColorParameterString,"Ymin Ymax Umin Umax Vmin Vmax | CanniTh HoughTh minLineLen maxLineGab");
 		declareAndRetrieveSettings();
 	}
 	
@@ -52,21 +56,29 @@ public:
 	
 	virtual void onParameterChanged(const std::string & pSettingName)
 	{
-		if(pSettingName.find("/red_light") != std::string::npos)
+		if(pSettingName.find("light/red") != std::string::npos)
 		{
 			mThresholdingParameters.mRedLightParameter.setValuesFromString(mRedLightParameterString);
 		}
-		else if(pSettingName.find("/yellow_light") != std::string::npos)
+		else if(pSettingName.find("light/yellow") != std::string::npos)
 		{
 			mThresholdingParameters.mYellowLightParameter.setValuesFromString(mYellowLightParameterString);
 		}
-		else if(pSettingName.find("/blue_light") != std::string::npos)
+		else if(pSettingName.find("light/blue") != std::string::npos)
 		{
 			mThresholdingParameters.mBlueLightParameter.setValuesFromString(mBlueLightParameterString);
 		}
-		else if(pSettingName.find("/lightsearchareapercent") != std::string::npos)
+		else if(pSettingName.find("light/searchareapercent") != std::string::npos)
 		{
-			mThresholdingParameters.setLightSearchArea(mLightSearchAreaString);
+			mThresholdingParameters.mLightSearchArea.setValuesFromString(mLightSearchAreaString);
+		}
+		else if(pSettingName.find("line/searchareapercent") != std::string::npos)
+		{
+			mThresholdingParameters.mLineSearchArea.setValuesFromString(mLineSearchAreaString);
+		}
+		else if(pSettingName.find("line/color") != std::string::npos)
+		{
+			mThresholdingParameters.mLineColorParameter.setValuesFromString(mLineColorParameterString);
 		}
 	}
 	
@@ -76,6 +88,8 @@ public:
 	std::string						mYellowLightParameterString;
 	std::string						mBlueLightParameterString;
 	std::string						mDebugImgChannels;
+	std::string						mLineSearchAreaString;
+	std::string						mLineColorParameterString;
 	uint32_t						mLightTimeWindowSec;
 };
 
@@ -89,6 +103,7 @@ int main(int argc, char ** argv)
 		ros::NodeHandle n;
 		
 		ros::Publisher lMsgPublisher = n.advertise<std_msgs::String>("light_and_line_detector/event", 10);
+		ros::Publisher lPubStat = n.advertise<emaginarium_common::LightAndLineDetectionStats>("light_and_line_detector/stats",1);
 		
 		ros::Rate lLoopRate(1);
 		
@@ -100,7 +115,7 @@ int main(int argc, char ** argv)
 		settings_store::StateDeclarator lStateDeclarator(n);
 		
 		//CameraFrameProvider lFrameProviderA(CameraFrameProvider::Parameters(320*4,240*4,12));
-		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(320,240,24,"/home/pi/Untitled Project.avi"));
+		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,24,"/home/pi/Untitled Project.avi"));
 		PauseProxyFrameProvider lFrameProvider(lFrameProviderA,n);
 		
 		ThresholdingWorker lThresholdingWorker(lFrameProvider,lSettings.mThresholdingParameters,lEnableLightDetection);
@@ -108,22 +123,26 @@ int main(int argc, char ** argv)
 		
 		LightAndLineFrame lFrame;
 		
-		LightAndLineFrame::tTimestamp lPreviousFrameTs = std::chrono::system_clock::now();
-		LightAndLineFrame::tTimestamp lStatStart;
-		
 		LightDetector lLightDetector(50,50);
 		cv::Mat lTmp;
+		
+		LightAndLineFrame::tTimestamp lPreviousFrameTs = std::chrono::system_clock::now();
+		LightAndLineFrame::tTimestamp lStatStart;
+		emaginarium_common::LightAndLineDetectionStats lNextStat;
+		int lStatCptr = 0;
 		
 		while(ros::ok())
 		{
 			if(lThresholdingThread.getNextFrame(lFrame))
 			{
+				lFrame.setTimestamp(LightAndLineFrame::F_LightAnalyzeStart);
 				if(lEnableLightDetection)
 				{
+					
 					lLightDetector.addNewFrame(lFrame);
-					if(lSettings.mDebugImgChannels.find("D") != std::string::npos)
+					if(lSettings.mDebugImgChannels.find("L") != std::string::npos)
 					{
-						lLightDetector.createDebugImg(lFrame[LightAndLineFrame::Debug2],lSettings.mLightTimeWindowSec);
+						lLightDetector.createDebugImg(lFrame[LightAndLineFrame::LightStatus],lSettings.mLightTimeWindowSec);
 					}
 					if(lLightDetector.detectLightSequence(lSettings.mLightTimeWindowSec))
 					{
@@ -134,6 +153,7 @@ int main(int argc, char ** argv)
 						ROS_WARN_STREAM("GOGOGOGO !");
 					}
 				}
+				lFrame.setTimestamp(LightAndLineFrame::F_LightAnalyzeDone);
 				
 				if(lSettings.mDebugImgChannels.find("d") != std::string::npos)
 				{
@@ -151,6 +171,15 @@ int main(int argc, char ** argv)
 						cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame[LightAndLineFrame::LC_Yellow][i],cv::Scalar(0,255,255),2);
 					for(int i = 0 ; i < lFrame[LightAndLineFrame::LC_Blue].size() ; ++i)
 						cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame[LightAndLineFrame::LC_Blue][i],cv::Scalar(255,0,0),2);
+					
+					cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame.getLineSearchArea(),cv::Scalar(128,128,128),2);
+					for(int i = 0 ; i < lFrame.getLines().size() ; ++i)
+					{
+						cv::line(lFrame[LightAndLineFrame::Debug],
+							cv::Point(lFrame.getLines()[i][0],lFrame.getLines()[i][1]),
+							cv::Point(lFrame.getLines()[i][2],lFrame.getLines()[i][3]),
+							cv::Scalar(255,0,0),2);
+					}
 				}
 				
 				
@@ -161,6 +190,36 @@ int main(int argc, char ** argv)
 				lFrameDebugger.setImage('v',lFrame[LightAndLineFrame::V]);
 				lFrameDebugger.setImage('d',lFrame[LightAndLineFrame::Debug]);
 				lFrameDebugger.setImage('D',lFrame[LightAndLineFrame::Debug2]);
+				lFrameDebugger.setImage('L',lFrame[LightAndLineFrame::LightStatus]);
+				
+				// update stats
+				{
+					if(lStatCptr == 0)
+					{
+						lStatStart = std::chrono::system_clock::now();
+						lNextStat = emaginarium_common::LightAndLineDetectionStats();
+					}
+					++lStatCptr;
+					
+					LightAndLineFrame::tTimestamp lNow = std::chrono::system_clock::now();
+					lNextStat.fps += 1.f/std::chrono::duration<float>(lNow - lPreviousFrameTs).count();
+					lPreviousFrameTs = lNow;
+					lNextStat.latency += std::chrono::duration<float,std::milli>(lNow - lFrame[LightAndLineFrame::F_GrabDone]).count();
+					lNextStat.lightthresholding += std::chrono::duration<float,std::milli>(lFrame[LightAndLineFrame::F_LightThresholdingDone] - lFrame[LightAndLineFrame::F_LightThresholdingStart]).count();
+					lNextStat.lightanalyze += std::chrono::duration<float,std::milli>(lFrame[LightAndLineFrame::F_LightAnalyzeDone] - lFrame[LightAndLineFrame::F_LightAnalyzeStart]).count();
+					lNextStat.linethresholding += std::chrono::duration<float,std::milli>(lFrame[LightAndLineFrame::F_LineThresholdingDone] - lFrame[LightAndLineFrame::F_LineThresholdingStart]).count();
+					if(std::chrono::duration<float>(lNow - lStatStart).count() > 0.25)
+					{
+						lNextStat.fps /= lStatCptr;
+						lNextStat.latency /= lStatCptr;
+						lNextStat.lightthresholding /= lStatCptr;
+						lNextStat.lightanalyze /= lStatCptr;
+						lNextStat.linethresholding /= lStatCptr;
+						lStatCptr = 0;
+						lPubStat.publish(lNextStat);
+						
+					}
+				}
 			}
 			
 			ros::spinOnce();

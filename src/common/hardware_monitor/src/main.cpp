@@ -94,7 +94,7 @@ struct HwMonitor
 	// 16: under-voltage has occurred
 	// 17: arm frequency capped has occurred
 	// 18: throttling has occurred
-	void checkThrottledFlags()
+	void checkThrottledFlags(settings_store::StateDeclarator & pStateDeclarator)
 	{
 		std::string lFlags = exec("vcgencmd get_throttled");
 		// remove 'throttled=0x'
@@ -107,6 +107,19 @@ struct HwMonitor
 		
 		if(lToPrint)
 		{
+			if(lToPrint & 0x01)
+			{
+				pStateDeclarator.setStateStr("Undervoltage","error");
+			}
+			if(lToPrint & 0x02)
+			{
+				pStateDeclarator.setStateStr("ArmFreqCapped","error");
+			}
+			if(lToPrint & 0x04)
+			{
+				pStateDeclarator.setStateStr("Throttled","error");
+			}
+			
 			ROS_ERROR_STREAM( 
 				(lToPrint & 0x01 ? "Undervoltage detected " : "") 
 				<< (lToPrint & 0x02 ? "ArmFreqCapped detected " : "") 
@@ -253,6 +266,8 @@ int main(int argc, char ** argv)
 		
 		ros::NodeHandle n;
 		
+		settings_store::StateDeclarator lStateDeclarator(n);
+		
 		// do not bufferize those messages
 		ros::Publisher lMsgPublisher = n.advertise<hardware_monitor::HardwareInfo>("hardware_monitor/HardwareInfo", 1);
 		hardware_monitor::HardwareInfo lMsg;
@@ -276,7 +291,7 @@ int main(int argc, char ** argv)
 			std::chrono::time_point<std::chrono::system_clock> lNewTs = std::chrono::system_clock::now();
 			if (std::chrono::duration<float>(lNewTs - lTs).count() >= lSettings.mUpdateIntervalSec)
 			{
-				lHwMonitor.checkThrottledFlags();
+				lHwMonitor.checkThrottledFlags(lStateDeclarator);
 				
 				lTs = lNewTs;
 				++lMsg.header.seq;

@@ -25,6 +25,7 @@ public:
 		V,
 		Debug,
 		Debug2,
+		LightStatus,
 		
 		LayerCount
 	};
@@ -32,8 +33,12 @@ public:
 	enum TimeStampFence
 	{
 		F_GrabDone = 0,
-		F_ThresholdingStart,
-		F_ThresholdingDone
+		F_LightThresholdingStart,
+		F_LightThresholdingDone,
+		F_LightAnalyzeStart,
+		F_LightAnalyzeDone,
+		F_LineThresholdingStart,
+		F_LineThresholdingDone
 	};
 	typedef std::chrono::time_point<std::chrono::system_clock> tTimestamp;
 	typedef std::map<TimeStampFence,tTimestamp> tTimestamps;
@@ -50,6 +55,13 @@ public:
 	const tRects & operator[](LightColor pColor) const;
 	cv::Rect & editLightSearchArea() ;
 	const cv::Rect & getLightSearchArea() const;
+	
+	typedef std::vector<cv::Vec4i> tLines;
+	tLines & editLines();
+	const tLines & getLines() const;
+	
+	cv::Rect & editLineSearchArea() ;
+	const cv::Rect & getLineSearchArea() const;
 	
 	void swap(LightAndLineFrame & pOther);
 	
@@ -69,4 +81,6 @@ private:
 	tTimestamps	mTimestamps;
 	tRects		mLightAreas[LC_Count];
 	cv::Rect	mLightSearchArea;
+	cv::Rect	mLineSearchArea;
+	tLines		mLines;
 };

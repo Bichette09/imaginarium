@@ -35,6 +35,7 @@ add_message_files(
    FILES
    Gyro.msg
    Debug2dPrimitive.msg
+   LightAndLineDetectionStats.msg
 )
 #add_service_files(
 #   FILES
