@@ -73,7 +73,24 @@ function onload()
 				]
 			}
 		});
-		
+	
+	sGraphs.addGraph(
+		{
+			"title":"odometry",
+			"y1":{
+				"unit":"m/s",
+				"range":[-2.01,15.01],
+				"rostraces":[
+					{
+						"name":"speed",
+						"topicname":"/speed",
+						"messagetype":"/emobile/Speed",
+						"messagefield":"speed"
+					}
+				]
+			}
+		});
+	
 	sGraphs.addGraph(
 		{
 			"title":"img",
