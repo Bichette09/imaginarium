@@ -21,7 +21,7 @@
     }, 
     "command/L": {
         "description": "Prediction distance", 
-        "value": "3.0"
+        "value": "2"
     }, 
     "hardware_monitor/update_period": {
         "description": "hardware state read interval", 
