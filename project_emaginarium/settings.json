@@ -1,42 +1,30 @@
 {
-    "commandNosewheel/Kp": {
-        "description": "", 
-        "inuse": false, 
-        "value": "1"
-    }, 
     "commandNosewheel/Kprec": {
         "description": "Gain of pre command", 
-        "inuse": true, 
         "value": "-1.0"
     }, 
     "commandNosewheel/Kprop": {
         "description": "Gain of prop command", 
-        "inuse": true, 
         "value": "0"
     }, 
     "commandThrust/Kp": {
         "description": "", 
-        "inuse": true, 
         "value": "5"
     }, 
     "hardware_monitor/update_period": {
         "description": "hardware state read interval", 
-        "inuse": true, 
         "value": "1"
     }, 
     "ultrasoundfilter/lowpassgain": {
         "description": "gain of lowpass filter, 0 to disable", 
-        "inuse": true, 
         "value": "0."
     }, 
     "ultrasoundfilter/minsamples": {
         "description": "minimum valid samples", 
-        "inuse": true, 
         "value": "2"
     }, 
     "ultrasoundfilter/windowsize": {
         "description": "sample window size, < 0 to disable ", 
-        "inuse": true, 
         "value": "5"
     }
 }
