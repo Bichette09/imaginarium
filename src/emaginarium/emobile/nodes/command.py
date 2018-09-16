@@ -18,9 +18,13 @@ class CommandSettings(settings_store_client.SettingsBase):
 		settings_store_client.SettingsBase.__init__(self)
 		self.L=2.
 		self.D=0.75
+		self.distMin=0.10
+		self.distMoy=0.50
 		self.registerAttributes([
 			('L','command/L','Prediction distance'),
-			('D','command/D','Commanded distance from the side')
+			('D','command/D','Commanded distance from the side'),
+			('distMin','command/distMin','Distance minimum before stop'),
+			('distMoy','command/distMoy','Distance medium for slow speed')
 			])
 
 class ControlLaw():
@@ -36,9 +40,14 @@ class ControlLaw():
 		self.coefADroite = 0
 		self.coefBDroite = 0
 
-	def updatestick(self,param):
-		self.throttleGoal= param.data[3]
-		#self.steeringGoal= param.data[0]
+	def computeThrottleObjective(self):
+
+		if  min(self.ledarDist[0:8]) > lSettings.distMoy :
+			self.steeringGoal =1
+		elif min(self.ledarDist[0:8]) <= lSettings.distMoy and min(self.ledarDist[0:8]) > lSettings.distMin:
+			self.steeringGoal = 0.5
+		else:
+			self.steeringGoal =0
 		
 	def onNewLedar(self,param):
 		self.ledarDist = param.distance
@@ -157,7 +166,6 @@ if __name__ == "__main__":
 	sRosPublisherDebug2dPrimitives = rospy.Publisher('emobile/Debug2dPrimitive', emaginarium_common.msg.Debug2dPrimitive, queue_size=1)
 	
 	lControlLaw = ControlLaw()
-	sRosSuscriberThrottle = rospy.Subscriber('GamePadSticks', std_msgs.msg.Float32MultiArray,lControlLaw.updatestick)
 	sRosSuscriberLedar = rospy.Subscriber('/pointcloud', emobile.msg.PointCloud,lControlLaw.onNewLedar)
 	
 	lWheelAnglec = 0.
@@ -170,16 +178,17 @@ if __name__ == "__main__":
 		# Predictive command
 		# Compute objective Point
 		(lxAt,lyAt)=lControlLaw.computeObjectivePoint()
-		#objectivePointX=lSettings.L
-		#objectivePointY=lA*lSettings.L+lB+lSettings.D
-		#objectivePointX=lSettings.L+lSettings.D*math.cos(lFinalAngle/57.3)
-		#objectivePointY=lA*lSettings.L+lB-lSettings.D*math.sin(lFinalAngle/57.3)
 
+		#Compute Wheel angle 
 		lWheelAnglec=math.atan(lControlLaw.y_obj/(lControlLaw.x_obj-0.265))*57.3
 		lWheelAnglec = max(-35,min(35,lWheelAnglec))
 		
 		#Command normalisation
 		lControlLaw.steeringGoal=lWheelAnglec/35
+
+		#Compute Speed goal
+		lControlLaw.computeThrottleObjective()
+
 
 		sRosPublisherThrottle.publish(emobile.msg.CommandThrottle(lControlLaw.throttleGoal))
 		sRosPublisherSteering.publish(emobile.msg.CommandSteering(lControlLaw.steeringGoal))
