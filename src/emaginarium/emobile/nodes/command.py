@@ -41,13 +41,18 @@ class ControlLaw():
 		self.coefBDroite = 0
 
 	def computeThrottleObjective(self):
-
-		if  min(self.ledarDist[0:8]) > lSettings.distMoy :
-			self.steeringGoal =1
-		elif min(self.ledarDist[0:8]) <= lSettings.distMoy and min(self.ledarDist[0:8]) > lSettings.distMin:
-			self.steeringGoal = 0.5
+		
+		vu8_dist=[j for i,j in enumerate(self.ledarDist[0:8]) if j != 0]
+		if len(vu8_dist) != 0:
+			if  min(vu8_dist) > lSettings.distMoy :
+				self.throttleGoal =1
+			elif min(vu8_dist) <= lSettings.distMoy and min(vu8_dist) > lSettings.distMin:
+				self.throttleGoal = 0.5
+			else:
+				self.throttleGoal =0
 		else:
-			self.steeringGoal =0
+			self.throttleGoal =0
+
 		
 	def onNewLedar(self,param):
 		self.ledarDist = param.distance

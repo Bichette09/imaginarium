@@ -1,7 +1,7 @@
 {
     "actuator/kTh": {
         "description": "kTh", 
-        "value": "0.4"
+        "value": "0.2"
     }, 
     "command/D": {
         "description": "Commanded distance from the side", 
@@ -25,7 +25,7 @@
     }, 
     "command/distMin": {
         "description": "Distance minimum before stop", 
-        "value": "0.1"
+        "value": "0.3"
     }, 
     "command/distMoy": {
         "description": "Distance medium for slow speed", 

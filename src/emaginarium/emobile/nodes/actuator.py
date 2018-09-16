@@ -47,6 +47,11 @@ class Actuator(object):
 			self.__mStateDeclarator.setState("init/actuator",True)
 			rospy.logwarn('Powertrain is ready')
 
+	def __del__(self):
+		if self.__mGpio is not None:
+			self.__mGpio.set_servo_pulsewidth(self.pinT, 1520)
+		
+
 	def updateThrottleTarget(self, param):
 		self.mGoalThrottle = min(max(-1.,param.throttle),1.)
 		if self.mGoalThrottle != param.throttle:
@@ -57,26 +62,30 @@ class Actuator(object):
 		self.mGoalThrottle = min(max(-1.,self.mGoalThrottle),1.)
 		
 		lGoalThrottle = 0.
+		
 		if self.__mPowerWatchdog.isPowerEnable():
 			lGoalThrottle = self.mGoalThrottle * self.settings.kTh
 		
 		if lGoalThrottle > 0.:
-			self.throttles = 1460
-			self.throttles = self.throttles + (1240 - self.throttles)*lGoalThrottle
+			self.throttles = 1540
+			self.throttles = self.throttles + (1980 - self.throttles)*lGoalThrottle
 		elif lGoalThrottle < 0.:
 			self.throttles = 1500
-			self.throttles = self.throttles + (1740-self.throttles)*lGoalThrottle
+			self.throttles = self.throttles + (980-self.throttles)*lGoalThrottle
 		else:
-			self.throttles = 1480
+			self.throttles = 1520
 			
-			if self.__mLastSpeed < -0.1:
-				self.throttles = 1460
-			elif self.__mLastSpeed > 0.1:
-				self.throttles = 1500
+			#if self.__mLastSpeed < -0.1:
+			#	self.throttles = 1560
+			#elif self.__mLastSpeed > 0.1:
+			#	self.throttles = 1520
 				
 		rospy.logwarn(self.throttles)
 		if self.__mGpio is not None:
-			self.__mGpio.set_servo_pulsewidth(self.pinT, self.throttles)
+			if rospy.is_shutdown():
+				self.__mGpio.set_servo_pulsewidth(self.pinT, 1520)
+			else:
+				self.__mGpio.set_servo_pulsewidth(self.pinT, self.throttles)
 
 	def updateSteeringTarget(self, param):
 		self.mGoalSteering = min(max(-1.,param.steering),1.)
@@ -91,7 +100,7 @@ class Actuator(object):
 			self.__mGpio.set_servo_pulsewidth(self.pinS, self.steering)
 	
 	def updateSpeed(self,param):
-		self.__mLastSpeed = param.data
+		self.__mLastSpeed = param.speed
 		
 if __name__ == "__main__":	
 	os.getcwd()
@@ -102,3 +111,4 @@ if __name__ == "__main__":
 	sRosSuscriberSteering = rospy.Subscriber('emobile/CommandSteering', emobile.msg.CommandSteering,lActuator.updateSteeringTarget)
 	sRosSuscriberSteering = rospy.Subscriber('/speed', emobile.msg.Speed,lActuator.updateSpeed)
 	rospy.spin()
+	lActuator.updateThrottle()
