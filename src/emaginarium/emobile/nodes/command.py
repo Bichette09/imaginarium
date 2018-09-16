@@ -148,14 +148,21 @@ class ControlLaw():
 					vU8_dist[i-1]= vU8_dist[i-1] - delta_mean
 				if (i+1) <8:
 					vU8_dist[i+1]= vU8_dist[i+1] - delta_mean
-			# rospy.logwarn('vu8_dist :'+str(vU8_dist))
-			# rospy.logwarn('ledar_dist :'+str(self.ledarDist[0:8]))
+
+			# Penalisation a partir des points du M16
+			if np.mean(self.ledarDist[20:24])< 0.2:
+				vU8_dist[0]=vU8_dist[0]/2
+				vU8_dist[1]=vU8_dist[1]/2
+			if np.mean(self.ledarDist[20:24])>1:
+ 				vU8_dist[6]=vU8_dist[6]/2
+				vU8_dist[7]=vU8_dist[7]/2
+
+			# Calcul du point le plus eloigne
 			i_obj = vU8_dist.index(max(vU8_dist))	
 
-			
 			self.x_obj=vU8_X[i_obj]
 			self.y_obj=vU8_Y[i_obj]
-			# rospy.logwarn('i : '+ str(i_obj)+ ' obj :'+str(self.x_obj)+' yobj :'+str(self.y_obj))
+
 		return (lXattractive,lYattractive)
 		
 if __name__ == "__main__":

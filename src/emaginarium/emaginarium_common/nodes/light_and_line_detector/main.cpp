@@ -114,10 +114,13 @@ int main(int argc, char ** argv)
 		
 		settings_store::StateDeclarator lStateDeclarator(n);
 		
-		//CameraFrameProvider lFrameProviderA(CameraFrameProvider::Parameters(320*4,240*4,12));
+#if 1
+		CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*2,240*2,12));
+#else
 		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,24,"/home/pi/Untitled Project.avi"));
 		PauseProxyFrameProvider lFrameProvider(lFrameProviderA,n);
-		
+#endif
+
 		ThresholdingWorker lThresholdingWorker(lFrameProvider,lSettings.mThresholdingParameters,lEnableLightDetection);
 		FrameProcessor<LightAndLineFrame> lThresholdingThread(lThresholdingWorker);
 		

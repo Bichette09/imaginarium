@@ -1,23 +1,11 @@
 {
     "actuator/kTh": {
         "description": "kTh", 
-        "value": "0.2"
+        "value": "0.1"
     }, 
     "command/D": {
         "description": "Commanded distance from the side", 
-        "value": "0.75"
-    }, 
-    "command/K": {
-        "description": "Gain", 
-        "value": "1.0"
-    }, 
-    "command/Kprec": {
-        "description": "Gain of pre command", 
-        "value": "1.0"
-    }, 
-    "command/Kprop": {
-        "description": "Gain of prop command", 
-        "value": "1.0"
+        "value": "0.5"
     }, 
     "command/L": {
         "description": "Prediction distance", 
@@ -36,11 +24,11 @@
         "value": "1"
     }, 
     "light/blue": {
-        "description": "Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
         "value": "60 255 170 210 110 140 | 6 20 "
     }, 
     "light/red": {
-        "description": "Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
         "value": "100 255 100 120 160 210 | 6 20 "
     }, 
     "light/searchareapercent": {
@@ -52,7 +40,7 @@
         "value": "15"
     }, 
     "light/yellow": {
-        "description": "Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
         "value": "120 255 50 70 160 185 | 6 20 "
     }, 
     "light_and_line_detector/debug_img_channels": {
@@ -60,7 +48,7 @@
         "value": "yuvdDL"
     }, 
     "line/color": {
-        "description": "Ymin Ymax Umin Umax Vmin Vmax", 
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | CanniTh HoughTh minLineLen maxLineGab", 
         "value": "110 255 125 140 115 130 | 100 30 25 20"
     }, 
     "line/searchareapercent": {

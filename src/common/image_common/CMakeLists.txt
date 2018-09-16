@@ -19,6 +19,8 @@ find_package(catkin REQUIRED COMPONENTS
 find_package( OpenCV REQUIRED )
 
 if(EXISTS "/usr/local/lib/libraspicam.so")
+	# need a minimum of 256MB of vram
+	# compile libraspicam from libraspicam.zip
 	set(USE_RASPICAM_LIB ON)
 	set(RASPICAM_LIBS "-lraspicam" "-lmmal" "-lmmal_core")
 	add_definitions("-DUSE_RASPICAM_LIB")
