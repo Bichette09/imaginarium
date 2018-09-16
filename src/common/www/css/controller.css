@@ -63,38 +63,57 @@
 	left:45%;
 }
 
-#watchdogroot {
+.block {
 	border-style:solid;
 	border-width: 0.1em;
 	border-radius: 0.5em;
 	border-color:#888888;
 	user-select: none;
+	margin-bottom:0.5em;
+}
+
+#watchdogroot {
 	text-align:center;
 	display:flex;
 	flex-direction:column;
 }
 
-.watchdogred{
+.iconred{
 	color:red;
 }
-.watchdogorange{
+.iconorange{
 	color:orange;
+}
+.icongreen{
+	color:green;
+}
+.icongray{
+	color:darkgray;
 }
 
 #watchdogbutton {
 	font-size:8em;
 }
-#rearmwatchdogbutton {
-	color:green;
-	font-size:1.5em;
+
+#powerstatustext {
+	font-size:1.2em;
+	margin-left:0.6em;
+	margin-right:0.6em;
 }
 
-#watchdogstatus{
+#powerstatusroot{
+	margin-top:0.5em;
+	font-size:1em;
 	display:flex;
 	flex-direction:row;
+	
 	justify-content: center;
 	font-size:1em;
-	height:1.5em;
+	height:2em;
+}
+
+#powerstatusicon, #startbutton{
+	font-size:2em;
 }
 
 .button{

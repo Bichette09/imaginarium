@@ -30,9 +30,29 @@ var sRosCtx = {
 			if(pOnRosConnectionStatusCallback !== undefined)
 				pOnRosConnectionStatusCallback(false);
 		});
+		
+		window.addEventListener('unload', function(event) {
+			sRosCtx.finalizeRos();
+		});
+	},
+	
+	finalizeRos : function()
+	{
+		if(sRosCtx.mHandle == undefined)
+			return;
+		for(var lKey in sRosCtx.mTopics)
+		{
+			if(sRosCtx.mTopics[lKey].writer)
+			{
+				console.log('unadvertise ' + lKey);
+				sRosCtx.mTopics[lKey].unadvertise();
+			}
+		}
+		sRosCtx.mHandle.close();
+		sRosCtx.mHandle = undefined;
 	},
 
-	ensureTopicIsCreated : function(pName,pType)
+	ensureTopicIsCreated : function(pName,pType, pIsWriter)
 	{
 		if( sRosCtx.mTopics[pName] === undefined)
 		{
@@ -42,6 +62,7 @@ var sRosCtx = {
 					name : pName,
 					messageType : pType
 				}),
+				writer : pIsWriter,
 				callbacks : []
 			};
 		}
@@ -49,7 +70,7 @@ var sRosCtx = {
 
 	startListeningTopic : function(pName, pType, pCallback)
 	{
-		sRosCtx.ensureTopicIsCreated(pName,pType);
+		sRosCtx.ensureTopicIsCreated(pName,pType,false);
 		if(sRosCtx.mTopics[pName].callbacks.length == 0)
 		{
 			sRosCtx.mTopics[pName].topic.subscribe(function(message){
@@ -74,7 +95,7 @@ var sRosCtx = {
 	{
 		if(!sRosCtx.mConnected)
 			return;
-		sRosCtx.ensureTopicIsCreated(pName,pType);
+		sRosCtx.ensureTopicIsCreated(pName,pType,true);
 		sRosCtx.mTopics[pName].topic.publish(pMsg);
 	},
 	

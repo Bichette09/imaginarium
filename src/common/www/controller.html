@@ -25,20 +25,24 @@
 	<body onload='onload()' onunload='onunload()'>
 		<div class="titleroot">
 			<a class="link" href="../index.html"><div class="titlehome">home</div></a>
-			<div class="title">Game pad controller</div>
+			<div class="title">Controller</div>
 		</div>
 		<div class="separator"></div>
 		<div id="roserror" class="warning"><div class="linkicon">warning</div>Ros not connected</div>
-		<div id="watchdogroot">
-			<div id="watchdogstatus"><div id="watchdogstatustext">Watchdog : running</div><div id="rearmwatchdogbutton" class="button" onclick='rearmwatchdogbutton()' title="rearm watchdog">refresh</div></div>
-			<div id="watchdogbutton" class="button watchdogorange" onclick='watchdogbutton()' title="emergency stop">highlight_off</div>
+		<div id="watchdogroot" class="block">
+			<div id="powerwatchdogtitle" class="title">Power watchdog</div>
+			<div id="powerstatusroot"><div title="click to enable power" id="startbutton" class="button icongreen" onclick="startpower()">play_arrow</div><div id="powerstatustext">Status : </div><div id="powerstatusicon" class="button icongray">help_outline</div></div>
+			<div id="watchdogbutton" class="button iconorange" onclick='stopbutton()' title="emergency stop">highlight_off</div>
 		</div>
-		<div id="connectinfo" class="info"><div class="linkicon">info_outline</div>Connect the gamepad and press a button</div>
-		<div id="supporterror" class="error"><div class="linkicon">warning</div>No game pad support</div>
-		<div id="gamepadroot">
-			<div id="gamepadid"></div>
-			<div id="gamepadbuttoncontainer"></div>
-			<div id="gamepadaxescontainer"></div>
+		<div id="gamepadblock" class="block">
+			<div class="title">Gamepad inputs</div>
+			<div id="connectinfo" class="info"><div class="linkicon">info_outline</div>Connect the gamepad and press a button</div>
+			<div id="supporterror" class="error"><div class="linkicon">warning</div>No game pad support</div>
+			<div id="gamepadroot">
+				<div id="gamepadid"></div>
+				<div id="gamepadbuttoncontainer"></div>
+				<div id="gamepadaxescontainer"></div>
+			</div>
 		</div>
 	</body>
 </html>
