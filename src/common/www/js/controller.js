@@ -1,3 +1,5 @@
+document.addEventListener('contextmenu', event => event.preventDefault());
+
 var sGamePad = {
 	mIsInit : false,
 	mGamePadId : null,

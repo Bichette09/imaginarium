@@ -115,7 +115,7 @@ int main(int argc, char ** argv)
 		settings_store::StateDeclarator lStateDeclarator(n);
 		
 #if 1
-		CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*2,240*2,12));
+		CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*2,240*2,24));
 #else
 		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,24,"/home/pi/Untitled Project.avi"));
 		PauseProxyFrameProvider lFrameProvider(lFrameProviderA,n);
