@@ -27,28 +27,36 @@
         "description": "hardware state read interval", 
         "value": "1"
     }, 
-    "ligh_and_line_detector/blue_light": {
-        "description": "Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
-        "value": "170 210 110 140 60 6 20"
+    "light/blue": {
+        "description": "Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "value": "60 255 170 210 110 140 | 6 20 "
     }, 
-    "ligh_and_line_detector/debug_img_channels": {
-        "description": "which channels should be published for debug ? AYUVM", 
-        "value": "yuvdD"
+    "light/red": {
+        "description": "Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "value": "100 255 100 120 160 210 | 6 20 "
     }, 
-    "ligh_and_line_detector/light_debug_info": {
-        "description": "output detection info into d and D channels", 
-        "value": "true"
-    }, 
-    "ligh_and_line_detector/lightsearchareapercent": {
+    "light/searchareapercent": {
         "description": "area in percent were light should be searched [xmin xmax ymin ymax]", 
-        "value": "60 100 5 70 "
+        "value": "50 100 10 90 "
     }, 
-    "ligh_and_line_detector/red_light": {
-        "description": "Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
-        "value": "100 120 160 210 100 6 20"
+    "light/time_window": {
+        "description": "max duration between red and blue light in sec", 
+        "value": "15"
     }, 
-    "ligh_and_line_detector/yellow_light": {
-        "description": "Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
-        "value": "50 70 160 185 120 6 20"
+    "light/yellow": {
+        "description": "Ymin Ymax Umin Umax Vmin Vmax DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "value": "120 255 50 70 160 185 | 6 20 "
+    }, 
+    "light_and_line_detector/debug_img_channels": {
+        "description": "which channels should be published for debug ? yuvdDL", 
+        "value": "yuvdDL"
+    }, 
+    "line/color": {
+        "description": "Ymin Ymax Umin Umax Vmin Vmax", 
+        "value": "110 255 125 140 115 130 | 100 30 25 20"
+    }, 
+    "line/searchareapercent": {
+        "description": "area in percent were line should be searched [xmin xmax ymin ymax]", 
+        "value": "0 100 50 90"
     }
 }

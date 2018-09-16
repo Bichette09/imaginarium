@@ -26,6 +26,7 @@ add_message_files(
    Antenna.msg
    CommandNosewheel.msg
    DiagThrust.msg
+   Sides.msg
   
 )
 #add_service_files(

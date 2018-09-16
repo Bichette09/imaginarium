@@ -1,0 +1,8 @@
+bool rightAngleValid
+bool leftAngleValid
+bool rightDistanceValid
+bool leftDistanceValid
+float32 rightAngle
+float32 leftAngle
+float32 rightDistance
+float32 leftDistance

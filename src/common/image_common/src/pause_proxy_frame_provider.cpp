@@ -52,6 +52,7 @@ bool PauseProxyFrameProvider::getNextFrame(FrameInterface & pRes)
 		pRes.editY() = mCurrentFrame[0] ;
 		pRes.editU() = mCurrentFrame[1] ;
 		pRes.editV() = mCurrentFrame[2] ;
+		pRes.setGrabTimestamp();
 	}
 
 	return mIsFrameOk;

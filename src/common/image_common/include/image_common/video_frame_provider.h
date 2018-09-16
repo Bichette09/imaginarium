@@ -24,7 +24,7 @@ public:
 		const int	mWidth;
 		const int	mHeight;
 		const int 	mFps;
-		const int	mSleepUs;
+		const int	mFramePeriodMs;
 		
 	private:
 		
@@ -40,6 +40,7 @@ public:
 	virtual int getFrameHeight() const;
 	
 private:
+	std::chrono::time_point<std::chrono::system_clock>	mLastGrab;
 	cv::VideoCapture * mCaptureHandle;
 	cv::Mat mTmpA;
 	cv::Mat mTmpB;

@@ -15,7 +15,7 @@ VideoFrameProvider::Parameters::Parameters(int pOutputWidth, int pOutputHeight, 
 	, mWidth( std::max(320,std::min(pOutputWidth,3200)))
 	, mHeight( std::max(240,std::min(pOutputHeight,2400)))
 	, mFps(std::max(1,std::min(pFps,50)))
-	, mSleepUs(1000000/mFps)
+	, mFramePeriodMs(1000/mFps)
 {
 	
 }
@@ -56,8 +56,6 @@ bool VideoFrameProvider::getNextFrame(FrameInterface & pRes)
 		}
 	}
 	
-	usleep(mParameters.mSleepUs);
-	
 	*mCaptureHandle>>mTmpA;
 	if(mTmpA.empty())
 	{
@@ -65,6 +63,14 @@ bool VideoFrameProvider::getNextFrame(FrameInterface & pRes)
 		delete mCaptureHandle;
 		mCaptureHandle = NULL;
 		return false;
+	}
+	
+	std::chrono::time_point<std::chrono::system_clock> lNow = std::chrono::system_clock::now();
+	int lElapsedMs = std::chrono::duration<float,std::milli>(lNow - mLastGrab).count();
+	mLastGrab = lNow;
+	if(lElapsedMs < mParameters.mFramePeriodMs)
+	{
+		usleep( (mParameters.mFramePeriodMs - lElapsedMs)*1000);
 	}
 	
 	cv::resize(mTmpA,mTmpB,cv::Size(mParameters.mWidth,mParameters.mHeight));
@@ -76,6 +82,9 @@ bool VideoFrameProvider::getNextFrame(FrameInterface & pRes)
 	pRes.editY() = lOutputArray[0];
 	pRes.editU() = lOutputArray[1];
 	pRes.editV() = lOutputArray[2];
+	
+	pRes.setGrabTimestamp();
+	
 	return true;
 }
 
