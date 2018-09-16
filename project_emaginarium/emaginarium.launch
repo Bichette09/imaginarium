@@ -18,13 +18,16 @@
 		<arg name="serialPort" value="/dev/arduinomega"/>
 	</include>
 	<!-- tinylidar -->
-	<include file="$(find emaginarium)/launch/tinylidar.launch" > 
+	<!--<include file="$(find emaginarium)/launch/tinylidar.launch" > 
 		<arg name="serialPort" value="/dev/arduinoduemilanove"/>
-	</include>
+	</include>-->
 	<!-- speed -->
 	<include file="$(find emaginarium)/launch/speed.launch" > 
 		<arg name="pinA" value="24"/>
 		<arg name="pinB" value="23"/>
+	</include>
+	<include file="$(find emaginarium)/launch/sidelidars.launch" > 
+		<arg name="serialPortLidar" default="/dev/arduinoduemilanove"/>
 	</include>
 	<!-- antenna -->
 	<!--<include file="$(find emaginarium)/launch/antenna.launch" > 

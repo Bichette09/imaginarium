@@ -28,7 +28,7 @@ class SideLidars(object):
 	def __init__(self,serialPortName,pub):
 		# ecart entre les deux detecteurs (mm)
 		self._D = 285.0
-		self.refreshRate = 50
+		self.refreshRate = 20
 		self._pSerialPort = serial.Serial(serialPortName, baudrate=115200,timeout=1)
 		self._publisher = pub
 		
@@ -38,6 +38,7 @@ class SideLidars(object):
 		try:
 			lidars = json.loads(out)
 		except Exception as e:
+			print "Sidelidars"
 			print e
 			print out
 			lidars = {}
