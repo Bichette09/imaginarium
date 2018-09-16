@@ -30,6 +30,7 @@ class Actuator(object):
 		self.mGoalThrottle=0 #-1 pour marche arriere max 0 arret 1 marche avant max
 		self.mGoalSteering=0
 		self.__mGpio = None
+		self.__mLastSpeed = 0.
 		try:
 			self.__mGpio = pigpio.pi()
 		except:
@@ -67,6 +68,12 @@ class Actuator(object):
 			self.throttles = self.throttles + (1740-self.throttles)*lGoalThrottle
 		else:
 			self.throttles = 1480
+			
+			if self.__mLastSpeed < -0.1:
+				self.throttles = 1460
+			elif self.__mLastSpeed > 0.1:
+				self.throttles = 1500
+				
 		rospy.logwarn(self.throttles)
 		if self.__mGpio is not None:
 			self.__mGpio.set_servo_pulsewidth(self.pinT, self.throttles)
@@ -82,7 +89,9 @@ class Actuator(object):
 		self.steering= (1.49-0.25*self.mGoalSteering)*1000
 		if self.__mGpio is not None:
 			self.__mGpio.set_servo_pulsewidth(self.pinS, self.steering)
-
+	
+	def updateSpeed(self,param):
+		self.__mLastSpeed = param.data
 		
 if __name__ == "__main__":	
 	os.getcwd()
@@ -91,4 +100,5 @@ if __name__ == "__main__":
 	lActuator = Actuator(rospy.get_param('/actuator/pinT'),rospy.get_param('/actuator/pinS'))
 	sRosSuscriberThrottle = rospy.Subscriber('emobile/CommandThrottle', emobile.msg.CommandThrottle,lActuator.updateThrottleTarget)
 	sRosSuscriberSteering = rospy.Subscriber('emobile/CommandSteering', emobile.msg.CommandSteering,lActuator.updateSteeringTarget)
+	sRosSuscriberSteering = rospy.Subscriber('/speed', emobile.msg.Speed,lActuator.updateSpeed)
 	rospy.spin()
