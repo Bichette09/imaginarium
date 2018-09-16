@@ -62,3 +62,47 @@
 	top:45%;
 	left:45%;
 }
+
+#watchdogroot {
+	border-style:solid;
+	border-width: 0.1em;
+	border-radius: 0.5em;
+	border-color:#888888;
+	user-select: none;
+	text-align:center;
+	display:flex;
+	flex-direction:column;
+}
+
+.watchdogred{
+	color:red;
+}
+.watchdogorange{
+	color:orange;
+}
+
+#watchdogbutton {
+	font-size:8em;
+}
+#rearmwatchdogbutton {
+	color:green;
+	font-size:1.5em;
+}
+
+#watchdogstatus{
+	display:flex;
+	flex-direction:row;
+	justify-content: center;
+	font-size:1em;
+	height:1.5em;
+}
+
+.button{
+	cursor:default;
+	font-family: 'Material Icons';
+	filter:grayscale(55%) ;
+}
+
+.button:hover{
+	filter:saturate(100%) ;
+}

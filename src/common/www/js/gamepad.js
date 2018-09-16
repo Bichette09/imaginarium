@@ -6,6 +6,11 @@ var sGamePad = {
 	mLastStickCheckSum : undefined
 };
 
+var sWatchDog = {
+	mIsRunning: true,
+	mIsEnable: true
+};
+
 function onProcessGamePad(){
 	let lGamePads = navigator.getGamepads();
 	let lGamePad = undefined;
@@ -157,4 +162,39 @@ function onload() {
 	$(window).on("gamepadconnected", onProcessGamePad);
 	$(window).on("gamepaddisconnected",onProcessGamePad);
 	
+	$("#rearmwatchdogbutton").hide();
+	setInterval(sendHeartBeat,500);
+}
+
+function onunload() {
+	// send disable watch doc command
+	sRosCtx.writeMsg('WatchDogHeartBeat','std_msgs/Int32',{data:-1});
+	sWatchDog.mIsEnable = false;
+}
+
+function watchdogbutton()
+{
+	sWatchDog.mIsRunning = false;
+	$("#rearmwatchdogbutton").show();
+	$("#watchdogstatustext").text("Watchdog emergency halt");
+	$("#watchdogbutton").addClass('watchdogred');
+	$("#watchdogbutton").removeClass('watchdogorange');
+	sendHeartBeat();
+}
+
+function rearmwatchdogbutton()
+{
+	sWatchDog.mIsRunning = true;
+	$("#rearmwatchdogbutton").hide();
+	$("#watchdogstatustext").text("Watchdog is running");
+	$("#watchdogbutton").removeClass('watchdogred');
+	$("#watchdogbutton").addClass('watchdogorange');
+	sendHeartBeat();
+}
+
+function sendHeartBeat()
+{
+	if(!sWatchDog.mIsEnable)
+		return;
+	sRosCtx.writeMsg('WatchDogHeartBeat','std_msgs/Int32',{data: sWatchDog.mIsRunning ? 2 : 0});
 }
