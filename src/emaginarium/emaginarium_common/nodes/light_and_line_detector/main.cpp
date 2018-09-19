@@ -21,6 +21,7 @@
 
 #include "thresholding_worker.h"
 #include "light_detector.h"
+#include "hough_worker.h"
 #include "emaginarium_common/LightAndLineDetectionStats.h"
 
 class LightAndLineDetectorSettings : public settings_store::SettingsBase
@@ -36,9 +37,10 @@ public:
 		mBlueLightParameterString = mThresholdingParameters.mBlueLightParameter.getStringFromValues();
 		mLightSearchAreaString = mThresholdingParameters.mLightSearchArea.getStringFromValues();
 		mLineSearchAreaString = mThresholdingParameters.mLineSearchArea.getStringFromValues();
-		mLineColorParameterString = mThresholdingParameters.mLineColorParameter.getStringFromValues();
+		mRedLineColorParameterString = mHoughParameters.mRedLineColorParameter.getStringFromValues();
+		mGreenLineColorParameterString = mHoughParameters.mGreenLineColorParameter.getStringFromValues();
 		
-		registerAttribute<std::string>("light_and_line_detector/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? yuvdDL");
+		registerAttribute<std::string>("light_and_line_detector/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? yuvcodDL");
 		registerAttribute<std::string>("light/searchareapercent",mLightSearchAreaString,"area in percent were light should be searched [xmin xmax ymin ymax]");
 		registerAttribute<std::string>("light/red",mRedLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea");
 		registerAttribute<std::string>("light/yellow",mYellowLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea");
@@ -46,7 +48,11 @@ public:
 		registerAttribute<uint32_t>("light/time_window",mLightTimeWindowSec,1,60,"max duration between red and blue light in sec");
 		
 		registerAttribute<std::string>("line/searchareapercent",mLineSearchAreaString,"area in percent were line should be searched [xmin xmax ymin ymax]");
-		registerAttribute<std::string>("line/color",mLineColorParameterString,"Ymin Ymax Umin Umax Vmin Vmax | CanniTh HoughTh minLineLen maxLineGab");
+		registerAttribute<std::string>("line/redcolor",mRedLineColorParameterString,"Ymin Ymax Umin Umax Vmin Vmax | HoughTh minLineLen maxLineGab");
+		registerAttribute<std::string>("line/greencolor",mGreenLineColorParameterString,"Ymin Ymax Umin Umax Vmin Vmax | HoughTh minLineLen maxLineGab");
+		
+		registerAttribute<int32_t>("line/cannyth",mThresholdingParameters.mCannyThreshold,0,255,"Canny threshold");
+
 		declareAndRetrieveSettings();
 	}
 	
@@ -76,20 +82,26 @@ public:
 		{
 			mThresholdingParameters.mLineSearchArea.setValuesFromString(mLineSearchAreaString);
 		}
-		else if(pSettingName.find("line/color") != std::string::npos)
+		else if(pSettingName.find("line/redcolor") != std::string::npos)
 		{
-			mThresholdingParameters.mLineColorParameter.setValuesFromString(mLineColorParameterString);
+			mHoughParameters.mRedLineColorParameter.setValuesFromString(mRedLineColorParameterString);
+		}
+		else if(pSettingName.find("line/greencolor") != std::string::npos)
+		{
+			mHoughParameters.mGreenLineColorParameter.setValuesFromString(mGreenLineColorParameterString);
 		}
 	}
 	
 	ThresholdingWorker::Parameters	mThresholdingParameters;
+	HoughWorker::Parameters			mHoughParameters;
 	std::string						mLightSearchAreaString;
 	std::string						mRedLightParameterString;
 	std::string						mYellowLightParameterString;
 	std::string						mBlueLightParameterString;
 	std::string						mDebugImgChannels;
 	std::string						mLineSearchAreaString;
-	std::string						mLineColorParameterString;
+	std::string						mRedLineColorParameterString;
+	std::string						mGreenLineColorParameterString;
 	uint32_t						mLightTimeWindowSec;
 };
 
@@ -115,14 +127,16 @@ int main(int argc, char ** argv)
 		settings_store::StateDeclarator lStateDeclarator(n);
 		
 #if 1
-		CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*2,240*2,24));
+		CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*2,240*2,60));
 #else
 		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,24,"/home/pi/Untitled Project.avi"));
 		PauseProxyFrameProvider lFrameProvider(lFrameProviderA,n);
 #endif
 
 		ThresholdingWorker lThresholdingWorker(lFrameProvider,lSettings.mThresholdingParameters,lEnableLightDetection);
-		FrameProcessor<LightAndLineFrame> lThresholdingThread(lThresholdingWorker);
+		HoughWorker lHoughWorker(lThresholdingWorker,lSettings.mHoughParameters);
+		FrameProcessor<LightAndLineFrame> lHoughThread(lHoughWorker);
+		
 		
 		LightAndLineFrame lFrame;
 		
@@ -136,7 +150,7 @@ int main(int argc, char ** argv)
 		
 		while(ros::ok())
 		{
-			if(lThresholdingThread.getNextFrame(lFrame))
+			if(lHoughThread.getNextFrame(lFrame))
 			{
 				lFrame.setTimestamp(LightAndLineFrame::F_LightAnalyzeStart);
 				if(lEnableLightDetection)
@@ -158,30 +172,37 @@ int main(int argc, char ** argv)
 				}
 				lFrame.setTimestamp(LightAndLineFrame::F_LightAnalyzeDone);
 				
-				if(lSettings.mDebugImgChannels.find("d") != std::string::npos)
+				if(lSettings.mDebugImgChannels.find("o") != std::string::npos)
 				{
 					std::vector<cv::Mat> lToMerge;
 					lToMerge.push_back(lFrame[LightAndLineFrame::Y]);
 					lToMerge.push_back(lFrame[LightAndLineFrame::U]);
 					lToMerge.push_back(lFrame[LightAndLineFrame::V]);
 					cv::merge(lToMerge, lTmp);
-					cvtColor(lTmp, lFrame[LightAndLineFrame::Debug], cv::COLOR_YUV2BGR);
-					cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame.getLightSearchArea(),cv::Scalar(255,255,255),2);
+					cvtColor(lTmp, lFrame[LightAndLineFrame::Overlay], cv::COLOR_YUV2BGR);
+					cv::rectangle(lFrame[LightAndLineFrame::Overlay],lFrame.getLightSearchArea(),cv::Scalar(255,255,255),2);
 					
 					for(int i = 0 ; i < lFrame[LightAndLineFrame::LC_Red].size() ; ++i)
-						cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame[LightAndLineFrame::LC_Red][i],cv::Scalar(0,0,255),2);
+						cv::rectangle(lFrame[LightAndLineFrame::Overlay],lFrame[LightAndLineFrame::LC_Red][i],cv::Scalar(0,0,255),2);
 					for(int i = 0 ; i < lFrame[LightAndLineFrame::LC_Yellow].size() ; ++i)
-						cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame[LightAndLineFrame::LC_Yellow][i],cv::Scalar(0,255,255),2);
+						cv::rectangle(lFrame[LightAndLineFrame::Overlay],lFrame[LightAndLineFrame::LC_Yellow][i],cv::Scalar(0,255,255),2);
 					for(int i = 0 ; i < lFrame[LightAndLineFrame::LC_Blue].size() ; ++i)
-						cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame[LightAndLineFrame::LC_Blue][i],cv::Scalar(255,0,0),2);
+						cv::rectangle(lFrame[LightAndLineFrame::Overlay],lFrame[LightAndLineFrame::LC_Blue][i],cv::Scalar(255,0,0),2);
 					
-					cv::rectangle(lFrame[LightAndLineFrame::Debug],lFrame.getLineSearchArea(),cv::Scalar(128,128,128),2);
-					for(int i = 0 ; i < lFrame.getLines().size() ; ++i)
+					cv::rectangle(lFrame[LightAndLineFrame::Overlay],lFrame.getLineSearchArea(),cv::Scalar(128,128,128),2);
+					for(int i = 0 ; i < lFrame.getRedLines().size() ; ++i)
 					{
-						cv::line(lFrame[LightAndLineFrame::Debug],
-							cv::Point(lFrame.getLines()[i][0],lFrame.getLines()[i][1]),
-							cv::Point(lFrame.getLines()[i][2],lFrame.getLines()[i][3]),
-							cv::Scalar(255,0,0),2);
+						cv::line(lFrame[LightAndLineFrame::Overlay],
+							cv::Point(lFrame.getRedLines()[i][0],lFrame.getRedLines()[i][1]),
+							cv::Point(lFrame.getRedLines()[i][2],lFrame.getRedLines()[i][3]),
+							cv::Scalar(0,0,255),2);
+					}
+					for(int i = 0 ; i < lFrame.getGreenLines().size() ; ++i)
+					{
+						cv::line(lFrame[LightAndLineFrame::Overlay],
+							cv::Point(lFrame.getGreenLines()[i][0],lFrame.getGreenLines()[i][1]),
+							cv::Point(lFrame.getGreenLines()[i][2],lFrame.getGreenLines()[i][3]),
+							cv::Scalar(0,128,0),2);
 					}
 				}
 				
@@ -191,6 +212,8 @@ int main(int argc, char ** argv)
 				lFrameDebugger.setImage('y',lFrame[LightAndLineFrame::Y]);
 				lFrameDebugger.setImage('u',lFrame[LightAndLineFrame::U]);
 				lFrameDebugger.setImage('v',lFrame[LightAndLineFrame::V]);
+				lFrameDebugger.setImage('c',lFrame[LightAndLineFrame::CannyEdges]);
+				lFrameDebugger.setImage('o',lFrame[LightAndLineFrame::Overlay]);
 				lFrameDebugger.setImage('d',lFrame[LightAndLineFrame::Debug]);
 				lFrameDebugger.setImage('D',lFrame[LightAndLineFrame::Debug2]);
 				lFrameDebugger.setImage('L',lFrame[LightAndLineFrame::LightStatus]);
@@ -210,14 +233,16 @@ int main(int argc, char ** argv)
 					lNextStat.latency += std::chrono::duration<float,std::milli>(lNow - lFrame[LightAndLineFrame::F_GrabDone]).count();
 					lNextStat.lightthresholding += std::chrono::duration<float,std::milli>(lFrame[LightAndLineFrame::F_LightThresholdingDone] - lFrame[LightAndLineFrame::F_LightThresholdingStart]).count();
 					lNextStat.lightanalyze += std::chrono::duration<float,std::milli>(lFrame[LightAndLineFrame::F_LightAnalyzeDone] - lFrame[LightAndLineFrame::F_LightAnalyzeStart]).count();
-					lNextStat.linethresholding += std::chrono::duration<float,std::milli>(lFrame[LightAndLineFrame::F_LineThresholdingDone] - lFrame[LightAndLineFrame::F_LineThresholdingStart]).count();
+					lNextStat.linecanyfilter += std::chrono::duration<float,std::milli>(lFrame[LightAndLineFrame::F_LineCanyFilterDone] - lFrame[LightAndLineFrame::F_LineCanyFilterStart]).count();
+					lNextStat.linehoughfilter += std::chrono::duration<float,std::milli>(lFrame[LightAndLineFrame::F_LineHoughFilterDone] - lFrame[LightAndLineFrame::F_LineHoughFilterStart]).count();
 					if(std::chrono::duration<float>(lNow - lStatStart).count() > 0.25)
 					{
 						lNextStat.fps /= lStatCptr;
 						lNextStat.latency /= lStatCptr;
 						lNextStat.lightthresholding /= lStatCptr;
 						lNextStat.lightanalyze /= lStatCptr;
-						lNextStat.linethresholding /= lStatCptr;
+						lNextStat.linecanyfilter /= lStatCptr;
+						lNextStat.linehoughfilter /= lStatCptr;
 						lStatCptr = 0;
 						lPubStat.publish(lNextStat);
 						

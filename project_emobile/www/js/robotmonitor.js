@@ -82,10 +82,23 @@ function onload()
 				"range":[-2.01,15.01],
 				"rostraces":[
 					{
-						"name":"speed",
+						"name":"speed m/s",
 						"topicname":"/speed",
 						"messagetype":"/emobile/Speed",
 						"messagefield":"speed"
+					}
+				]
+			},
+			"y2":{
+				"unit":"km/h",
+				"range":[-2.01,60.01],
+				"rostraces":[
+					{
+						"name":"speed km/h",
+						"topicname":"/speed",
+						"messagetype":"/emobile/Speed",
+						"messagefield":"speed",
+						"scale":3.6
 					}
 				]
 			}
@@ -114,10 +127,15 @@ function onload()
 						"messagetype":"/emaginarium_common/LightAndLineDetectionStats",
 						"messagefield":"lightanalyze"
 					},{
-						"name":"line_thresholding",
+						"name":"line_canny",
 						"topicname":"/light_and_line_detector/stats",
 						"messagetype":"/emaginarium_common/LightAndLineDetectionStats",
-						"messagefield":"linethresholding"
+						"messagefield":"linecanyfilter"
+					},{
+						"name":"line_hough",
+						"topicname":"/light_and_line_detector/stats",
+						"messagetype":"/emaginarium_common/LightAndLineDetectionStats",
+						"messagefield":"linehoughfilter"
 					}
 				]
 			},
