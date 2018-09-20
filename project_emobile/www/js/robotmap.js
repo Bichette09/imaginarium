@@ -83,7 +83,7 @@ function redraw()
 		ctx.restore();
 	}
 	
-	for(var i = 0 ; i < sLastLeddarMeasures.length ; ++i)
+	for(var i = 0 ; i < sLastLeddarMeasures.length ; ++i) // 
 	{
 		var lMeasuredPos = sLastLeddarMeasures[i];
 		sCanvasHelper.drawCircle(lMeasuredPos[0],lMeasuredPos[1],0.030, i < 8 ? 'rgba(0,128,0,0.7)' : 'rgba(0,0,128,0.7)','black',1,true);

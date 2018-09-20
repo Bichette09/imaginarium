@@ -1,7 +1,15 @@
 {
+    "actuator/bwdStopThrottle": {
+        "description": "command applied to stop emobile when it was moving in backward direction default 1520", 
+        "value": "1780"
+    }, 
+    "actuator/fwdStopThrottle": {
+        "description": "command applied to stop emobile when it was moving in forward direction default 1520", 
+        "value": "1260"
+    }, 
     "actuator/kTh": {
         "description": "kTh", 
-        "value": "0.3"
+        "value": "0.1"
     }, 
     "command/D": {
         "description": "Commanded distance from the side", 
@@ -9,15 +17,23 @@
     }, 
     "command/L": {
         "description": "Prediction distance", 
-        "value": "1.5"
+        "value": "1.2"
     }, 
     "command/distLatMax": {
         "description": "Lateral distance maximum", 
         "value": "0.75"
     }, 
+    "command/distLatMaxMax": {
+        "description": "Lateral distance maximum du desespoir", 
+        "value": "1.0"
+    }, 
     "command/distLatMin": {
         "description": "Lateral distance minimum", 
-        "value": "0.5"
+        "value": "0.3"
+    }, 
+    "command/distLatMinmin": {
+        "description": "Lateral distance minimum avant contact", 
+        "value": "0.1"
     }, 
     "command/distMin": {
         "description": "Distance minimum before stop", 

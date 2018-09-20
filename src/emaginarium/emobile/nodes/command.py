@@ -21,8 +21,8 @@ class CommandSettings(settings_store_client.SettingsBase):
 		self.D=0.75
 		self.distMin=0.10
 		self.distMoy=0.50
-		self.distLatMin = 0.60
-		self.distLatMinMin = 0.40
+		self.distLatMin = 0.50
+		self.distLatMinMin = 0.30
 		self.distLatMax = 0.75
 		self.distLatMaxMax = 1.0
 		self.registerAttributes([
@@ -48,6 +48,7 @@ class ControlLaw():
 		self.y_obj = 0
 		self.coefADroite = 0
 		self.coefBDroite = 0
+		self.pingLidarDist = 0
 
 	def computeThrottleObjective(self):
 		
@@ -69,6 +70,9 @@ class ControlLaw():
 		self.ledarDist = param.distance
 		self.ledarDistX0 = param.x1
 		self.ledarDistY0 = param.y1
+
+	def pingLidar(self,param):
+		self.pingLidarDist = param.data
 
 	def computeAngleToBorders(self):
 		# remove null measures
@@ -149,12 +153,16 @@ class ControlLaw():
 		# Calcul de la distance moyenne des points
 		dist_mean=np.sum(vU8_dist)/nb_not_null
 
-		# On modifie les listes pour rajouter le point attracti
-		(lindexAttract)=self.findIndexAttractive(vU8_Y,lYattractive)
-
-		vU8_X.insert(lindexAttract,lXattractive)
-		vU8_Y.insert(lindexAttract,lYattractive)
-		vU8_dist.insert(lindexAttract,lDattractive)
+		minDist = min(vU8_dist[3],vU8_dist[4])
+		if minDist > lSettings.distMoy:
+			# On modifie les listes pour rajouter le point attractif
+			(lindexAttract)=self.findIndexAttractive(vU8_Y,lYattractive)
+			vU8_X.insert(lindexAttract,lXattractive)
+			vU8_Y.insert(lindexAttract,lYattractive)
+			vU8_dist.insert(lindexAttract,lDattractive)
+		else:
+			lXattractive=0
+			lYattractive=0
 
 		#rospy.logwarn('x :'+str(vU8_X)+' y :'+str(vU8_Y))
 
@@ -164,23 +172,23 @@ class ControlLaw():
 				delta_mean = dist_mean-self.ledarDist[i]
 				if (i-1) >0 :
 					vU8_dist[i-1]= vU8_dist[i-1] - delta_mean
-				if (i+1) <8:
+				if (i+1) <len(vU8_X):
 					vU8_dist[i+1]= vU8_dist[i+1] - delta_mean
 
 			# Penalisation a partir des points du M16
 			minYO = abs(self.coefADroite * 0.09 + self.coefBDroite)
+			if self.pingLidarDist < lSettings.distLatMin:
+				vU8_dist[0]=0
+				vU8_dist[1]=0
+
+			if self.pingLidarDist < lSettings.distLatMinMin:
+				vU8_dist[2]=0
+
 			if minYO < lSettings.distLatMin:
-				vU8_dist[7]=2*vU8_dist[7]/3
-				vU8_dist[8]=2*vU8_dist[8]/3
-
+				vU8_dist[-1]=0
+ 				vU8_dist[-2]=0
 			if minYO < lSettings.distLatMinMin:
-				vU8_dist[6]=2*vU8_dist[6]/3
-
-			if minYO > lSettings.distLatMax:
-				vU8_dist[0]=2*vU8_dist[0]/3
- 				vU8_dist[1]=2*vU8_dist[1]/3
-			if minYO > lSettings.distLatMaxMax:
-				vU8_dist[2]=2*vU8_dist[2]/3
+				vU8_dist[-3]=0
 				
 			# Calcul du point le plus eloigne
 			i_obj = vU8_dist.index(max(vU8_dist))	
@@ -189,7 +197,7 @@ class ControlLaw():
 			self.y_obj=vU8_Y[i_obj]
 
 		sRosPublisherDebugLineDist.publish(std_msgs.msg.Float32(minYO))
-		return (lXattractive,lYattractive)
+		return (lXattractive,lYattractive,dist_mean)
 		
 if __name__ == "__main__":
 	
@@ -207,17 +215,19 @@ if __name__ == "__main__":
 	
 	lControlLaw = ControlLaw()
 	sRosSuscriberLedar = rospy.Subscriber('/pointcloud', emobile.msg.PointCloud,lControlLaw.onNewLedar)
+	sRosSuscriberLidar = rospy.Subscriber('/emobile/PingLidarDist', std_msgs.msg.Float32,lControlLaw.pingLidar)
 	
 	lWheelAnglec = 0.
 	
+	lRate = rospy.Rate(40)
+	
 	while not rospy.core.is_shutdown():
 		
-		# we want 100Hz reresh rate
-		time.sleep(0.02)
-				
+		lRate.sleep()
+		
 		# Predictive command
 		# Compute objective Point
-		(lxAt,lyAt)=lControlLaw.computeObjectivePoint()
+		(lxAt,lyAt,dist_mean)=lControlLaw.computeObjectivePoint()
 
 		#Compute Wheel angle 
 		lWheelAnglec=math.atan(lControlLaw.y_obj/(lControlLaw.x_obj-0.265))*57.3
@@ -235,3 +245,4 @@ if __name__ == "__main__":
 		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('sideline','line','red',[lControlLaw.coefADroite,lControlLaw.coefBDroite]))
 		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('targetPoint','circle','green',[lControlLaw.x_obj,lControlLaw.y_obj,0.05]))
 		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('targetPoint2','circle','red',[lxAt,lyAt,0.05]))		
+		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('moy','circle','blue',[0.362,0,dist_mean]))	

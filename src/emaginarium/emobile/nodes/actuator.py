@@ -9,6 +9,7 @@ import os
 import emaginarium_common.msg
 import std_msgs
 from settings_store import settings_store_client
+import time
 
 
 class ActuatorSettings(settings_store_client.SettingsBase):
@@ -16,19 +17,28 @@ class ActuatorSettings(settings_store_client.SettingsBase):
 	def __init__(self):
 		settings_store_client.SettingsBase.__init__(self)
 		self.kTh=0.3
+		self.forwardStopThrottle = 1520
+		self.backwardStopThrottle = 1520
 		self.registerAttributes([
 			('kTh','actuator/kTh','kTh'),
+			('forwardStopThrottle','actuator/fwdStopThrottle','command applied to stop emobile when it was moving in forward direction default 1520'),
+			('backwardStopThrottle','actuator/bwdStopThrottle','command applied to stop emobile when it was moving in backward direction default 1520'),
 			])
 
 class Actuator(object):
 	def __init__(self,pinT,pinS):
 		self.__mStateDeclarator = settings_store_client.StateDeclarator()
 		self.__mPowerWatchdog = settings_store_client.PowerWatchdog(self.__mStateDeclarator);
+		self.mRosPublisherThrottle = rospy.Publisher('/throttles', std_msgs.msg.Float32, queue_size=1)
+	
 		self.throttles = 0
 		self.steering = 0
 		self.settings = ActuatorSettings()
 		self.mGoalThrottle=0 #-1 pour marche arriere max 0 arret 1 marche avant max
 		self.mGoalSteering=0
+		self.mLastNonNullGoalThrottle = 0
+		self.mBrakeTimer = None
+		
 		self.__mGpio = None
 		self.__mLastSpeed = 0.
 		try:
@@ -65,26 +75,42 @@ class Actuator(object):
 		
 		if self.__mPowerWatchdog.isPowerEnable():
 			lGoalThrottle = self.mGoalThrottle * self.settings.kTh
+			
 		
-		if lGoalThrottle > 0.:
-			self.throttles = 1540
-			self.throttles = self.throttles + (1980 - self.throttles)*lGoalThrottle
-		elif lGoalThrottle < 0.:
-			self.throttles = 1500
-			self.throttles = self.throttles + (980-self.throttles)*lGoalThrottle
+		if abs(lGoalThrottle) > 0.01:
+			# MOVE
+			self.mLastNonNullGoalThrottle = lGoalThrottle
+			self.mBrakeTimer = time.time()
+			
+			if lGoalThrottle > 0.:
+				self.throttles = 1540
+				self.throttles = self.throttles + (1980 - self.throttles)*lGoalThrottle
+			else:
+				self.throttles = 1500
+				self.throttles = self.throttles + (980-self.throttles)*lGoalThrottle
 		else:
+			# STOP
 			self.throttles = 1520
 			
-			#if self.__mLastSpeed < -0.1:
-			#	self.throttles = 1560
-			#elif self.__mLastSpeed > 0.1:
-			#	self.throttles = 1520
+			if (self.mBrakeTimer is not None) and (time.time() - self.mBrakeTimer) < 0.5 and self.mLastNonNullGoalThrottle > 0.:
+				if self.__mLastSpeed > 0.3:
+					# we need to brake if we are moving faster than 0.3 m/s
+					if self.mLastNonNullGoalThrottle > 0.01:
+						self.throttles = self.settings.forwardStopThrottle
+					elif self.mLastNonNullGoalThrottle < 0.01:
+						self.throttles = self.settings.backwardStopThrottle
+				else:
+					self.mBrakeTimer = None
+			else:
+				self.mBrakeTimer = None
+				
 				
 		# rospy.logwarn(self.throttles)
 		if self.__mGpio is not None:
 			if rospy.is_shutdown():
 				self.__mGpio.set_servo_pulsewidth(self.pinT, 1520)
 			else:
+				self.mRosPublisherThrottle.publish(std_msgs.msg.Float32(self.throttles))
 				self.__mGpio.set_servo_pulsewidth(self.pinT, self.throttles)
 
 	def updateSteeringTarget(self, param):

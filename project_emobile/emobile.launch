@@ -23,6 +23,9 @@
 	<include file="$(find emobile)/launch/odometer.launch" >
 		<arg name="pin" value="26"/>
 	</include>
+	<!-- ping lidar -->
+	<include file="$(find emobile)/launch/pingLidar.launch" >
+	</include>
 	<!-- Actuator -->
 	<include file="$(find emobile)/launch/actuator.launch" > 
 		<arg name="pinT" value="18"/>

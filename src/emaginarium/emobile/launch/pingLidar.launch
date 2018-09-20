@@ -1,0 +1,4 @@
+<launch>
+	<node name="pingLidar" pkg="emobile" type="pingLidar.py">
+	</node>
+</launch>

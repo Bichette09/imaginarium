@@ -91,6 +91,11 @@ function onload()
 						"topicname":"/emobile/DebugMinDist",
 						"messagetype":"std_msgs/Float32",
 						"messagefield":"data"
+					},{
+						"name":"ping lidar",
+						"topicname":"/emobile/PingLidarDist",
+						"messagetype":"std_msgs/Float32",
+						"messagefield":"data"
 					}
 				]
 			}
@@ -100,7 +105,7 @@ function onload()
 		{
 			"title":"odometry",
 			"y1":{
-				"unit":"m/s",
+				"unit":"speed",
 				"range":[-2.01,15.01],
 				"rostraces":[
 					{
@@ -108,18 +113,23 @@ function onload()
 						"topicname":"/speed",
 						"messagetype":"/emobile/Speed",
 						"messagefield":"speed"
-					}
-				]
-			},"y2":{
-				"unit":"km/h",
-				"range":[-2.01,15.01],
-				"rostraces":[
-					{
+					},{
 						"name":"speed km/h",
 						"topicname":"/speed",
 						"messagetype":"/emobile/Speed",
 						"messagefield":"speed",
 						"scale":3.6
+					}
+				]
+			},"y2":{
+				"unit":"??",
+				"range":[979.9,1980.1],
+				"rostraces":[
+					{
+						"name":"throttle",
+						"topicname":"/throttles",
+						"messagetype":"std_msgs/Float32",
+						"messagefield":"data"
 					}
 				]
 			}
