@@ -11,7 +11,7 @@ import math
 from settings_store import settings_store_client
 import time
 import numpy as np
-import scipy.stats
+# import scipy.stats
 
 class CommandSettings(settings_store_client.SettingsBase):
 

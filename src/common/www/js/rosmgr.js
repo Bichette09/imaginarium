@@ -5,6 +5,7 @@ var sRosCtx = {
 	mServices : {},
 	
 	initRos : function(pOnRosConnectionStatusCallback){
+		$('body').addClass('roserror');
 		sRosCtx.mHandle = new ROSLIB.Ros({
 			url: 'ws://' + window.location.hostname + ':9090'
 		});
@@ -13,6 +14,7 @@ var sRosCtx = {
 		sRosCtx.mHandle.on('connection', function() {
 			console.log('Connected to websocket server.');
 			sRosCtx.mConnected = true;
+			$('body').removeClass('roserror');
 			if(pOnRosConnectionStatusCallback !== undefined)
 				pOnRosConnectionStatusCallback(true);
 		});
@@ -20,6 +22,7 @@ var sRosCtx = {
 		sRosCtx.mHandle.on('error', function(error) {
 			console.log('Error connecting to websocket server: ', error);
 			sRosCtx.mConnected = false;
+			$('body').addClass('roserror');
 			if(pOnRosConnectionStatusCallback !== undefined)
 				pOnRosConnectionStatusCallback(false);
 		});
@@ -27,6 +30,7 @@ var sRosCtx = {
 		sRosCtx.mHandle.on('close', function() {
 			console.log('Connection to websocket server closed.');
 			sRosCtx.mConnected = false;
+			$('body').addClass('roserror');
 			if(pOnRosConnectionStatusCallback !== undefined)
 				pOnRosConnectionStatusCallback(false);
 		});

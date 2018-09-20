@@ -3,6 +3,12 @@ body {
 	background-color:#eeeeee;
 }
 
+.roserror {
+	
+	background-color:#ffaaaa;
+	filter:sepia(50%);
+}
+
 .titleroot{
 	/* set relative here so absolution on child will be relative to this node*/
 	position:relative;
