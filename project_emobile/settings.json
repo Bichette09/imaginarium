@@ -1,11 +1,11 @@
 {
     "actuator/kTh": {
         "description": "kTh", 
-        "value": "0.1"
+        "value": "0.15"
     }, 
     "command/D": {
         "description": "Commanded distance from the side", 
-        "value": "0.5"
+        "value": "0.75"
     }, 
     "command/L": {
         "description": "Prediction distance", 
