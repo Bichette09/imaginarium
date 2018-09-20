@@ -71,6 +71,7 @@ class ControlLaw():
 		self.rightAngleValid = 0.
 		self.leftDistanceValid = 0.
 		self.rightDistanceValid = 0.
+		self.countAntenna = 0
 		
 	def onNewSpeed(self,param):
 		self.speed = param.speed
@@ -100,7 +101,8 @@ class ControlLaw():
 			self.rightDistance = param.rightDistance
 	
 	def updateAntenna(self,param):
-		self.antennaStatus = param.status
+		self.countAntenna +=1
+			
 		
 if __name__ == "__main__":
 	
@@ -119,6 +121,7 @@ if __name__ == "__main__":
 	sRosSuscriberSpeed = rospy.Subscriber('emaginarium/Speed', emaginarium.msg.Speed,lControlLaw.onNewSpeed)
 	sRosSuscriberLiDar = rospy.Subscriber('emaginarium/TinyLidar', emaginarium.msg.TinyLidar,lControlLaw.onNewTinyLidar)
 	sRosSuscriberSides = rospy.Subscriber('/emaginarium/Sides', emaginarium.msg.Sides,lControlLaw.onNewSides)
+	sRosSuscriberAntenna = rospy.Subscriber('/emaginarium/Antenna', emaginarium.msg.Antenna,lControlLaw.updateAntenna)
 	
 	
 	#init
@@ -144,21 +147,50 @@ if __name__ == "__main__":
 		lProp = 0.
 		# personne devant => precommande only
 		if lControlLaw.ultrasonDist[4] == 0. and lControlLaw.ultrasonDist[5] == 0.:
+			lLastSpeedTarget = 1.0
 			lProp = 0.
 		else:
-			if lControlLaw.ultrasonDist[2] == 0. and lControlLaw.ultrasonDist[7] == 0.:
+			lLastSpeedTarget = 0.5
+			dir = [lControlLaw.ultrasonDist[2],lControlLaw.ultrasonDist[3],lControlLaw.ultrasonDist[6],lControlLaw.ultrasonDist[7]]
+			for i in range(len(dir)):
+				if dir[i] == 0.:
+					dir[i] = 1000
+			sum = lControlLaw.ultrasonDist[2]+lControlLaw.ultrasonDist[3]+lControlLaw.ultrasonDist[6]+lControlLaw.ultrasonDist[7]
+			if sum >= 3000:
 				lProp = 0.
-			elif lControlLaw.ultrasonDist[2] == 0. and lControlLaw.ultrasonDist[7] > 0.:
-				lProp = 40
-			elif lControlLaw.ultrasonDist[2] > 0. and lControlLaw.ultrasonDist[7] == 0.:
-				lProp = -40
-			elif lControlLaw.ultrasonDist[2] > 0. and lControlLaw.ultrasonDist[7] > 0.:
-				if lControlLaw.ultrasonDist[2] > lControlLaw.ultrasonDist[7]:
-					lProp = 40
+			elif sum >= 2000:
+				if dir[0] == 1000 and dir[1] == 1000:
+					lProp = 9+18+9
+				elif dir[2] == 1000 and dir[3] == 1000:
+					lProp = -(9+18+9)
 				else:
-					lProp = -40
-		
-		print lProp,lControlLaw.ultrasonDist[2]+lControlLaw.ultrasonDist[5]
+					lProp = 0.
+			elif sum >= 1000:
+				if dir[0] == 1000:
+					lProp = 9+18+18
+				elif dir[1] == 1000:
+					lProp = 9+18
+				elif dir[2] == 1000:
+					lProp = -(9+18)
+				elif dir[3] == 1000:
+					lProp = -(9+18+18)
+				else:
+					lProp = 0.
+			else:
+				imax = dir.index(max(dir))
+				if imax == 0:
+					lProp = 9+18+18
+				elif imax == 1:
+					lProp = 9+18
+				elif imax == 2:
+					lProp = -(9+18)
+				elif imax == 3:
+					lProp = -(9+18+18)
+				else:
+					lProp = 0.
+		if lControlLaw.countAntenna >= 2:
+			lLastSpeedTarget = 0.0
+		#print lProp,lControlLaw.ultrasonDist[2]+lControlLaw.ultrasonDist[5]
 			
 		# compute distance to control from the side
 		if lControlLaw.leftDistance is not None and lControlLaw.rightDistance is not None:
@@ -168,10 +200,15 @@ if __name__ == "__main__":
 		
 		# compute position of the objective in the robot frame (y coordinate with respect to the two sides)
 		avPhase = 1.5
-		if lControlLaw.rightAngle is not None:
-			yRight=Obj-(lControlLaw.rightDistance)+avPhase*np.tan(lControlLaw.rightAngle*np.pi/180.0)
-		if lControlLaw.leftAngle is not None:
-			yLeft=-Obj+(lControlLaw.leftDistance)+avPhase*np.tan(lControlLaw.leftAngle*np.pi/180.0)
+		try:
+			if lControlLaw.rightAngle is not None:
+				yRight=Obj-(lControlLaw.rightDistance)+avPhase*np.tan(lControlLaw.rightAngle*np.pi/180.0)
+			if lControlLaw.leftAngle is not None:
+				yLeft=-Obj+(lControlLaw.leftDistance)+avPhase*np.tan(lControlLaw.leftAngle*np.pi/180.0)
+		except:
+			print lControlLaw.rightAngle,lControlLaw.leftAngle
+			yRight = 0.0
+			yLeft = 0.0
 		
 		if lControlLaw.leftAngle is not None and lControlLaw.rightAngle is not None:
 		# the two angles are valid, take the closest one
@@ -196,6 +233,7 @@ if __name__ == "__main__":
 		lWheelAngle = max(-45,min(45,lWheelAngle))
 
 		lDynamixel.setWheelAngle(lWheelAngle)
+		
 		# Message publication
 		sRosPublisher.publish(emaginarium.msg.CommandNosewheel(lWheelAngle,False,lProp,lPrec,lFinalAngle,lLeftAngle,lRightAngle))
 		sRosSuscriberSpeedTarget.publish(emaginarium.msg.SpeedTarget(lLastSpeedTarget))

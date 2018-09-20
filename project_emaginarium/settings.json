@@ -11,6 +11,10 @@
         "description": "", 
         "value": "5"
     }, 
+    "commandThrust/kTh": {
+        "description": "", 
+        "value": "5"
+    }, 
     "hardware_monitor/update_period": {
         "description": "hardware state read interval", 
         "value": "1"
