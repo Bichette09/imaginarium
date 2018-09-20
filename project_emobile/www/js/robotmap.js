@@ -79,7 +79,7 @@ function redraw()
 	
 		ctx.translate(lPosTmp[0],lPosTmp[1]);
 		ctx.rotate(Math.PI * lAngle / 180.);
-		sCanvasHelper.drawRectangle(0,0,40,150,'rgba(0,0,128,0.5)',undefined,undefined);
+		sCanvasHelper.drawRectangle(-10,0,40,150,'rgba(0,0,128,0.5)',undefined,undefined);
 		ctx.restore();
 	}
 	

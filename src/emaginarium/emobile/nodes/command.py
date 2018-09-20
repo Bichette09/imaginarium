@@ -49,6 +49,7 @@ class ControlLaw():
 		self.coefADroite = 0
 		self.coefBDroite = 0
 		self.pingLidarDist = 0
+		self.mFrontLedarPos = np.array([0.265 + 0.097,0.])
 
 	def computeThrottleObjective(self):
 		
@@ -117,7 +118,9 @@ class ControlLaw():
 		(lAngle)=self.computeAngleToBorders()
 		lXattractive = lSettings.L
 		lYattractive = self.coefADroite*lSettings.L+self.coefBDroite+lSettings.D
-		lDattractive = np.sqrt(lXattractive**2+lYattractive**2)
+		
+		# compute distance to front lidar so this distance could be compared to front lidar dists
+		lDattractive = np.linalg.norm(np.array([lXattractive,lYattractive]) - self.mFrontLedarPos)
 
 		return (lXattractive, lYattractive,lDattractive)
 
@@ -195,7 +198,22 @@ class ControlLaw():
 
 			self.x_obj=vU8_X[i_obj]
 			self.y_obj=vU8_Y[i_obj]
-
+		
+		# compute position of virtual points
+		lVirtualPoints = []
+		for (x,y,d) in zip(vU8_X,vU8_Y,vU8_dist):
+			# compute dir vector
+			lDir = np.array([x,y]) - self.mFrontLedarPos
+			lLen = np.linalg.norm(lDir)
+			if lLen <= 0.:
+				continue
+			lDir = lDir / lLen
+			lVirtualPoint = self.mFrontLedarPos + d*lDir
+			lVirtualPoints.append(lVirtualPoint[0])
+			lVirtualPoints.append(lVirtualPoint[1])
+			lVirtualPoints.append(0.05)
+		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('virtualpoints','circle','rgba(0,0,255,0.4)',lVirtualPoints))
+		
 		sRosPublisherDebugLineDist.publish(std_msgs.msg.Float32(minYO))
 		return (lXattractive,lYattractive,dist_mean)
 		
@@ -219,7 +237,7 @@ if __name__ == "__main__":
 	
 	lWheelAnglec = 0.
 	
-	lRate = rospy.Rate(40)
+	lRate = rospy.Rate(30)
 	
 	while not rospy.core.is_shutdown():
 		
@@ -244,5 +262,5 @@ if __name__ == "__main__":
 		sRosPublisherSteering.publish(emobile.msg.CommandSteering(lControlLaw.steeringGoal))
 		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('sideline','line','red',[lControlLaw.coefADroite,lControlLaw.coefBDroite]))
 		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('targetPoint','circle','green',[lControlLaw.x_obj,lControlLaw.y_obj,0.05]))
-		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('targetPoint2','circle','red',[lxAt,lyAt,0.05]))		
-		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('moy','circle','blue',[0.362,0,dist_mean]))	
+		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('targetPoint2','circle','red',[lxAt,lyAt,0.05]))
+		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('moy','circle','rgba(0,0,255,0.4)',[0.362,0,dist_mean]))
