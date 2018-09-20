@@ -48,20 +48,22 @@ except:
 # necessary hardware pause
 time.sleep(1)
 
-lRate = rospy.Rate(42)
+lRate = rospy.Rate(30)
 
 t=rospy.Time.now()
 while not rospy.is_shutdown():
-	if m is None:
-		time.sleep(0.1)
-		continue
 	#read the sensor
 	# read register from 16 to 16+16
 	t_old = t
 	t=rospy.Time.now()
-	lDist = m.read_registers(16,16,4)
-	for i in range(nBeams):
-		lDist[i] /= 100.0
+	lDist = None
+	if m is not None:
+		m.read_registers(16,16,4)
+		for i in range(nBeams):
+			lDist[i] /= 100.0
+	else:
+		#generate dummy measures
+		lDist = [0.3]*16
 	# compose the message
 	msg = LaserScan()
 	# header

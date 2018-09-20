@@ -22,10 +22,6 @@ class PointCloudConverter():
 		self.xM16 = [0]*16
 		self.yM16 = [0]*16
 		self.dM16 = [0]*16
-		self.sensorX = [self.mVu8Pos[0]]*8 + [self.mM16Pos[0]]*16
-		self.sensorY = [self.mVu8Pos[1]]*8 + [self.mM16Pos[1]]*16
-		self.mVu8AngleInc = 0.
-		self.mM16AngleInc = 0.
 		
 		
 		self.mPublisher = pPublisher
@@ -36,14 +32,10 @@ class PointCloudConverter():
 		msg.distance = self.dVu8 + self.dM16
 		msg.x1 = self.xVu8 + self.xM16
 		msg.y1 = self.yVu8 + self.yM16
-		msg.sensorx = self.sensorX
-		msg.sensory = self.sensorY
-		msg.measureconeangle = [self.mVu8AngleInc]*8 + [self.mM16AngleInc]*16
 		
 		self.mPublisher.publish(msg)
 
 	def Vu8PointCloud(self,scan):
-		self.mVu8AngleInc = scan.angle_increment
 		lDistIdx = [[3,4],[2,5],[1,6],[0,7]]
 		for i in range(0,4):
 			for s, si in zip([-1.,1.],[0,1]):
@@ -63,11 +55,9 @@ class PointCloudConverter():
 					self.yVu8[lIdx] = 0.
 				self.dVu8[lIdx] = dist
 
-		self.sendPointCloud()
 		
 
 	def M16PointCloud(self,scan):
-		self.mM16AngleInc = scan.angle_increment
 		lDistIdx = [[7,8],[6,9],[5,10],[4,11],[3,12],[2,13],[1,14],[0,15]]
 		for i in range(0,8):
 			for s, si in zip([-1.,1.],[0,1]):
@@ -87,7 +77,7 @@ class PointCloudConverter():
 					self.xM16[lIdx] = 0.
 					self.yM16[lIdx] = 0.
 				self.dM16[lIdx] = dist
-		self.sendPointCloud()
+
 
 	
 if __name__ == "__main__":
@@ -101,5 +91,10 @@ if __name__ == "__main__":
 	SubFrontLeddar = rospy.Subscriber('/leddarVu8', LaserScan,lPointCloudConverter.Vu8PointCloud)
 	SubFrontLeddar = rospy.Subscriber('/leddarM16', LaserScan,lPointCloudConverter.M16PointCloud)
 	
-	rospy.spin() 
+	lRate = rospy.Rate(30)
+
+	while not rospy.is_shutdown():
+		lRate.sleep();
+		lPointCloudConverter.sendPointCloud();
+	
 	
