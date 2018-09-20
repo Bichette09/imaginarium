@@ -44,11 +44,19 @@
         "value": "120 255 50 70 160 185 | 6 20 "
     }, 
     "light_and_line_detector/debug_img_channels": {
-        "description": "which channels should be published for debug ? yuvdDL", 
-        "value": " yuvdDL"
+        "description": "which channels should be published for debug ? yuvcdDL", 
+        "value": " yuvdoDL"
     }, 
-    "line/color": {
-        "description": "Ymin Ymax Umin Umax Vmin Vmax | CanniTh HoughTh minLineLen maxLineGab", 
+    "line/cannyth": {
+        "description": "Canny threshold", 
+        "value": "64"
+    }, 
+    "line/greencolor": {
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | HoughTh minLineLen maxLineGab", 
+        "value": "90 115 95 115 150 170 | 30 25 40"
+    }, 
+    "line/redcolor": {
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | HoughTh minLineLen maxLineGab", 
         "value": "40 80 120 140 150 180 | 30 25 40"
     }, 
     "line/searchareapercent": {
