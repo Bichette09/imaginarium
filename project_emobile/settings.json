@@ -1,7 +1,7 @@
 {
     "actuator/kTh": {
         "description": "kTh", 
-        "value": "0.15"
+        "value": "0.1"
     }, 
     "command/D": {
         "description": "Commanded distance from the side", 
@@ -9,7 +9,15 @@
     }, 
     "command/L": {
         "description": "Prediction distance", 
-        "value": "2"
+        "value": "1.5"
+    }, 
+    "command/distLatMax": {
+        "description": "Lateral distance maximum", 
+        "value": "0.75"
+    }, 
+    "command/distLatMin": {
+        "description": "Lateral distance minimum", 
+        "value": "0.5"
     }, 
     "command/distMin": {
         "description": "Distance minimum before stop", 

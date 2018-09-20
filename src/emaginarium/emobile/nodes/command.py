@@ -20,11 +20,15 @@ class CommandSettings(settings_store_client.SettingsBase):
 		self.D=0.75
 		self.distMin=0.10
 		self.distMoy=0.50
+		self.distLatMin = 0.50
+		self.distLatMax = 0.75
 		self.registerAttributes([
 			('L','command/L','Prediction distance'),
 			('D','command/D','Commanded distance from the side'),
 			('distMin','command/distMin','Distance minimum before stop'),
-			('distMoy','command/distMoy','Distance medium for slow speed')
+			('distMoy','command/distMoy','Distance medium for slow speed'),
+			('distLatMin','command/distLatMin','Lateral distance minimum'),
+			('distLatMax','command/distLatMax','Lateral distance maximum')
 			])
 
 class ControlLaw():
@@ -150,18 +154,22 @@ class ControlLaw():
 					vU8_dist[i+1]= vU8_dist[i+1] - delta_mean
 
 			# Penalisation a partir des points du M16
-			if np.mean(self.ledarDist[20:24])< 0.2:
-				vU8_dist[0]=vU8_dist[0]/2
-				vU8_dist[1]=vU8_dist[1]/2
-			if np.mean(self.ledarDist[20:24])>1:
- 				vU8_dist[6]=vU8_dist[6]/2
+			minYO = min([abs(x) for x in self.ledarDistY0[19:24]])
+			if minYO < lSettings.distLatMin:
+				vU8_dist[6]=vU8_dist[6]/2
 				vU8_dist[7]=vU8_dist[7]/2
+				rospy.logwarn('min trouve :'+str(minYO)+' dist Min :'+str(lSettings.distLatMin))
+			if minYO > lSettings.distLatMax:
+				vU8_dist[0]=vU8_dist[0]/2
+ 				vU8_dist[1]=vU8_dist[1]/2
+				rospy.logwarn('min trouve :'+str(minYO)+' dist Max :'+str(lSettings.distLatMax))
 
 			# Calcul du point le plus eloigne
 			i_obj = vU8_dist.index(max(vU8_dist))	
 
 			self.x_obj=vU8_X[i_obj]
 			self.y_obj=vU8_Y[i_obj]
+
 
 		return (lXattractive,lYattractive)
 		
@@ -206,4 +214,4 @@ if __name__ == "__main__":
 		sRosPublisherSteering.publish(emobile.msg.CommandSteering(lControlLaw.steeringGoal))
 		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('sideline','line','red',[lControlLaw.coefADroite,lControlLaw.coefBDroite]))
 		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('targetPoint','circle','green',[lControlLaw.x_obj,lControlLaw.y_obj,0.05]))
-		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('targetPoint2','circle','red',[lxAt,lyAt,0.05]))
+		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('targetPoint2','circle','red',[lxAt,lyAt,0.05]))		
