@@ -11,6 +11,7 @@ import math
 from settings_store import settings_store_client
 import time
 import numpy as np
+import scipy.stats
 
 class CommandSettings(settings_store_client.SettingsBase):
 
@@ -20,15 +21,19 @@ class CommandSettings(settings_store_client.SettingsBase):
 		self.D=0.75
 		self.distMin=0.10
 		self.distMoy=0.50
-		self.distLatMin = 0.50
+		self.distLatMin = 0.60
+		self.distLatMinMin = 0.40
 		self.distLatMax = 0.75
+		self.distLatMaxMax = 1.0
 		self.registerAttributes([
 			('L','command/L','Prediction distance'),
 			('D','command/D','Commanded distance from the side'),
 			('distMin','command/distMin','Distance minimum before stop'),
 			('distMoy','command/distMoy','Distance medium for slow speed'),
 			('distLatMin','command/distLatMin','Lateral distance minimum'),
-			('distLatMax','command/distLatMax','Lateral distance maximum')
+			('distLatMinMin','command/distLatMinmin','Lateral distance minimum avant contact'),
+			('distLatMax','command/distLatMax','Lateral distance maximum'),
+			('distLatMaxMax','command/distLatMaxMax','Lateral distance maximum du desespoir')
 			])
 
 class ControlLaw():
@@ -47,16 +52,18 @@ class ControlLaw():
 	def computeThrottleObjective(self):
 		
 		vu8_dist=[j for i,j in enumerate(self.ledarDist[0:8]) if j != 0]
+		minDist=0
 		if len(vu8_dist) != 0:
-			if  min(vu8_dist) > lSettings.distMoy :
+			minDist = min(vu8_dist)
+			if minDist  > lSettings.distMoy :
 				self.throttleGoal =1
-			elif min(vu8_dist) <= lSettings.distMoy and min(vu8_dist) > lSettings.distMin:
+			elif minDist <= lSettings.distMoy and minDist > lSettings.distMin:
 				self.throttleGoal = 0.5
 			else:
 				self.throttleGoal =0
 		else:
 			self.throttleGoal =0
-
+		sRosPublisherDebugMinDist.publish(std_msgs.msg.Float32(minDist))
 		
 	def onNewLedar(self,param):
 		self.ledarDist = param.distance
@@ -79,9 +86,16 @@ class ControlLaw():
 		try:
 			if len(m16_X) == 0:
 				raise Exception()
+			
+			# lA, lB, r_value, p_value, std_err = scipy.stats.linregress(m16_X, m16_Y)
+			
+			# if r_value < 0.6:
+				# lA
+			
 			resFit = np.polyfit(np.array(m16_X),np.array(m16_Y),1)
 			lA = resFit[0]
 			lB = resFit[1]
+			
 			lAngle=math.atan(lA)*57.3
 		except:
 			pass
@@ -154,23 +168,27 @@ class ControlLaw():
 					vU8_dist[i+1]= vU8_dist[i+1] - delta_mean
 
 			# Penalisation a partir des points du M16
-			minYO = min([abs(x) for x in self.ledarDistY0[19:24]])
+			minYO = abs(self.coefADroite * 0.09 + self.coefBDroite)
 			if minYO < lSettings.distLatMin:
-				vU8_dist[6]=vU8_dist[6]/2
-				vU8_dist[7]=vU8_dist[7]/2
-				rospy.logwarn('min trouve :'+str(minYO)+' dist Min :'+str(lSettings.distLatMin))
-			if minYO > lSettings.distLatMax:
-				vU8_dist[0]=vU8_dist[0]/2
- 				vU8_dist[1]=vU8_dist[1]/2
-				rospy.logwarn('min trouve :'+str(minYO)+' dist Max :'+str(lSettings.distLatMax))
+				vU8_dist[7]=2*vU8_dist[7]/3
+				vU8_dist[8]=2*vU8_dist[8]/3
 
+			if minYO < lSettings.distLatMinMin:
+				vU8_dist[6]=2*vU8_dist[6]/3
+
+			if minYO > lSettings.distLatMax:
+				vU8_dist[0]=2*vU8_dist[0]/3
+ 				vU8_dist[1]=2*vU8_dist[1]/3
+			if minYO > lSettings.distLatMaxMax:
+				vU8_dist[2]=2*vU8_dist[2]/3
+				
 			# Calcul du point le plus eloigne
 			i_obj = vU8_dist.index(max(vU8_dist))	
 
 			self.x_obj=vU8_X[i_obj]
 			self.y_obj=vU8_Y[i_obj]
 
-
+		sRosPublisherDebugLineDist.publish(std_msgs.msg.Float32(minYO))
 		return (lXattractive,lYattractive)
 		
 if __name__ == "__main__":
@@ -183,6 +201,8 @@ if __name__ == "__main__":
 	
 	sRosPublisherSteering = rospy.Publisher('emobile/CommandSteering', emobile.msg.CommandSteering, queue_size=1)
 	sRosPublisherThrottle = rospy.Publisher('emobile/CommandThrottle', emobile.msg.CommandThrottle, queue_size=1)
+	sRosPublisherDebugLineDist = rospy.Publisher('emobile/DebugLineDist', std_msgs.msg.Float32, queue_size=1)
+	sRosPublisherDebugMinDist = rospy.Publisher('emobile/DebugMinDist', std_msgs.msg.Float32, queue_size=1)
 	sRosPublisherDebug2dPrimitives = rospy.Publisher('emobile/Debug2dPrimitive', emaginarium_common.msg.Debug2dPrimitive, queue_size=1)
 	
 	lControlLaw = ControlLaw()
@@ -193,7 +213,7 @@ if __name__ == "__main__":
 	while not rospy.core.is_shutdown():
 		
 		# we want 100Hz reresh rate
-		time.sleep(0.01)
+		time.sleep(0.02)
 				
 		# Predictive command
 		# Compute objective Point

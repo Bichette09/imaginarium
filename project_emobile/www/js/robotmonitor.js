@@ -73,6 +73,28 @@ function onload()
 				]
 			}
 		});
+		
+	sGraphs.addGraph(
+		{
+			"title":"command_info",
+			"y1":{
+				"unit":"m",
+				"range":[0.01,4.01],
+				"rostraces":[
+					{
+						"name":"line dist",
+						"topicname":"/emobile/DebugLineDist",
+						"messagetype":"std_msgs/Float32",
+						"messagefield":"data"
+					},{
+						"name":"min dist",
+						"topicname":"/emobile/DebugMinDist",
+						"messagetype":"std_msgs/Float32",
+						"messagefield":"data"
+					}
+				]
+			}
+		});
 	
 	sGraphs.addGraph(
 		{
@@ -88,10 +110,9 @@ function onload()
 						"messagefield":"speed"
 					}
 				]
-			},
-			"y2":{
+			},"y2":{
 				"unit":"km/h",
-				"range":[-2.01,60.01],
+				"range":[-2.01,15.01],
 				"rostraces":[
 					{
 						"name":"speed km/h",

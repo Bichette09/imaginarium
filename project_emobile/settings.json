@@ -1,7 +1,7 @@
 {
     "actuator/kTh": {
         "description": "kTh", 
-        "value": "0.1"
+        "value": "0.3"
     }, 
     "command/D": {
         "description": "Commanded distance from the side", 
@@ -21,11 +21,11 @@
     }, 
     "command/distMin": {
         "description": "Distance minimum before stop", 
-        "value": "0.3"
+        "value": "0.6"
     }, 
     "command/distMoy": {
         "description": "Distance medium for slow speed", 
-        "value": "0.5"
+        "value": "1.7"
     }, 
     "hardware_monitor/update_period": {
         "description": "hardware state read interval", 
