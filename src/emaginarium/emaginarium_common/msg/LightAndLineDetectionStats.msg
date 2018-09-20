@@ -7,4 +7,5 @@ float32 lightthresholding
 # light area analyze duration
 float32 lightanalyze
 # line thresholding duration
-float32 linethresholding
+float32 linecanyfilter
+float32 linehoughfilter

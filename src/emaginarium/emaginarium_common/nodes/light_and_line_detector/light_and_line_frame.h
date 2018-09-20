@@ -23,6 +23,8 @@ public:
 		Y = 0,
 		U,
 		V,
+		CannyEdges,
+		Overlay,
 		Debug,
 		Debug2,
 		LightStatus,
@@ -37,8 +39,10 @@ public:
 		F_LightThresholdingDone,
 		F_LightAnalyzeStart,
 		F_LightAnalyzeDone,
-		F_LineThresholdingStart,
-		F_LineThresholdingDone
+		F_LineCanyFilterStart,
+		F_LineCanyFilterDone,
+		F_LineHoughFilterStart,
+		F_LineHoughFilterDone
 	};
 	typedef std::chrono::time_point<std::chrono::system_clock> tTimestamp;
 	typedef std::map<TimeStampFence,tTimestamp> tTimestamps;
@@ -57,8 +61,10 @@ public:
 	const cv::Rect & getLightSearchArea() const;
 	
 	typedef std::vector<cv::Vec4i> tLines;
-	tLines & editLines();
-	const tLines & getLines() const;
+	tLines & editRedLines();
+	const tLines & getRedLines() const;
+	tLines & editGreenLines();
+	const tLines & getGreenLines() const;
 	
 	cv::Rect & editLineSearchArea() ;
 	const cv::Rect & getLineSearchArea() const;
@@ -82,5 +88,6 @@ private:
 	tRects		mLightAreas[LC_Count];
 	cv::Rect	mLightSearchArea;
 	cv::Rect	mLineSearchArea;
-	tLines		mLines;
+	tLines		mRedLines;
+	tLines		mGreenLines;
 };

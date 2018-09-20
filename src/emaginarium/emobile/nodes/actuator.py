@@ -80,7 +80,7 @@ class Actuator(object):
 			#elif self.__mLastSpeed > 0.1:
 			#	self.throttles = 1520
 				
-		rospy.logwarn(self.throttles)
+		# rospy.logwarn(self.throttles)
 		if self.__mGpio is not None:
 			if rospy.is_shutdown():
 				self.__mGpio.set_servo_pulsewidth(self.pinT, 1520)

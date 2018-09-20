@@ -35,7 +35,6 @@ function setCommandSteering(pMsg)
 	if(sWheelAngle != pMsg.steering)
 	{
 		sWheelAngle = lAngle;
-		console.log(lAngle);
 		sRequestRedraw = true;
 	}
 }
