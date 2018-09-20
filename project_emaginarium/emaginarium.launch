@@ -30,10 +30,10 @@
 		<arg name="serialPortLidar" default="/dev/arduinoduemilanove"/>
 	</include>
 	<!-- antenna -->
-	<!--<include file="$(find emaginarium)/launch/antenna.launch" > 
+	<include file="$(find emaginarium)/launch/antenna.launch" > 
 		<arg name="pinA" value="20"/>
 		<arg name="pinB" value="21"/>
-	</include>-->
+	</include>
 	<!-- command thrust -->
 	<include file="$(find emaginarium)/launch/commandThrust.launch" > 
 		

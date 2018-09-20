@@ -9,35 +9,32 @@ import emaginarium_common.msg
 from settings_store import settings_store_client
 import os
 
+
 class CommandThrust(object):
 	def __init__(self,pinA,pinB,pinC,pinD,settings):
 		self.speed = 0
 		self.thrust = [0,0,0,0]# Thrust table for all the engines
 		self.mthrust = 0 # Command Thrust
 		self.mGoalSpeed = 0. # Goal Speed
-		self.__mIsEnable = False # Engine are disabled
-		self.__mGpio = pigpio.pi()
+		self.mGpio = pigpio.pi()
 		self.pinA=pinA
 		self.pinB=pinB
 		self.pinC=pinC
 		self.pinD=pinD
 		self.sRosPublisher = rospy.Publisher('emaginarium/DiagThrust', emaginarium.msg.DiagThrust,queue_size=5) 	
 		self.settings = settings # Goal Speed propotional gain
+		self.mStateDeclarator = settings_store_client.StateDeclarator()
+		self.mPowerWatchdog = settings_store_client.PowerWatchdog(self.mStateDeclarator)
+		lSettings = CommandThrustSettings()
+		self.mStateDeclarator.setState("actuator/enable","disable")
+		self.mStateDeclarator.setState("init/actuator",True)
 		try:
 			self.updateThrust() # mandatory init engines
 		except:
 			rospy.logerr('Fail to initialize engines')
-			self.__mGpio = None
+			self.mGpio = None
 		time.sleep(5)
 		print('Powertrain is ready')
-
-		
- 	def updatexbox (self,param):
-		if '|B|' in param.data:
-			self.__mIsEnable = False
-			if '|Y|' in param.data:
-				self.__mIsEnable = True
-		
 			
 		self.updateThrust()
 				
@@ -54,13 +51,14 @@ class CommandThrust(object):
 		
 	def updateThrust(self):
 		# limit goal speed
+		
 		self.mGoalSpeed = min(max(-5.,self.mGoalSpeed),5.)
 		lError = self.speed - self.mGoalSpeed
 		
-		self.mThrust = lError * self.settings.kp
+		self.mThrust = lError * self.settings.kTh
 		self.mThrust = max(-1.,min(self.mThrust,1.))
 
-		if self.__mIsEnable:
+		if self.mPowerWatchdog.isPowerEnable():
 			if self.mThrust >= 0:
 				self.thrust[0] = 1050+950*self.mThrust
 				self.thrust[1] = 1050
@@ -85,12 +83,11 @@ class CommandThrust(object):
 				self.thrust[i]=2000	  
 	
 		# mapping 1->26; 2->19; 3->13 and 4->6
-		if self.__mGpio is not None:
-			self.__mGpio.set_servo_pulsewidth(self.pinA, self.thrust[0])
-			self.__mGpio.set_servo_pulsewidth(self.pinB, self.thrust[1])
-			self.__mGpio.set_servo_pulsewidth(self.pinC, self.thrust[2])
-			self.__mGpio.set_servo_pulsewidth(self.pinD, self.thrust[3])
-
+		if self.mGpio is not None:
+			self.mGpio.set_servo_pulsewidth(self.pinA, self.thrust[0])
+			self.mGpio.set_servo_pulsewidth(self.pinB, self.thrust[1])
+			self.mGpio.set_servo_pulsewidth(self.pinC, self.thrust[2])
+			self.mGpio.set_servo_pulsewidth(self.pinD, self.thrust[3])
 		# Diagnostic message publishing
 		msg = emaginarium.msg.DiagThrust()
 		msg.commandedThrust = self.mthrust
@@ -102,9 +99,9 @@ class CommandThrustSettings(settings_store_client.SettingsBase):
 
 	def __init__(self):
 		settings_store_client.SettingsBase.__init__(self)
-		self.kp=5
+		self.kTh=5
 		self.registerAttributes([
-			('kp','commandThrust/Kp')
+			('kTh','commandThrust/kTh')
 			])
 		
 if __name__ == "__main__":	
@@ -113,12 +110,11 @@ if __name__ == "__main__":
 
 	#creation instance settings pour les parametres modifiables
 	lSettings = CommandThrustSettings()
-
+	
 	lCommandThrust = CommandThrust(rospy.get_param('/commandThrust/pinA'),rospy.get_param('/commandThrust/pinB'),rospy.get_param('/commandThrust/pinC'),rospy.get_param('/commandThrust/pinD'),lSettings)
 	
 	sRosSuscriberSpeed = rospy.Subscriber('emaginarium/Speed', emaginarium.msg.Speed,lCommandThrust.updateSpeed)
 	sRosSuscriberSpeed = rospy.Subscriber('emaginarium/SpeedTarget', emaginarium.msg.SpeedTarget,lCommandThrust.updateSpeedTarget)
-	sRosSuscriberSpeed = rospy.Subscriber('GamePadButtons', emaginarium_common.msg.GamePadButtons,lCommandThrust.updatexbox)
 	rospy.spin() # Attente de la mise à jour de la valeur de Speed pour executer updateSpeed
 	
 		
