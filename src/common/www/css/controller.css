@@ -68,8 +68,14 @@
 	border-width: 0.1em;
 	border-radius: 0.5em;
 	border-color:#888888;
-	user-select: none;
 	margin-bottom:0.5em;
+	
+	-webkit-user-select: none;  /* Chrome all / Safari all */
+	-moz-user-select: none;     /* Firefox all */
+	-ms-user-select: none;      /* IE 10+ */
+	-o-user-select: none;
+	user-select: none;
+	
 }
 
 #watchdogroot {
@@ -111,8 +117,10 @@
 	font-size:1em;
 	height:2em;
 }
-
-#powerstatusicon, #startbutton{
+#startbutton{
+	font-size:4em;
+}
+#powerstatusicon{
 	font-size:2em;
 }
 

@@ -43,7 +43,7 @@ CameraFrameProvider::CameraFrameProvider(Parameters pParams)
 	//Open camera 
 	if ( !mCameraHandle->open()) 
 	{
-		ROS_ERROR_STREAM("CameraThread fail to open video stream");
+		ROS_ERROR_STREAM("CameraThread fail to open video stream (ensure that picam interface is enabled and video core as enough memory)");
 		mIsError = true;
 	}
 	else
@@ -53,10 +53,10 @@ CameraFrameProvider::CameraFrameProvider(Parameters pParams)
 		
 		mBuffer = new unsigned char[ lBufferSize];
 		ROS_INFO_STREAM("OpenCV version "<<CV_MAJOR_VERSION<<"."<<CV_MINOR_VERSION);
-		ROS_INFO_STREAM("CameraThread capture Y["<<mParameters.mCaptureWidth<<"x"<<mParameters.mCaptureHeight<<"] UV["<<mParameters.mHalfWidth<<"x"<<mParameters.mHalfHeight<<"] @"<<mParameters.mFps<<"fps");
+		ROS_INFO_STREAM("CameraThread capture Y["<<mParameters.mCaptureWidth<<"x"<<mParameters.mCaptureHeight<<"] UV["<<mParameters.mHalfWidth<<"x"<<mParameters.mHalfHeight<<"] @"<<mParameters.mFps<<"fps, output resolution ["<<mParameters.mHalfWidth<<"x"<<mParameters.mHalfHeight<<"]");
 	}
 #else
-	ROS_ERROR_STREAM("CameraThread not build with raspicam support");
+	ROS_ERROR_STREAM("CameraThread not build with libraspicam support");
 	mIsError = true;
 #endif
 	

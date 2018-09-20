@@ -135,16 +135,9 @@ void LightDetector::createDebugImg(cv::Mat & pTarget,tTs pTimeWindowSec)
 			cv::Scalar lColor(0,0,0);
 			for(int c = 0 ; c < 3 ; ++c)
 			{
-				if(lColumn[y].mTs[c] == 0)
-					continue;
 				if(lColumn[y].mTs[c] < lMinTsValue)
-				{
-					lColor[c] = 32;
-				}
-				else
-				{
-					lColor[c] = 128 + ((lColumn[y].mTs[c] - lMinTsValue) * 128) / (pTimeWindowSec*1000); 
-				}
+					continue;
+				lColor[c] = 64 + ((lColumn[y].mTs[c] - lMinTsValue) * 192) / (pTimeWindowSec*1000); 
 			}
 			
 			if(lColor != cv::Scalar(0,0,0))

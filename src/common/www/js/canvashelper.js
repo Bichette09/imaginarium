@@ -108,12 +108,29 @@ var sCanvasHelper = {
 				continue;
 			if(lData.type == 'line')
 			{
-				this.drawLine(lData.data[0],lData.data[1],lData.color,2,true)
+				var lLen = lData.data.length / 2;
+				if(lLen * 2 != lData.data.length)
+				{
+					console.log('line primitive invalid length ' + lData.data.length.toString());
+				}
+				for(var i = 0 ; i < lLen ; ++i)
+				{
+					this.drawLine(lData.data[i*2+0],lData.data[i*2+1],lData.color,2,true)
+				}
 			}
 			else if(lData.type == 'circle')
 			{
-				this.drawCircle(lData.data[0],lData.data[1],lData.data[2],undefined,lData.color,2,true);
+				var lLen = lData.data.length / 3;
+				if(lLen * 3 != lData.data.length)
+				{
+					console.log('circle primitive invalid length ' + lData.data.length.toString());
+				}
+				for(var i = 0 ; i < lLen ; ++i)
+				{
+					this.drawCircle(lData.data[i*3+0],lData.data[i*3+1],lData.data[i*3+2],undefined,lData.color,2,true);
+				}
 			}
+			
 		}
 	},
 	

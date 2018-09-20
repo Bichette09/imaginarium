@@ -37,20 +37,7 @@ public:
 		int mPercentOfValidPixelPerArea;
 	};
 	
-	struct LineDefinition
-	{
-		LineDefinition();
-		
-		void setValuesFromString(const std::string & pString);
-		std::string getStringFromValues() const;
-		
-		ColorFilterParameter	mColorFilter;
-		int						mCannyThreshold;
-		int						mHoughThreshold;
-		int						mMinLineLen;
-		int						mMaxLineGap;
-		
-	};
+	
 	
 	struct SearchArea
 	{
@@ -71,17 +58,14 @@ public:
 	{
 		Parameters();
 		
-		void setLightSearchArea(const std::string & pString);
-		std::string getLightSearchArea() const;
-		
 		SearchArea					mLightSearchArea;
 		LightColorAreaDefinition	mRedLightParameter;
 		LightColorAreaDefinition	mYellowLightParameter;
 		LightColorAreaDefinition	mBlueLightParameter;
 		
 		SearchArea					mLineSearchArea;
-		LineDefinition				mLineColorParameter;
 		
+		int32_t						mCannyThreshold;
 	};
 	
 	ThresholdingWorker(FrameProvider & pFrameProvider, const Parameters & pParameters, const bool & pEnableLightDetection);
@@ -89,13 +73,15 @@ public:
 	
 	const Parameters &			mParameters;
 	
+	static void ComputeColorMask(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi,const ColorFilterParameter & pColorDef, cv::Mat * pTmpMatArray);
+	
+	
 protected:
 	virtual bool computeNextResult(LightAndLineFrame & pRes);
 private:
 
 	void extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi, const LightColorAreaDefinition & pColorDef, cv::Mat * pTmpMatArray, LightAndLineFrame::tRects & pAreas);
 
-	void computeColorMask(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi,const ColorFilterParameter & pColorDef, cv::Mat * pTmpMatArray);
 	
 	const bool mEnableLightDetection;
 	
@@ -119,7 +105,6 @@ private:
 	};
 	
 	cv::Mat mLightTmpMatArray[TM_Count];
-	cv::Mat mLineTmpMatArray[TM_Count];
 	
 	cv::Mat mMorphoKernel3x3;
 	cv::Mat mMorphoKernel5x5;
