@@ -19,14 +19,28 @@ PauseProxyFrameProvider::~PauseProxyFrameProvider()
 
 void PauseProxyFrameProvider::onGamepadButton(const std_msgs::String::ConstPtr& msg)
 {
-	if(msg->data.find("|A|") != std::string::npos)
+	//ROS_WARN_STREAM(msg->data);
+	if(msg->data.find("|VideoProxy_Pause|") != std::string::npos)
 	{
+		if(!mIsPaused)
+		{
+			ROS_WARN_STREAM("pause video stream");
+		}
+		else
+		{
+			ROS_WARN_STREAM("next video stream frame");
+		}
+		
 		mIsPaused = true;
 		mNextFrame = true;
 		mStateDeclarator.setState("video_stream","pause");
 	}
-	else if(msg->data.find("|X|")  != std::string::npos)
+	else if(msg->data.find("|VideoProxy_Play|")  != std::string::npos)
 	{
+		if(!mIsPaused)
+		{
+			ROS_WARN_STREAM("restart video stream");
+		}
 		mIsPaused = false;
 		mStateDeclarator.setState("video_stream","play");
 	}

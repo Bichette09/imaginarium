@@ -32,13 +32,22 @@ void HoughWorker::LineDefinition::setValuesFromString(const std::string & pStrin
 			break;
 	}
 	lStream
+		>>mColorFilter.mDebugMask;
+	while(lStream)
+	{
+		char lTmp = ' ';
+		lStream>>lTmp;
+		if(lTmp == '|')
+			break;
+	}
+	lStream
 		>>mHoughThreshold
 		>>mMinLineLen
 		>>mMaxLineGap
 		;
 	if(!lStream)
 	{
-		ROS_WARN_STREAM("Invalid parameters "<<pString);
+		ROS_WARN_STREAM("Invalid line parameters "<<pString);
 		*this = lBackup;
 	}
 }
@@ -54,6 +63,8 @@ std::string HoughWorker::LineDefinition::getStringFromValues() const
 		<<mColorFilter.mVMin<<" "
 		<<mColorFilter.mVMax<<" "
 		<<"| "
+		<<mColorFilter.mDebugMask<<" "
+		<<"| "
 		<<mHoughThreshold<<" "
 		<<mMinLineLen<<" "
 		<<mMaxLineGap<<" "
@@ -63,8 +74,8 @@ std::string HoughWorker::LineDefinition::getStringFromValues() const
 
 HoughWorker::Parameters::Parameters()
 {
-	mRedLineColorParameter.setValuesFromString("0 255 0 255 0 255 | 100 20 20 20 ");
-	mGreenLineColorParameter.setValuesFromString("0 255 0 255 0 255 | 100 20 20 20 ");
+	mRedLineColorParameter.setValuesFromString("0 255 0 255 0 255 | 0 | 100 20 20 20 ");
+	mGreenLineColorParameter.setValuesFromString("0 255 0 255 0 255 | 0 | 100 20 20 20 ");
 }
 
 

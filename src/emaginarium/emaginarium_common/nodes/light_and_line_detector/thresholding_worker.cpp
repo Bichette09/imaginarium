@@ -12,6 +12,7 @@ ThresholdingWorker::ColorFilterParameter::ColorFilterParameter()
 	, mVMax(255)
 	, mYMin(170)
 	, mYMax(255)
+	, mDebugMask(0)
 {
 }
 
@@ -41,11 +42,20 @@ void ThresholdingWorker::LightColorAreaDefinition::setValuesFromString(const std
 			break;
 	}
 	lStream
+		>>mColorFilter.mDebugMask;
+	while(lStream)
+	{
+		char lTmp = ' ';
+		lStream>>lTmp;
+		if(lTmp == '|')
+			break;
+	}
+	lStream
 		>>mDownscaleFactor
 		>>mPercentOfValidPixelPerArea;
 	if(!lStream)
 	{
-		ROS_WARN_STREAM("Invalid parameters "<<pString);
+		ROS_WARN_STREAM("Invalid light parameters "<<pString);
 		*this = lBackup;
 	}
 }
@@ -60,6 +70,8 @@ std::string ThresholdingWorker::LightColorAreaDefinition::getStringFromValues() 
 		<<mColorFilter.mUMax<<" "
 		<<mColorFilter.mVMin<<" "
 		<<mColorFilter.mVMax<<" "
+		<<"| "
+		<<mColorFilter.mDebugMask<<" "
 		<<"| "
 		<<mDownscaleFactor<<" "
 		<<mPercentOfValidPixelPerArea<<" ";
@@ -128,9 +140,9 @@ ThresholdingWorker::Parameters::Parameters()
 	: mCannyThreshold(64)
 {
 	mLightSearchArea.setValuesFromString("50 100 10 90");
-	mRedLightParameter.setValuesFromString("100 255 100 120 160 210 | 6 20");
-	mYellowLightParameter.setValuesFromString("120 255 50 70 160 185 | 6 20");
-	mBlueLightParameter.setValuesFromString("60 255 170 210 110 140 | 6 20");
+	mRedLightParameter.setValuesFromString("100 255 100 120 160 210 | 0 | 6 20");
+	mYellowLightParameter.setValuesFromString("120 255 50 70 160 185 | 0 | 6 20");
+	mBlueLightParameter.setValuesFromString("60 255 170 210 110 140 | 0 | 6 20");
 	
 	mLineSearchArea.setValuesFromString("0 100 70 95");
 }
@@ -270,6 +282,11 @@ void ThresholdingWorker::ComputeColorMask(LightAndLineFrame & pFrame,const cv::R
 	else if(lAccumulationMat != TM_A)
 	{
 		cv::swap(pTmpMatArray[lAccumulationMat],pTmpMatArray[lNextAccumulationMat]);
+	}
+	
+	if(pColorDef.mDebugMask)
+	{
+		pFrame[LightAndLineFrame::Debug] = pTmpMatArray[TM_A].clone();
 	}
 	
 }

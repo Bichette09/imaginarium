@@ -32,6 +32,7 @@ public:
 		: settings_store::SettingsBase(pNodeHandle)
 		, mDebugImgChannels("yuvdDL")
 		, mLightTimeWindowSec(10)
+		, mLightDetection(true)
 	{
 		mRedLightParameterString = mThresholdingParameters.mRedLightParameter.getStringFromValues();
 		mYellowLightParameterString = mThresholdingParameters.mYellowLightParameter.getStringFromValues();
@@ -53,6 +54,8 @@ public:
 		registerAttribute<std::string>("line/greencolor",mGreenLineColorParameterString,"Ymin Ymax Umin Umax Vmin Vmax | HoughTh minLineLen maxLineGab");
 		
 		registerAttribute<int32_t>("line/cannyth",mThresholdingParameters.mCannyThreshold,0,255,"Canny threshold");
+		
+		registerAttribute<bool>("img/lightdetection",mLightDetection,"Enable light detection");
 
 		declareAndRetrieveSettings();
 	}
@@ -104,6 +107,8 @@ public:
 	std::string						mRedLineColorParameterString;
 	std::string						mGreenLineColorParameterString;
 	uint32_t						mLightTimeWindowSec;
+	
+	bool							mLightDetection;
 };
 
 
@@ -125,18 +130,19 @@ int main(int argc, char ** argv)
 		LightAndLineDetectorSettings lSettings(n);
 		FrameDebugger lFrameDebugger(n,lSettings.mDebugImgChannels);
 		
-		bool lEnableLightDetection = true;
 		
 		settings_store::StateDeclarator lStateDeclarator(n);
-#define USE_CAM
+//#define USE_CAM
 #ifdef USE_CAM
 		CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*2,240*2,10));
 		
 		FrameRecorder lVideoRecorder("/home/pi",lFrameProvider.mParameters.mHalfWidth,lFrameProvider.mParameters.mHalfHeight,lFrameProvider.mParameters.mFps,n);
 #else
-		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,24,"/home/pi/Untitled Project.avi"));
+		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,10,"/home/pi/vid_18.avi"));
 		PauseProxyFrameProvider lFrameProvider(lFrameProviderA,n);
 #endif
+
+		bool lEnableLightDetection = true;
 
 		ThresholdingWorker lThresholdingWorker(lFrameProvider,lSettings.mThresholdingParameters,lEnableLightDetection);
 		HoughWorker lHoughWorker(lThresholdingWorker,lSettings.mHoughParameters);
@@ -156,6 +162,11 @@ int main(int argc, char ** argv)
 		
 		while(ros::ok())
 		{
+			// update light detection flag
+			lEnableLightDetection = lSettings.mLightDetection;
+			
+			lStateDeclarator.setState("img/lightdetection",lEnableLightDetection);
+			
 			if(lHoughThread.getNextFrame(lFrame))
 			{
 				lFrame.setTimestamp(LightAndLineFrame::F_LightAnalyzeStart);

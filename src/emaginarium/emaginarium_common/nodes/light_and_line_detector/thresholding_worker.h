@@ -18,6 +18,7 @@ public:
 		int mVMax;
 		int mYMin;
 		int mYMax;
+		int mDebugMask;
 	};
 
 	struct LightColorAreaDefinition
