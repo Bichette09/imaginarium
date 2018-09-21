@@ -68,7 +68,7 @@
         "value": "120 255 50 70 160 185 | 6 20 "
     }, 
     "light_and_line_detector/debug_img_channels": {
-        "description": "which channels should be published for debug ? yuvcdDL", 
+        "description": "which channels should be published for debug ? yuvcodDL", 
         "value": " yuvdoDL"
     }, 
     "line/cannyth": {

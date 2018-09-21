@@ -18,6 +18,7 @@
 #include "image_common/video_frame_provider.h"
 #include "image_common/pause_proxy_frame_provider.h"
 #include "image_common/frame_debugger.h"
+#include "image_common/frame_recorder.h"
 
 #include "thresholding_worker.h"
 #include "light_detector.h"
@@ -117,6 +118,8 @@ int main(int argc, char ** argv)
 		ros::Publisher lMsgPublisher = n.advertise<std_msgs::String>("light_and_line_detector/event", 10);
 		ros::Publisher lPubStat = n.advertise<emaginarium_common::LightAndLineDetectionStats>("light_and_line_detector/stats",1);
 		
+		
+		
 		ros::Rate lLoopRate(1);
 		
 		LightAndLineDetectorSettings lSettings(n);
@@ -125,9 +128,13 @@ int main(int argc, char ** argv)
 		bool lEnableLightDetection = true;
 		
 		settings_store::StateDeclarator lStateDeclarator(n);
-		
-#if 1
+
+#define USE_CAM
+#ifdef USE_CAM
 		CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*2,240*2,10));
+		
+		FrameRecorder lVideoRecorder("/home/pi",lFrameProvider.mParameters.mHalfWidth,lFrameProvider.mParameters.mHalfHeight,lFrameProvider.mParameters.mFps,n);
+		
 #else
 		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,24,"/home/pi/Untitled Project.avi"));
 		PauseProxyFrameProvider lFrameProvider(lFrameProviderA,n);
@@ -147,6 +154,7 @@ int main(int argc, char ** argv)
 		LightAndLineFrame::tTimestamp lStatStart;
 		emaginarium_common::LightAndLineDetectionStats lNextStat;
 		int lStatCptr = 0;
+		
 		
 		while(ros::ok())
 		{
@@ -171,7 +179,9 @@ int main(int argc, char ** argv)
 					}
 				}
 				lFrame.setTimestamp(LightAndLineFrame::F_LightAnalyzeDone);
-				
+#ifdef USE_CAM
+				lVideoRecorder.addFrame(lFrame);
+#endif
 				if(lSettings.mDebugImgChannels.find("o") != std::string::npos)
 				{
 					std::vector<cv::Mat> lToMerge;
@@ -180,6 +190,7 @@ int main(int argc, char ** argv)
 					lToMerge.push_back(lFrame[LightAndLineFrame::V]);
 					cv::merge(lToMerge, lTmp);
 					cvtColor(lTmp, lFrame[LightAndLineFrame::Overlay], cv::COLOR_YUV2BGR);
+					
 					cv::rectangle(lFrame[LightAndLineFrame::Overlay],lFrame.getLightSearchArea(),cv::Scalar(255,255,255),2);
 					
 					for(int i = 0 ; i < lFrame[LightAndLineFrame::LC_Red].size() ; ++i)
@@ -255,7 +266,6 @@ int main(int argc, char ** argv)
 		}
 		
 	}
-	
 	return 0;
 }
 

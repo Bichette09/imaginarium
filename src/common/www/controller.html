@@ -35,6 +35,13 @@
 			<div title="click to enable power" id="startbutton" class="button icongreen" onclick="startpower()">play_circle_outline</div>
 			<div id="watchdogbutton" class="button iconorange" onclick='stopbutton()' title="emergency stop">highlight_off</div>
 		</div>
+		<div id="buttonblock" class="block">
+			<div class="title">Button inputs</div>
+			<div class="testbuttoncontainer">
+				<div class="testbutton" onclick="sendCustomButton('Video_Start')">Video_Start</div>
+				<div class="testbutton" onclick="sendCustomButton('Video_Stop')">Video_Stop</div>
+			</div>
+		</div>
 		<div id="gamepadblock" class="block">
 			<div class="title">Gamepad inputs</div>
 			<div id="connectinfo" class="info"><div class="linkicon">info_outline</div>Connect the gamepad and press a button</div>

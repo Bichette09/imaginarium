@@ -1,3 +1,25 @@
+.testbuttoncontainer {
+	display:flex;
+	flex-wrap:wrap;
+	flex-direction:line;
+	justify-content: center;
+}
+
+.testbutton {
+	background-color:#89f19e;
+	margin-left:1em;
+	margin-bottom:0.5em;
+	border-radius:0.1em;
+	font-size:1.5em;
+	text-align:center;
+	padding-left: 0.3em;
+	padding-right: 0.3em;
+}
+
+.testbutton:hover {
+	background-color:#c1f189;
+}
+
 #gamepadid {
 	text-align:center;
 }

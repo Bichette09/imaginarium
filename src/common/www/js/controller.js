@@ -94,6 +94,11 @@ function onProcessGamePad(){
 	}
 }
 
+function sendCustomButton(pMsg)
+{
+	sRosCtx.writeMsg('/GamePadButtons','std_msgs/String',{data:'|' + pMsg + '|'});
+}
+
 function onDisconnect(){
 	sGamePad.mIsInit = false;
 	sGamePad.mGamePadId = undefined;
