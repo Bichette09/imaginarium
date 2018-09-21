@@ -28,6 +28,7 @@ public:
 		Debug,
 		Debug2,
 		LightStatus,
+		LineStatus,
 		
 		LayerCount
 	};
@@ -47,25 +48,37 @@ public:
 	typedef std::chrono::time_point<std::chrono::system_clock> tTimestamp;
 	typedef std::map<TimeStampFence,tTimestamp> tTimestamps;
 	
-	enum LightColor
+	enum ColorAreas
 	{
 		LC_Blue = 0,
 		LC_Yellow,
 		LC_Red,
+		
+		LC_LineGreen,
+		LC_LineRed,
+		
 		LC_Count
 	};
 	typedef std::vector<cv::Rect> tRects;
-	tRects & operator[](LightColor pColor);
-	const tRects & operator[](LightColor pColor) const;
+	tRects & operator[](ColorAreas pType);
+	const tRects & operator[](ColorAreas pType) const;
+	
+	
 	cv::Rect & editLightSearchArea() ;
 	const cv::Rect & getLightSearchArea() const;
 	
-	typedef std::vector<cv::Vec4i> tLines;
-	tLines & editRedLines();
-	const tLines & getRedLines() const;
-	tLines & editGreenLines();
-	const tLines & getGreenLines() const;
+	enum LinesType
+	{
+		LT_Red,
+		LT_Green,
+		
+		LT_Count
+	};
 	
+	typedef std::vector<cv::Vec4i> tLines;
+	tLines & operator[](LinesType pType);
+	const tLines & operator[](LinesType pType) const;
+		
 	cv::Rect & editLineSearchArea() ;
 	const cv::Rect & getLineSearchArea() const;
 	
@@ -85,9 +98,9 @@ private:
 	
 	tLayers		mLayers;
 	tTimestamps	mTimestamps;
-	tRects		mLightAreas[LC_Count];
+	tRects		mColorAreas[LC_Count];
+	tLines		mLines[LT_Count];
 	cv::Rect	mLightSearchArea;
 	cv::Rect	mLineSearchArea;
-	tLines		mRedLines;
-	tLines		mGreenLines;
+	
 };

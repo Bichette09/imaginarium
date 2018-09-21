@@ -33,7 +33,7 @@ void LightDetector::addNewFrame(const LightAndLineFrame & pFrame)
 	addDetectedAreas(pFrame[LightAndLineFrame::LC_Blue],LightAndLineFrame::LC_Blue);
 }
 
-void LightDetector::addDetectedAreas(const tRects & pAreas, LightAndLineFrame::LightColor pColor)
+void LightDetector::addDetectedAreas(const tRects & pAreas, LightAndLineFrame::ColorAreas pColor)
 {
 	tRects::const_iterator lIt = pAreas.begin();
 	const tRects::const_iterator lItEnd = pAreas.end();

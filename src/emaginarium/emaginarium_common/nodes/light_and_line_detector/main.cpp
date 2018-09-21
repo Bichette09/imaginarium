@@ -22,7 +22,6 @@
 
 #include "thresholding_worker.h"
 #include "light_detector.h"
-#include "hough_worker.h"
 #include "emaginarium_common/LightAndLineDetectionStats.h"
 
 class LightAndLineDetectorSettings : public settings_store::SettingsBase
@@ -30,7 +29,7 @@ class LightAndLineDetectorSettings : public settings_store::SettingsBase
 public:
 	LightAndLineDetectorSettings(ros::NodeHandle & pNodeHandle)
 		: settings_store::SettingsBase(pNodeHandle)
-		, mDebugImgChannels("yuvdDL")
+		, mDebugImgChannels("yuvdDLl")
 		, mLightTimeWindowSec(10)
 		, mLightDetection(true)
 	{
@@ -39,19 +38,25 @@ public:
 		mBlueLightParameterString = mThresholdingParameters.mBlueLightParameter.getStringFromValues();
 		mLightSearchAreaString = mThresholdingParameters.mLightSearchArea.getStringFromValues();
 		mLineSearchAreaString = mThresholdingParameters.mLineSearchArea.getStringFromValues();
-		mRedLineColorParameterString = mHoughParameters.mRedLineColorParameter.getStringFromValues();
-		mGreenLineColorParameterString = mHoughParameters.mGreenLineColorParameter.getStringFromValues();
+		mRedLineColorParameterString = mThresholdingParameters.mRedLineColorParameter.getStringFromValues();
+		mGreenLineColorParameterString = mThresholdingParameters.mGreenLineColorParameter.getStringFromValues();
+		mRedLineHoughParameterString = mThresholdingParameters.mRedLineHough.getStringFromValues();
+		mGreenLineHoughParameterString = mThresholdingParameters.mGreenLineHough.getStringFromValues();
+		
+		const char * lColorDesc = "Ymin Ymax Umin Umax Vmin Vmax | DebugMask | DownscaleFactor MinPixCountPercentPerDownscaleArea";
 		
 		registerAttribute<std::string>("light_and_line_detector/debug_img_channels",mDebugImgChannels,"which channels should be published for debug ? yuvcodDL");
 		registerAttribute<std::string>("light/searchareapercent",mLightSearchAreaString,"area in percent were light should be searched [xmin xmax ymin ymax]");
-		registerAttribute<std::string>("light/red",mRedLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea");
-		registerAttribute<std::string>("light/yellow",mYellowLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea");
-		registerAttribute<std::string>("light/blue",mBlueLightParameterString,"Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea");
+		registerAttribute<std::string>("light/red",mRedLightParameterString,lColorDesc);
+		registerAttribute<std::string>("light/yellow",mYellowLightParameterString,lColorDesc);
+		registerAttribute<std::string>("light/blue",mBlueLightParameterString,lColorDesc);
 		registerAttribute<uint32_t>("light/time_window",mLightTimeWindowSec,1,60,"max duration between red and blue light in sec");
 		
 		registerAttribute<std::string>("line/searchareapercent",mLineSearchAreaString,"area in percent were line should be searched [xmin xmax ymin ymax]");
-		registerAttribute<std::string>("line/redcolor",mRedLineColorParameterString,"Ymin Ymax Umin Umax Vmin Vmax | HoughTh minLineLen maxLineGab");
-		registerAttribute<std::string>("line/greencolor",mGreenLineColorParameterString,"Ymin Ymax Umin Umax Vmin Vmax | HoughTh minLineLen maxLineGab");
+		registerAttribute<std::string>("line/redcolor",mRedLineColorParameterString,lColorDesc);
+		registerAttribute<std::string>("line/greencolor",mGreenLineColorParameterString,lColorDesc);
+		registerAttribute<std::string>("line/redhough",mRedLineHoughParameterString,"HoughTh minLineLen maxLineGab");
+		registerAttribute<std::string>("line/greenhough",mGreenLineHoughParameterString,"HoughTh minLineLen maxLineGab");
 		
 		registerAttribute<int32_t>("line/cannyth",mThresholdingParameters.mCannyThreshold,0,255,"Canny threshold");
 		
@@ -88,24 +93,36 @@ public:
 		}
 		else if(pSettingName.find("line/redcolor") != std::string::npos)
 		{
-			mHoughParameters.mRedLineColorParameter.setValuesFromString(mRedLineColorParameterString);
+			mThresholdingParameters.mRedLineColorParameter.setValuesFromString(mRedLineColorParameterString);
 		}
 		else if(pSettingName.find("line/greencolor") != std::string::npos)
 		{
-			mHoughParameters.mGreenLineColorParameter.setValuesFromString(mGreenLineColorParameterString);
+			mThresholdingParameters.mGreenLineColorParameter.setValuesFromString(mGreenLineColorParameterString);
+		}
+		else if(pSettingName.find("line/redhough") != std::string::npos)
+		{
+			mThresholdingParameters.mRedLineHough.setValuesFromString(mRedLineHoughParameterString);
+		}
+		else if(pSettingName.find("line/greenhough") != std::string::npos)
+		{
+			mThresholdingParameters.mGreenLineHough.setValuesFromString(mGreenLineHoughParameterString);
 		}
 	}
 	
 	ThresholdingWorker::Parameters	mThresholdingParameters;
-	HoughWorker::Parameters			mHoughParameters;
+	
 	std::string						mLightSearchAreaString;
 	std::string						mRedLightParameterString;
 	std::string						mYellowLightParameterString;
 	std::string						mBlueLightParameterString;
 	std::string						mDebugImgChannels;
+	
 	std::string						mLineSearchAreaString;
 	std::string						mRedLineColorParameterString;
 	std::string						mGreenLineColorParameterString;
+	std::string						mRedLineHoughParameterString;
+	std::string						mGreenLineHoughParameterString;
+	
 	uint32_t						mLightTimeWindowSec;
 	
 	bool							mLightDetection;
@@ -144,9 +161,9 @@ int main(int argc, char ** argv)
 
 		bool lEnableLightDetection = true;
 
-		ThresholdingWorker lThresholdingWorker(lFrameProvider,lSettings.mThresholdingParameters,lEnableLightDetection);
-		HoughWorker lHoughWorker(lThresholdingWorker,lSettings.mHoughParameters);
-		FrameProcessor<LightAndLineFrame> lHoughThread(lHoughWorker);
+		ThresholdingWorker lThresholdingWorkerA(&lFrameProvider,NULL,lSettings.mThresholdingParameters,lEnableLightDetection);
+		ThresholdingWorker lThresholdingWorkerB(NULL,&lThresholdingWorkerA,lSettings.mThresholdingParameters,lEnableLightDetection);
+		FrameProcessor<LightAndLineFrame> lFinalThread(lThresholdingWorkerB);
 		
 		
 		LightAndLineFrame lFrame;
@@ -167,7 +184,7 @@ int main(int argc, char ** argv)
 			
 			lStateDeclarator.setState<bool>("img/lightdetection",lEnableLightDetection);
 			
-			if(lHoughThread.getNextFrame(lFrame))
+			if(lFinalThread.getNextFrame(lFrame))
 			{
 				lFrame.setTimestamp(LightAndLineFrame::F_LightAnalyzeStart);
 				if(lEnableLightDetection)
@@ -208,20 +225,24 @@ int main(int argc, char ** argv)
 						cv::rectangle(lFrame[LightAndLineFrame::Overlay],lFrame[LightAndLineFrame::LC_Yellow][i],cv::Scalar(0,255,255),2);
 					for(int i = 0 ; i < lFrame[LightAndLineFrame::LC_Blue].size() ; ++i)
 						cv::rectangle(lFrame[LightAndLineFrame::Overlay],lFrame[LightAndLineFrame::LC_Blue][i],cv::Scalar(255,0,0),2);
+					for(int i = 0 ; i < lFrame[LightAndLineFrame::LC_LineGreen].size() ; ++i)
+						cv::rectangle(lFrame[LightAndLineFrame::Overlay],lFrame[LightAndLineFrame::LC_LineGreen][i],cv::Scalar(0,255,0),2);
+					for(int i = 0 ; i < lFrame[LightAndLineFrame::LC_LineRed].size() ; ++i)
+						cv::rectangle(lFrame[LightAndLineFrame::Overlay],lFrame[LightAndLineFrame::LC_LineRed][i],cv::Scalar(0,0,255),2);
 					
 					cv::rectangle(lFrame[LightAndLineFrame::Overlay],lFrame.getLineSearchArea(),cv::Scalar(128,128,128),2);
-					for(int i = 0 ; i < lFrame.getRedLines().size() ; ++i)
+					for(int i = 0 ; i < lFrame[LightAndLineFrame::LT_Red].size() ; ++i)
 					{
 						cv::line(lFrame[LightAndLineFrame::Overlay],
-							cv::Point(lFrame.getRedLines()[i][0],lFrame.getRedLines()[i][1]),
-							cv::Point(lFrame.getRedLines()[i][2],lFrame.getRedLines()[i][3]),
+							cv::Point(lFrame[LightAndLineFrame::LT_Red][i][0],lFrame[LightAndLineFrame::LT_Red][i][1]),
+							cv::Point(lFrame[LightAndLineFrame::LT_Red][i][2],lFrame[LightAndLineFrame::LT_Red][i][3]),
 							cv::Scalar(0,0,255),2);
 					}
-					for(int i = 0 ; i < lFrame.getGreenLines().size() ; ++i)
+					for(int i = 0 ; i < lFrame[LightAndLineFrame::LT_Green].size() ; ++i)
 					{
 						cv::line(lFrame[LightAndLineFrame::Overlay],
-							cv::Point(lFrame.getGreenLines()[i][0],lFrame.getGreenLines()[i][1]),
-							cv::Point(lFrame.getGreenLines()[i][2],lFrame.getGreenLines()[i][3]),
+							cv::Point(lFrame[LightAndLineFrame::LT_Green][i][0],lFrame[LightAndLineFrame::LT_Green][i][1]),
+							cv::Point(lFrame[LightAndLineFrame::LT_Green][i][2],lFrame[LightAndLineFrame::LT_Green][i][3]),
 							cv::Scalar(0,128,0),2);
 					}
 				}
@@ -237,6 +258,7 @@ int main(int argc, char ** argv)
 				lFrameDebugger.setImage('d',lFrame[LightAndLineFrame::Debug]);
 				lFrameDebugger.setImage('D',lFrame[LightAndLineFrame::Debug2]);
 				lFrameDebugger.setImage('L',lFrame[LightAndLineFrame::LightStatus]);
+				lFrameDebugger.setImage('l',lFrame[LightAndLineFrame::LightStatus]);
 				
 				// update stats
 				{

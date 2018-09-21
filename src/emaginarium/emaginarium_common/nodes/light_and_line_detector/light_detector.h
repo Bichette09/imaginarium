@@ -34,7 +34,7 @@ private:
 		tTs	mTs[LightAndLineFrame::LC_Count];
 	};
 	
-	void addDetectedAreas(const tRects & pAreas, LightAndLineFrame::LightColor pColor);
+	void addDetectedAreas(const tRects & pAreas, LightAndLineFrame::ColorAreas pColor);
 	
 	typedef std::vector<DetectionCell> tCellVector;
 	typedef std::vector< tCellVector > tCellMatrix;
