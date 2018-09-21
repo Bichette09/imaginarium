@@ -9,7 +9,7 @@
     }, 
     "actuator/kTh": {
         "description": "kTh", 
-        "value": "0.15"
+        "value": "0.25"
     }, 
     "command/D": {
         "description": "Commanded distance from the side", 
@@ -37,11 +37,23 @@
     }, 
     "command/distMin": {
         "description": "Distance minimum before stop", 
-        "value": "0.6"
+        "value": "0.4"
     }, 
     "command/distMoy": {
         "description": "Distance medium for slow speed", 
-        "value": "1.2"
+        "value": "0.8"
+    }, 
+    "command/distMoy2": {
+        "description": "Upper distance medium for slow speed", 
+        "value": "1.4"
+    }, 
+    "command/ratioSpeed": {
+        "description": "Speed ratio in protected mode", 
+        "value": "0.2"
+    }, 
+    "command/ratioSpeedMin": {
+        "description": "Minimum Speed ratio in protected mode", 
+        "value": "0.05"
     }, 
     "hardware_monitor/update_period": {
         "description": "hardware state read interval", 
