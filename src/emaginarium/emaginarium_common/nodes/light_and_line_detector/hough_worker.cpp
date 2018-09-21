@@ -118,7 +118,7 @@ void HoughWorker::extractLines(const LineDefinition & pLineDef, LightAndLineFram
 	// dilate this mask
 	float lDilatePixel = 16.;
 	cv::resize(mLineTmpMatArray[TM_A],mLineTmpMatArray[TM_a],cv::Size(),1/lDilatePixel,1/lDilatePixel,cv::INTER_AREA);
-	cv::resize(mLineTmpMatArray[TM_a],mLineTmpMatArray[TM_A],cv::Size(),lDilatePixel,lDilatePixel,cv::INTER_AREA);
+	cv::resize(mLineTmpMatArray[TM_a],mLineTmpMatArray[TM_A],mLineTmpMatArray[TM_A].size(),lDilatePixel,lDilatePixel,cv::INTER_AREA);
 	cv::threshold(mLineTmpMatArray[TM_A], mLineTmpMatArray[TM_B],10,255,cv::THRESH_BINARY);
 
 	// compose mask and edges

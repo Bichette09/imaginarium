@@ -84,7 +84,7 @@ private:
 	void extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi, const LightColorAreaDefinition & pColorDef, cv::Mat * pTmpMatArray, LightAndLineFrame::tRects & pAreas);
 
 	
-	const bool mEnableLightDetection;
+	const bool & mEnableLightDetection;
 	
 	FrameProviderWorker<LightAndLineFrame>	mFrameProviderWorker;
 	FrameProcessor<LightAndLineFrame> *		mCameraThread;

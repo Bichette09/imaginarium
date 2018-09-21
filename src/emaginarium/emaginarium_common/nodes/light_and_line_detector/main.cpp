@@ -138,7 +138,7 @@ int main(int argc, char ** argv)
 		
 		FrameRecorder lVideoRecorder("/home/pi",lFrameProvider.mParameters.mHalfWidth,lFrameProvider.mParameters.mHalfHeight,lFrameProvider.mParameters.mFps,n);
 #else
-		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,10,"/home/pi/vid_18.avi"));
+		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,10,"/home/pi/vid_20.avi"));
 		PauseProxyFrameProvider lFrameProvider(lFrameProviderA,n);
 #endif
 

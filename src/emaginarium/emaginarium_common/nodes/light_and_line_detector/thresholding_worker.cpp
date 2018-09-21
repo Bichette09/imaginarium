@@ -204,7 +204,9 @@ void ThresholdingWorker::extractColorAreas(LightAndLineFrame & pFrame,const cv::
 {
 	pAreas.clear();
 	if(!mEnableLightDetection)
+	{
 		return;
+	}
 	
 	ComputeColorMask(pFrame,pLightSearchRoi,pColorDef.mColorFilter,pTmpMatArray);
 	// output is in TM_A
