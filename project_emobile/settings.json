@@ -9,7 +9,7 @@
     }, 
     "actuator/kTh": {
         "description": "kTh", 
-        "value": "0.1"
+        "value": "0.15"
     }, 
     "command/D": {
         "description": "Commanded distance from the side", 
@@ -17,7 +17,7 @@
     }, 
     "command/L": {
         "description": "Prediction distance", 
-        "value": "1.2"
+        "value": "3"
     }, 
     "command/distLatMax": {
         "description": "Lateral distance maximum", 
@@ -41,7 +41,7 @@
     }, 
     "command/distMoy": {
         "description": "Distance medium for slow speed", 
-        "value": "1.7"
+        "value": "1.2"
     }, 
     "hardware_monitor/update_period": {
         "description": "hardware state read interval", 

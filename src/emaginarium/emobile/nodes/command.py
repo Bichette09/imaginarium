@@ -51,21 +51,23 @@ class ControlLaw():
 		self.pingLidarDist = 0
 		self.mFrontLedarPos = np.array([0.265 + 0.097,0.])
 
+	def getNonNullMinValue(self, pInput):
+		validdists = [d for d in pInput if d > 0.]
+		return min(validdists) if len(validdists) > 0 else -1.
+		
 	def computeThrottleObjective(self):
 		
-		vu8_dist=[j for i,j in enumerate(self.ledarDist[0:8]) if j != 0]
-		minDist=0
-		if len(vu8_dist) != 0:
-			minDist = min(vu8_dist)
-			if minDist  > lSettings.distMoy :
-				self.throttleGoal =1
-			elif minDist <= lSettings.distMoy and minDist > lSettings.distMin:
-				self.throttleGoal = 0.5
-			else:
-				self.throttleGoal =0
+		lFrontMinDist = self.getNonNullMinValue(self.ledarDist[2:6])
+		lFrontCentralMinDist = self.getNonNullMinValue(self.ledarDist[2:6])
+		
+		if lFrontMinDist < lSettings.distMin:
+			self.throttleGoal = 0.
+		elif lFrontCentralMinDist < 0. or lFrontCentralMinDist > lSettings.distMoy:
+			self.throttleGoal = 1.
 		else:
-			self.throttleGoal =0
-		sRosPublisherDebugMinDist.publish(std_msgs.msg.Float32(minDist))
+			self.throttleGoal = 0.5
+		
+		sRosPublisherDebugMinDist.publish(std_msgs.msg.Float32(lFrontMinDist))
 		
 	def onNewLedar(self,param):
 		self.ledarDist = param.distance
@@ -156,8 +158,11 @@ class ControlLaw():
 		# Calcul de la distance moyenne des points
 		dist_mean= np.sum(vU8_dist)/nb_not_null if nb_not_null > 0 else 0
 
-		minDist = min(vU8_dist[3],vU8_dist[4])
-		if minDist > lSettings.distMoy:
+		
+		lFrontCentralMinDist = self.getNonNullMinValue(self.ledarDist[2:6])
+		sRosPublisherDebugFrontDist.publish(std_msgs.msg.Float32(lFrontCentralMinDist))
+		
+		if lFrontCentralMinDist > lSettings.distMoy or lFrontCentralMinDist < 0.:
 			# On modifie les listes pour rajouter le point attractif
 			(lindexAttract)=self.findIndexAttractive(vU8_Y,lYattractive)
 			vU8_X.insert(lindexAttract,lXattractive)
@@ -205,7 +210,7 @@ class ControlLaw():
 			# compute dir vector
 			lDir = np.array([x,y]) - self.mFrontLedarPos
 			lLen = np.linalg.norm(lDir)
-			if lLen <= 0.:
+			if lLen <= 0. or lDir[0] < 0.:
 				continue
 			lDir = lDir / lLen
 			lVirtualPoint = self.mFrontLedarPos + d*lDir
@@ -229,6 +234,7 @@ if __name__ == "__main__":
 	sRosPublisherThrottle = rospy.Publisher('emobile/CommandThrottle', emobile.msg.CommandThrottle, queue_size=1)
 	sRosPublisherDebugLineDist = rospy.Publisher('emobile/DebugLineDist', std_msgs.msg.Float32, queue_size=1)
 	sRosPublisherDebugMinDist = rospy.Publisher('emobile/DebugMinDist', std_msgs.msg.Float32, queue_size=1)
+	sRosPublisherDebugFrontDist = rospy.Publisher('emobile/DebugFrontDist', std_msgs.msg.Float32, queue_size=1)
 	sRosPublisherDebug2dPrimitives = rospy.Publisher('emobile/Debug2dPrimitive', emaginarium_common.msg.Debug2dPrimitive, queue_size=1)
 	
 	lControlLaw = ControlLaw()

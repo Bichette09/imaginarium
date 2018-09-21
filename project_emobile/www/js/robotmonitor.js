@@ -96,6 +96,11 @@ function onload()
 						"topicname":"/emobile/PingLidarDist",
 						"messagetype":"std_msgs/Float32",
 						"messagefield":"data"
+					},{
+						"name":"front dist",
+						"topicname":"/emobile/DebugFrontDist",
+						"messagetype":"std_msgs/Float32",
+						"messagefield":"data"
 					}
 				]
 			}
