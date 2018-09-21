@@ -102,6 +102,12 @@ namespace settings_store
 		}
 	}
 	
+	template <>
+	void StateDeclarator::setState(const std::string & pName, const bool & pValue)
+	{
+		setStateStr(pName, pValue ? "true":"false");
+	}
+	
 	template <typename T>
 	void StateDeclarator::setState(const std::string & pName, const T & pValue)
 	{

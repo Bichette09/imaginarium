@@ -165,7 +165,7 @@ int main(int argc, char ** argv)
 			// update light detection flag
 			lEnableLightDetection = lSettings.mLightDetection;
 			
-			lStateDeclarator.setState("img/lightdetection",lEnableLightDetection);
+			lStateDeclarator.setState<bool>("img/lightdetection",lEnableLightDetection);
 			
 			if(lHoughThread.getNextFrame(lFrame))
 			{

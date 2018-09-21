@@ -65,7 +65,7 @@
     }, 
     "light/blue": {
         "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
-        "value": "200 255 125 135 115 1125 | 0 | 6 20 "
+        "value": "210 255 125 135 115 124 | 0 | 6 20 "
     }, 
     "light/red": {
         "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
@@ -77,7 +77,7 @@
     }, 
     "light/time_window": {
         "description": "max duration between red and blue light in sec", 
-        "value": "15"
+        "value": "10"
     }, 
     "light/yellow": {
         "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
