@@ -51,7 +51,7 @@ while not rospy.is_shutdown():
 	t=rospy.Time.now()
 	lDist = None
 	if m is not None:
-		m.read_registers(16,8,4)
+		lDist = m.read_registers(16,8,4)
 		for i in range(nBeams):
 			lDist[i] /= 100.0
 	else:

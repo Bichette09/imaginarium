@@ -154,7 +154,7 @@ class ControlLaw():
 				nb_not_null +=1
 
 		# Calcul de la distance moyenne des points
-		dist_mean=np.sum(vU8_dist)/nb_not_null
+		dist_mean= np.sum(vU8_dist)/nb_not_null if nb_not_null > 0 else 0
 
 		minDist = min(vU8_dist[3],vU8_dist[4])
 		if minDist > lSettings.distMoy:
