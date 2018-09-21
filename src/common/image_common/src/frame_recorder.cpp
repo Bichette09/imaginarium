@@ -88,6 +88,6 @@ void FrameRecorder::endRecording()
 	mVideoRecorder->release();
 	delete mVideoRecorder; mVideoRecorder = NULL;
 	
-	ROS_WARN_STREAM("End recording in "<<lOutputFile);
+	ROS_WARN_STREAM("End recording");
 	
 }

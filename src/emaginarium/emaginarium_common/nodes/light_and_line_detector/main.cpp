@@ -128,13 +128,11 @@ int main(int argc, char ** argv)
 		bool lEnableLightDetection = true;
 		
 		settings_store::StateDeclarator lStateDeclarator(n);
-
 #define USE_CAM
 #ifdef USE_CAM
 		CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*2,240*2,10));
 		
 		FrameRecorder lVideoRecorder("/home/pi",lFrameProvider.mParameters.mHalfWidth,lFrameProvider.mParameters.mHalfHeight,lFrameProvider.mParameters.mFps,n);
-		
 #else
 		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,24,"/home/pi/Untitled Project.avi"));
 		PauseProxyFrameProvider lFrameProvider(lFrameProviderA,n);

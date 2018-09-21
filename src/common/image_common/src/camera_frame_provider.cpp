@@ -10,7 +10,7 @@
 
 CameraFrameProvider::Parameters::Parameters(int pRequestedWidth, int pRequestedHeight, int pFps)
 	: mCaptureWidth( std::max(320,std::min(320 * (int)std::floor(pRequestedWidth*2/320.),3200)))
-	, mCaptureHeight( std::max(240,std::min(240 * (int)std::floor(pRequestedWidth*2/240.),2400)))
+	, mCaptureHeight( std::max(240,std::min(240 * (int)std::floor(pRequestedHeight*2/240.),2400)))
 	, mHalfWidth(mCaptureWidth / 2)
 	, mHalfHeight(mCaptureHeight / 2)
 	, mPixelCount(mCaptureWidth*mCaptureHeight)
