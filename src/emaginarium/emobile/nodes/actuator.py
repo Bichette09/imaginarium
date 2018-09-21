@@ -92,7 +92,8 @@ class Actuator(object):
 			# STOP
 			self.throttles = 1520
 			
-			if (self.mBrakeTimer is not None) and (time.time() - self.mBrakeTimer) < 0.5 and self.mLastNonNullGoalThrottle > 0.:
+			if (self.mBrakeTimer is not None) and (time.time() - self.mBrakeTimer) < 2.5 and self.mLastNonNullGoalThrottle > 0.:
+				#rospy.logwarn('On freine')
 				if self.__mLastSpeed > 0.3:
 					# we need to brake if we are moving faster than 0.3 m/s
 					if self.mLastNonNullGoalThrottle > 0.01:

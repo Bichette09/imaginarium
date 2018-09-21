@@ -19,21 +19,23 @@ class CommandSettings(settings_store_client.SettingsBase):
 		settings_store_client.SettingsBase.__init__(self)
 		self.L=2.
 		self.D=0.75
-		self.distMin=0.10
-		self.distMoy=0.50
+		self.distMin=0.40
+		self.distMoy=0.80
+		self.distMoy2= 1.40
 		self.distLatMin = 0.50
 		self.distLatMinMin = 0.30
-		self.distLatMax = 0.75
-		self.distLatMaxMax = 1.0
+		self.ratioSpeed = 0.2
+		self.ratioSpeedMin = 0.05
 		self.registerAttributes([
 			('L','command/L','Prediction distance'),
 			('D','command/D','Commanded distance from the side'),
 			('distMin','command/distMin','Distance minimum before stop'),
 			('distMoy','command/distMoy','Distance medium for slow speed'),
+			('distMoy2','command/distMoy2','Upper distance medium for slow speed'),
 			('distLatMin','command/distLatMin','Lateral distance minimum'),
 			('distLatMinMin','command/distLatMinmin','Lateral distance minimum avant contact'),
-			('distLatMax','command/distLatMax','Lateral distance maximum'),
-			('distLatMaxMax','command/distLatMaxMax','Lateral distance maximum du desespoir')
+			('ratioSpeed','command/ratioSpeed','Speed ratio in protected mode'),
+			('ratioSpeedMin','command/ratioSpeedMin','Minimum Speed ratio in protected mode')
 			])
 
 class ControlLaw():
@@ -57,15 +59,17 @@ class ControlLaw():
 		
 	def computeThrottleObjective(self):
 		
-		lFrontMinDist = self.getNonNullMinValue(self.ledarDist[2:6])
-		lFrontCentralMinDist = self.getNonNullMinValue(self.ledarDist[2:6])
+		lFrontMinDist = self.getNonNullMinValue(self.ledarDist[2:7])
+		lFrontCentralMinDist = self.getNonNullMinValue(self.ledarDist[2:7])
 		
 		if lFrontMinDist < lSettings.distMin:
 			self.throttleGoal = 0.
-		elif lFrontCentralMinDist < 0. or lFrontCentralMinDist > lSettings.distMoy:
+		elif lFrontCentralMinDist < 0. or lFrontCentralMinDist > lSettings.distMoy2:
 			self.throttleGoal = 1.
+		elif lFrontCentralMinDist > lSettings.distMoy and lFrontCentralMinDist <= lSettings.distMoy2:
+			self.throttleGoal = lSettings.ratioSpeed
 		else:
-			self.throttleGoal = 0.5
+			self.throttleGoal = lSettings.ratioSpeedMin
 		
 		sRosPublisherDebugMinDist.publish(std_msgs.msg.Float32(lFrontMinDist))
 		
