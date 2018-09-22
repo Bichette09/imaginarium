@@ -166,7 +166,7 @@ class ControlLaw():
 		lFrontCentralMinDist = self.getNonNullMinValue(self.ledarDist[2:6])
 		sRosPublisherDebugFrontDist.publish(std_msgs.msg.Float32(lFrontCentralMinDist))
 		
-		if lFrontCentralMinDist > lSettings.distMoy or lFrontCentralMinDist < 0.:
+		if lFrontCentralMinDist > lSettings.distMoy2 or lFrontCentralMinDist < 0.:
 			# On modifie les listes pour rajouter le point attractif
 			(lindexAttract)=self.findIndexAttractive(vU8_Y,lYattractive)
 			vU8_X.insert(lindexAttract,lXattractive)

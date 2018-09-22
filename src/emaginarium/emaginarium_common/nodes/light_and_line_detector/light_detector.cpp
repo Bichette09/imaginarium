@@ -74,9 +74,9 @@ void LightDetector::clearDetector()
 	mLightSearchRoi = cv::Rect();
 }
 
-bool LightDetector::detectLightSequence(tTs pTimeWindowSec)
+bool LightDetector::detectLightSequence(tTs pTimeWindowMSec)
 {
-	const tTs lMinTsValue = mCurrentTs - pTimeWindowSec*1000;
+	const tTs lMinTsValue = mCurrentTs - pTimeWindowMSec;
 	const tTs lMinTimeBetweenTwoColors = 500;
 	int lTs[LightAndLineFrame::LC_Count];
 	for(int x = 0 ; x < mWidth ; ++x)
@@ -129,9 +129,9 @@ bool LightDetector::detectLightSequence(tTs pTimeWindowSec)
 	return false;
 }
 
-void LightDetector::createDebugImg(cv::Mat & pTarget,tTs pTimeWindowSec)
+void LightDetector::createDebugImg(cv::Mat & pTarget,tTs pTimeWindowMSec)
 {
-	const tTs lMinTsValue = mCurrentTs - pTimeWindowSec*1000;
+	const tTs lMinTsValue = mCurrentTs - pTimeWindowMSec;
 	
 	pTarget = cv::Mat(mHeight,mWidth,CV_8UC3,cv::Scalar(0,0,0));
 	
@@ -145,7 +145,7 @@ void LightDetector::createDebugImg(cv::Mat & pTarget,tTs pTimeWindowSec)
 			{
 				if(lColumn[y].mTs[c] < lMinTsValue || lColumn[y].mTs[c] <= 0)
 					continue;
-				lColor[c] = 64 + ((lColumn[y].mTs[c] - lMinTsValue) * 192) / (pTimeWindowSec*1000); 
+				lColor[c] = 64 + ((lColumn[y].mTs[c] - lMinTsValue) * 192) / (pTimeWindowMSec*1000); 
 			}
 			
 			if(lColor != cv::Scalar(0,0,0))

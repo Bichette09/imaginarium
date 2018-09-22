@@ -22,9 +22,9 @@ public:
 	
 	void addNewFrame(const LightAndLineFrame & pFrame);
 	void clearDetector();
-	bool detectLightSequence(tTs pTimeWindowSec);
+	bool detectLightSequence(tTs pTimeWindowMSec);
 	
-	void createDebugImg(cv::Mat & pTarget,tTs pTimeWindowSec);
+	void createDebugImg(cv::Mat & pTarget,tTs pTimeWindowMSec);
 	
 private:
 	struct DetectionCell

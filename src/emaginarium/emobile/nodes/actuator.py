@@ -17,12 +17,16 @@ class ActuatorSettings(settings_store_client.SettingsBase):
 	def __init__(self):
 		settings_store_client.SettingsBase.__init__(self)
 		self.kTh=0.3
+		self.mMaxRunTimer = 48
+		self.mMinTimeBetweenFinishLine = 36
 		self.forwardStopThrottle = 1520
 		self.backwardStopThrottle = 1520
 		self.registerAttributes([
 			('kTh','actuator/kTh','kTh'),
 			('forwardStopThrottle','actuator/fwdStopThrottle','command applied to stop emobile when it was moving in forward direction default 1520'),
 			('backwardStopThrottle','actuator/bwdStopThrottle','command applied to stop emobile when it was moving in backward direction default 1520'),
+			('mMaxRunTimer','actuator/maxruntime','max run time after start'),
+			('mMinTimeBetweenFinishLine','actuator/mintimebetweenfinishline','min duration between finish detection'),
 			])
 
 class Actuator(object):
@@ -38,6 +42,11 @@ class Actuator(object):
 		self.mGoalSteering=0
 		self.mLastNonNullGoalThrottle = 0
 		self.mBrakeTimer = None
+		
+		self.mFinishLineTimer = None
+		self.mRunTimer = None
+		
+		self.mIgnoreCommand = False
 		
 		self.__mGpio = None
 		self.__mLastSpeed = 0.
@@ -67,16 +76,42 @@ class Actuator(object):
 		if self.mGoalThrottle != param.throttle:
 			rospy.logerr('Goal speed out of range %f' % (param.throttle))
 		self.updateThrottle()
-		
+	
+	def onimgdetection(self, param):
+		if param.data != 'finish_line_detected':
+			return
+		lNow = time.time()
+		if self.mFinishLineTimer is None:
+			self.mFinishLineTimer = lNow
+		elif (lNow - self.mFinishLineTimer) > self.settings.mMinTimeBetweenFinishLine:
+			#self.__mPowerWatchdog.setPowerEnableMsg(False,'Finish line')
+			self.mFinishLineTimer=None
+			#self.mIgnoreCommand = True
+			rospy.logwarn('finish line')
+
+	
 	def updateThrottle(self):
 		self.mGoalThrottle = min(max(-1.,self.mGoalThrottle),1.)
 		
 		lGoalThrottle = 0.
 		
-		if self.__mPowerWatchdog.isPowerEnable():
-			lGoalThrottle = self.mGoalThrottle * self.settings.kTh
-			
+		lNow = time.time()
 		
+		if self.__mPowerWatchdog.isPowerEnable() and not self.mIgnoreCommand:
+			if self.mRunTimer is None:
+				self.mFinishLineTimer = None
+				self.mRunTimer = lNow
+			lGoalThrottle = self.mGoalThrottle * self.settings.kTh
+		elif not self.__mPowerWatchdog.isPowerEnable():
+			self.mIgnoreCommand = False
+		
+		if self.mRunTimer is not None:
+			if (lNow - self.mRunTimer) > self.settings.mMaxRunTimer:
+				#self.__mPowerWatchdog.setPowerEnableMsg(False,'time out')
+				self.mRunTimer=None
+				self.mIgnoreCommand = True
+				rospy.logwarn('time out')
+			
 		if abs(lGoalThrottle) > 0.01:
 			# MOVE
 			self.mLastNonNullGoalThrottle = lGoalThrottle
@@ -136,6 +171,7 @@ if __name__ == "__main__":
 	lActuator = Actuator(rospy.get_param('/actuator/pinT'),rospy.get_param('/actuator/pinS'))
 	sRosSuscriberThrottle = rospy.Subscriber('emobile/CommandThrottle', emobile.msg.CommandThrottle,lActuator.updateThrottleTarget)
 	sRosSuscriberSteering = rospy.Subscriber('emobile/CommandSteering', emobile.msg.CommandSteering,lActuator.updateSteeringTarget)
-	sRosSuscriberSteering = rospy.Subscriber('/speed', emobile.msg.Speed,lActuator.updateSpeed)
+	sRosSuscriberImg = rospy.Subscriber('/light_and_line_detector/event', std_msgs.msg.String,lActuator.onimgdetection)
+	sRosSuscriberSpeed = rospy.Subscriber('/speed', emobile.msg.Speed,lActuator.updateSpeed)
 	rospy.spin()
 	lActuator.updateThrottle()

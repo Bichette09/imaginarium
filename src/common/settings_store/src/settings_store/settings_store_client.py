@@ -128,6 +128,9 @@ class PowerWatchdog:
 	def setPowerEnable(self, pEnable):
 		self.__setPowerEnable(pEnable,'code');
 		
+	def setPowerEnableMsg(self, pEnable,pMsg):
+		self.__setPowerEnable(pEnable,pMsg);
+		
 	def isPowerEnable(self):
 		if self.__mEmergencyStopTs != None and self.__mEmergencyStopTs < datetime.datetime.now():
 			self.__setPowerEnable(False,'lost heartbeat')

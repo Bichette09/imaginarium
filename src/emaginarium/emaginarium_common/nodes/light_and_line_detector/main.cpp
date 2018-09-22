@@ -31,8 +31,8 @@ public:
 	LightAndLineDetectorSettings(ros::NodeHandle & pNodeHandle)
 		: settings_store::SettingsBase(pNodeHandle)
 		, mDebugImgChannels("yuvdDLl")
-		, mLightTimeWindowSec(10)
-		, mLineTimeWindowSec(10)
+		, mLightTimeWindowMSec(10000)
+		, mLineTimeWindowMSec(10000)
 		, mLightDetection(true)
 		, mLineDetection(true)
 	{
@@ -53,14 +53,14 @@ public:
 		registerAttribute<std::string>("light/red",mRedLightParameterString,lColorDesc);
 		registerAttribute<std::string>("light/yellow",mYellowLightParameterString,lColorDesc);
 		registerAttribute<std::string>("light/blue",mBlueLightParameterString,lColorDesc);
-		registerAttribute<uint32_t>("light/time_window",mLightTimeWindowSec,1,60,"max duration between red and blue light in sec");
+		registerAttribute<uint32_t>("light/time_window",mLightTimeWindowMSec,1,60,"max duration between red and blue light in msec");
 		
 		registerAttribute<std::string>("line/searchareapercent",mLineSearchAreaString,"area in percent were line should be searched [xmin xmax ymin ymax]");
 		registerAttribute<std::string>("line/redcolor",mRedLineColorParameterString,lColorDesc);
 		registerAttribute<std::string>("line/greencolor",mGreenLineColorParameterString,lColorDesc);
 		registerAttribute<std::string>("line/redhough",mRedLineHoughParameterString,"HoughTh minLineLen maxLineGab");
 		registerAttribute<std::string>("line/greenhough",mGreenLineHoughParameterString,"HoughTh minLineLen maxLineGab");
-		registerAttribute<uint32_t>("line/time_window",mLineTimeWindowSec,1,60,"duration during which we keep info in detection buffer");
+		registerAttribute<uint32_t>("line/time_window",mLineTimeWindowMSec,1,60,"duration during which we keep info in detection buffer in msec");
 		
 		registerAttribute<int32_t>("line/cannyth",mThresholdingParameters.mCannyThreshold,0,255,"Canny threshold");
 		
@@ -128,8 +128,8 @@ public:
 	std::string						mRedLineHoughParameterString;
 	std::string						mGreenLineHoughParameterString;
 	
-	uint32_t						mLightTimeWindowSec;
-	uint32_t						mLineTimeWindowSec;
+	uint32_t						mLightTimeWindowMSec;
+	uint32_t						mLineTimeWindowMSec;
 	
 	bool							mLightDetection;
 	bool							mLineDetection;
@@ -156,7 +156,7 @@ int main(int argc, char ** argv)
 		
 		
 		settings_store::StateDeclarator lStateDeclarator(n);
-//#define USE_CAM
+#define USE_CAM
 #ifdef USE_CAM
 		CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*2,240*2,12));
 		
@@ -204,9 +204,9 @@ int main(int argc, char ** argv)
 					lLightDetector.addNewFrame(lFrame);
 					if(lSettings.mDebugImgChannels.find("L") != std::string::npos)
 					{
-						lLightDetector.createDebugImg(lFrame[LightAndLineFrame::LightStatus],lSettings.mLightTimeWindowSec);
+						lLightDetector.createDebugImg(lFrame[LightAndLineFrame::LightStatus],lSettings.mLightTimeWindowMSec);
 					}
-					if(lLightDetector.detectLightSequence(lSettings.mLightTimeWindowSec))
+					if(lLightDetector.detectLightSequence(lSettings.mLightTimeWindowMSec))
 					{
 						lLightDetector.clearDetector();
 						std_msgs::String lMsg;
@@ -221,7 +221,7 @@ int main(int argc, char ** argv)
 				if(lEnableLineDetection)
 				{
 					
-					lLineDetector.addNewFrame(lFrame,lSettings.mLineTimeWindowSec);
+					lLineDetector.addNewFrame(lFrame,lSettings.mLineTimeWindowMSec);
 					
 					if(lLineDetector.detectLine(LightAndLineFrame::LT_Green))
 					{
@@ -242,7 +242,7 @@ int main(int argc, char ** argv)
 					
 					if(lSettings.mDebugImgChannels.find("l") != std::string::npos)
 					{
-						lLineDetector.createDebugImg(lFrame[LightAndLineFrame::LineStatus],lSettings.mLineTimeWindowSec);
+						lLineDetector.createDebugImg(lFrame[LightAndLineFrame::LineStatus],lSettings.mLineTimeWindowMSec);
 					}
 					
 				}
