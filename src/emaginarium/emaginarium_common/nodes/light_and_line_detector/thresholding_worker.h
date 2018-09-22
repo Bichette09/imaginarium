@@ -4,7 +4,7 @@
 #include "image_common/frame_processor.h"
 #include "image_common/frame_provider_worker.h"
 
-#define USE_HOUGH_LINE_DETECTION
+//#define USE_HOUGH_LINE_DETECTION
 
 class ThresholdingWorker : public WorkerInterface<LightAndLineFrame>
 {

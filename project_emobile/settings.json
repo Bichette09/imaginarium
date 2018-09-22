@@ -61,7 +61,7 @@
     }, 
     "img/lightdetection": {
         "description": "Enable light detection", 
-        "value": "false"
+        "value": "true"
     }, 
     "light/blue": {
         "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
@@ -90,6 +90,22 @@
     "line/cannyth": {
         "description": "Canny threshold", 
         "value": "64"
+    }, 
+    "line/greencolor": {
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "value": "70 150 110 130 90 120 | 1 | 6 5"
+    }, 
+    "line/greenhough": {
+        "description": "HoughTh minLineLen maxLineGab", 
+        "value": "30 15 50 "
+    }, 
+    "line/redcolor": {
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "value": "70 150 115 140 140 180 | 0 | 6 5"
+    }, 
+    "line/redhough": {
+        "description": "HoughTh minLineLen maxLineGab", 
+        "value": "30 15 50 "
     }, 
     "line/searchareapercent": {
         "description": "area in percent were line should be searched [xmin xmax ymin ymax]", 

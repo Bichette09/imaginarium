@@ -20,22 +20,36 @@ public:
 	typedef int32_t tTs;
 	
 	
-	void addNewFrame(const LightAndLineFrame & pFrame);
+	void addNewFrame(const LightAndLineFrame & pFrame, tTs pTimeWindowSec);
 	void clearDetector();
 	bool detectLineSequence();
 	
 	void createDebugImg(cv::Mat & pTarget,tTs pTimeWindowSec);
 	
+	bool detectLine(LightAndLineFrame::LinesType pLineType);
+	
 private:
+
+	void addLineColorAreas(const LightAndLineFrame & pFrame, LightAndLineFrame::ColorAreas pColorArea, LightAndLineFrame::LinesType pLineType, tTs pTimeWindowSec);
 	
 	typedef std::list<tTs> tTsQueue;
-	typedef std::vector<tTsQueue> tDetectionCells;
+	struct DetectionCell
+	{
+		DetectionCell();
+		void clearDetectionCell();
+		
+		tTsQueue	mTsQueue;
+		bool		mNoDataInLastFrame;
+	};
+	typedef std::vector<DetectionCell> tDetectionCells;
 	
 	const std::chrono::time_point<std::chrono::system_clock>	mCreationTime;
 	tTs			mCurrentTs;
 	
 	tDetectionCells	mDetectionCells[LightAndLineFrame::LT_Count];
 	
+	const int	mHeight;
 	const int	mWidth;
+	
 	cv::Rect	mLineSearchRoi;
 };

@@ -22,6 +22,7 @@
 
 #include "thresholding_worker.h"
 #include "light_detector.h"
+#include "line_detector.h"
 #include "emaginarium_common/LightAndLineDetectionStats.h"
 
 class LightAndLineDetectorSettings : public settings_store::SettingsBase
@@ -31,7 +32,9 @@ public:
 		: settings_store::SettingsBase(pNodeHandle)
 		, mDebugImgChannels("yuvdDLl")
 		, mLightTimeWindowSec(10)
+		, mLineTimeWindowSec(10)
 		, mLightDetection(true)
+		, mLineDetection(true)
 	{
 		mRedLightParameterString = mThresholdingParameters.mRedLightParameter.getStringFromValues();
 		mYellowLightParameterString = mThresholdingParameters.mYellowLightParameter.getStringFromValues();
@@ -57,10 +60,12 @@ public:
 		registerAttribute<std::string>("line/greencolor",mGreenLineColorParameterString,lColorDesc);
 		registerAttribute<std::string>("line/redhough",mRedLineHoughParameterString,"HoughTh minLineLen maxLineGab");
 		registerAttribute<std::string>("line/greenhough",mGreenLineHoughParameterString,"HoughTh minLineLen maxLineGab");
+		registerAttribute<uint32_t>("line/time_window",mLineTimeWindowSec,1,60,"duration during which we keep info in detection buffer");
 		
 		registerAttribute<int32_t>("line/cannyth",mThresholdingParameters.mCannyThreshold,0,255,"Canny threshold");
 		
 		registerAttribute<bool>("img/lightdetection",mLightDetection,"Enable light detection");
+		registerAttribute<bool>("img/linedetection",mLineDetection,"Enable line detection");
 
 		declareAndRetrieveSettings();
 	}
@@ -124,8 +129,10 @@ public:
 	std::string						mGreenLineHoughParameterString;
 	
 	uint32_t						mLightTimeWindowSec;
+	uint32_t						mLineTimeWindowSec;
 	
 	bool							mLightDetection;
+	bool							mLineDetection;
 };
 
 
@@ -151,15 +158,16 @@ int main(int argc, char ** argv)
 		settings_store::StateDeclarator lStateDeclarator(n);
 //#define USE_CAM
 #ifdef USE_CAM
-		CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*2,240*2,10));
+		CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*2,240*2,12));
 		
 		FrameRecorder lVideoRecorder("/home/pi",lFrameProvider.mParameters.mHalfWidth,lFrameProvider.mParameters.mHalfHeight,lFrameProvider.mParameters.mFps,n);
 #else
-		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,10,"/home/pi/vid_20.avi"));
+		VideoFrameProvider lFrameProviderA(VideoFrameProvider::Parameters(640,480,12,"/home/pi/vid_20.avi"));
 		PauseProxyFrameProvider lFrameProvider(lFrameProviderA,n);
 #endif
 
 		bool lEnableLightDetection = true;
+		bool lEnableLineDetection = true;
 
 		ThresholdingWorker lThresholdingWorkerA(&lFrameProvider,NULL,lSettings.mThresholdingParameters,lEnableLightDetection);
 		ThresholdingWorker lThresholdingWorkerB(NULL,&lThresholdingWorkerA,lSettings.mThresholdingParameters,lEnableLightDetection);
@@ -169,6 +177,7 @@ int main(int argc, char ** argv)
 		LightAndLineFrame lFrame;
 		
 		LightDetector lLightDetector(50,50);
+		LineDetector lLineDetector(25);
 		cv::Mat lTmp;
 		
 		LightAndLineFrame::tTimestamp lPreviousFrameTs = std::chrono::system_clock::now();
@@ -179,10 +188,12 @@ int main(int argc, char ** argv)
 		
 		while(ros::ok())
 		{
-			// update light detection flag
+			// update light and line detection flag
 			lEnableLightDetection = lSettings.mLightDetection;
+			lEnableLineDetection = lSettings.mLineDetection;
 			
 			lStateDeclarator.setState<bool>("img/lightdetection",lEnableLightDetection);
+			lStateDeclarator.setState<bool>("img/linedetection",lEnableLineDetection);
 			
 			if(lFinalThread.getNextFrame(lFrame))
 			{
@@ -205,6 +216,38 @@ int main(int argc, char ** argv)
 					}
 				}
 				lFrame.setTimestamp(LightAndLineFrame::F_LightAnalyzeDone);
+				
+				
+				if(lEnableLineDetection)
+				{
+					
+					lLineDetector.addNewFrame(lFrame,lSettings.mLineTimeWindowSec);
+					
+					if(lLineDetector.detectLine(LightAndLineFrame::LT_Green))
+					{
+						lLineDetector.clearDetector();
+						std_msgs::String lMsg;
+						lMsg.data = "start_line_detected";
+						lMsgPublisher.publish(lMsg);
+						ROS_WARN_STREAM("START LINE !");
+					}
+					else if(lLineDetector.detectLine(LightAndLineFrame::LT_Red))
+					{
+						lLineDetector.clearDetector();
+						std_msgs::String lMsg;
+						lMsg.data = "finish_line_detected";
+						lMsgPublisher.publish(lMsg);
+						ROS_WARN_STREAM("FINISH LINE !");
+					}
+					
+					if(lSettings.mDebugImgChannels.find("l") != std::string::npos)
+					{
+						lLineDetector.createDebugImg(lFrame[LightAndLineFrame::LineStatus],lSettings.mLineTimeWindowSec);
+					}
+					
+				}
+				
+				
 #ifdef USE_CAM
 				lVideoRecorder.addFrame(lFrame);
 #endif
@@ -258,7 +301,7 @@ int main(int argc, char ** argv)
 				lFrameDebugger.setImage('d',lFrame[LightAndLineFrame::Debug]);
 				lFrameDebugger.setImage('D',lFrame[LightAndLineFrame::Debug2]);
 				lFrameDebugger.setImage('L',lFrame[LightAndLineFrame::LightStatus]);
-				lFrameDebugger.setImage('l',lFrame[LightAndLineFrame::LightStatus]);
+				lFrameDebugger.setImage('l',lFrame[LightAndLineFrame::LineStatus]);
 				
 				// update stats
 				{
