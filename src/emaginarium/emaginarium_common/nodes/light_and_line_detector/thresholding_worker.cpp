@@ -12,19 +12,20 @@ ThresholdingWorker::ColorFilterParameter::ColorFilterParameter()
 	, mVMax(255)
 	, mYMin(170)
 	, mYMax(255)
+	, mDebugMask(0)
 {
 }
 
-ThresholdingWorker::LightColorAreaDefinition::LightColorAreaDefinition()
+ThresholdingWorker::ColorAreaDefinition::ColorAreaDefinition()
 	: mDownscaleFactor(4)
 	, mPercentOfValidPixelPerArea(33)
 {
 	
 }
 
-void ThresholdingWorker::LightColorAreaDefinition::setValuesFromString(const std::string & pString)
+void ThresholdingWorker::ColorAreaDefinition::setValuesFromString(const std::string & pString)
 {
-	LightColorAreaDefinition lBackup = *this;
+	ColorAreaDefinition lBackup = *this;
 	std::stringstream lStream(pString);
 	lStream
 		>>mColorFilter.mYMin
@@ -41,16 +42,25 @@ void ThresholdingWorker::LightColorAreaDefinition::setValuesFromString(const std
 			break;
 	}
 	lStream
+		>>mColorFilter.mDebugMask;
+	while(lStream)
+	{
+		char lTmp = ' ';
+		lStream>>lTmp;
+		if(lTmp == '|')
+			break;
+	}
+	lStream
 		>>mDownscaleFactor
 		>>mPercentOfValidPixelPerArea;
 	if(!lStream)
 	{
-		ROS_WARN_STREAM("Invalid parameters "<<pString);
+		ROS_WARN_STREAM("Invalid light parameters "<<pString);
 		*this = lBackup;
 	}
 }
 
-std::string ThresholdingWorker::LightColorAreaDefinition::getStringFromValues() const
+std::string ThresholdingWorker::ColorAreaDefinition::getStringFromValues() const
 {
 	std::stringstream lStream;
 	lStream
@@ -61,12 +71,47 @@ std::string ThresholdingWorker::LightColorAreaDefinition::getStringFromValues() 
 		<<mColorFilter.mVMin<<" "
 		<<mColorFilter.mVMax<<" "
 		<<"| "
+		<<mColorFilter.mDebugMask<<" "
+		<<"| "
 		<<mDownscaleFactor<<" "
 		<<mPercentOfValidPixelPerArea<<" ";
 	return lStream.str();
 }
 
+ThresholdingWorker::HoughParameters::HoughParameters()
+	: mHoughThreshold(20)
+	, mMinLineLen(20)
+	, mMaxLineGap(20)
+{
+	
+}
 
+void ThresholdingWorker::HoughParameters::setValuesFromString(const std::string & pString)
+{
+	HoughParameters lBackup = *this;
+	std::stringstream lStream(pString);
+	lStream
+		>>mHoughThreshold
+		>>mMinLineLen
+		>>mMaxLineGap
+		;
+	if(!lStream)
+	{
+		ROS_WARN_STREAM("Invalid line parameters "<<pString);
+		*this = lBackup;
+	}
+}
+
+std::string ThresholdingWorker::HoughParameters::getStringFromValues() const
+{
+	std::stringstream lStream;
+	lStream
+		<<mHoughThreshold<<" "
+		<<mMinLineLen<<" "
+		<<mMaxLineGap<<" "
+		;
+	return lStream.str();
+}
 
 
 ThresholdingWorker::SearchArea::SearchArea()
@@ -128,71 +173,106 @@ ThresholdingWorker::Parameters::Parameters()
 	: mCannyThreshold(64)
 {
 	mLightSearchArea.setValuesFromString("50 100 10 90");
-	mRedLightParameter.setValuesFromString("100 255 100 120 160 210 | 6 20");
-	mYellowLightParameter.setValuesFromString("120 255 50 70 160 185 | 6 20");
-	mBlueLightParameter.setValuesFromString("60 255 170 210 110 140 | 6 20");
+	mRedLightParameter.setValuesFromString("100 255 100 120 160 210 | 0 | 6 20 ");
+	mYellowLightParameter.setValuesFromString("140 255 80 120 135 150 | 0 | 6 20 ");
+	mBlueLightParameter.setValuesFromString("210 255 125 135 115 124 | 0 | 6 20 ");
 	
 	mLineSearchArea.setValuesFromString("0 100 70 95");
+	mRedLineColorParameter.setValuesFromString("70 150 115 140 150 180 | 0 | 6 20 ");
+	mGreenLineColorParameter.setValuesFromString("70 150 110 130 90 120 | 0 | 6 20 ");
+	mRedLineHough.setValuesFromString("30 15 50");
+	mGreenLineHough.setValuesFromString("30 15 50");
 }
 
 
-ThresholdingWorker::ThresholdingWorker(FrameProvider & pFrameProvider, const Parameters & pParameters, const bool & pEnableLightDetection)
-	: mCameraThread(NULL)
-	, mFrameProviderWorker(pFrameProvider)
+ThresholdingWorker::ThresholdingWorker(FrameProvider * pFrameProvider, ThresholdingWorker * pPrevious, const Parameters & pParameters, const bool & pEnableLightDetection)
+	: mPreviousThread(NULL)
+	, mFrameProviderWorker(NULL)
+	, mPrevious(NULL)
 	, mParameters(pParameters)
 	, mEnableLightDetection(pEnableLightDetection)
 {
-	mCameraThread = new FrameProcessor<LightAndLineFrame>(mFrameProviderWorker);
+	mMorphoKernel3x3 = cv::getStructuringElement(cv::MORPH_RECT,cv::Size(3,3));
+	mMorphoKernel5x5 = cv::getStructuringElement(cv::MORPH_RECT,cv::Size(5,5));
+	if(pFrameProvider)
+	{
+		mFrameProviderWorker = new FrameProviderWorker<LightAndLineFrame>(*pFrameProvider);
+		mPreviousThread = new FrameProcessor<LightAndLineFrame>(*mFrameProviderWorker);
+	}
+	else
+	{
+		mPrevious = pPrevious;
+		mPreviousThread = new FrameProcessor<LightAndLineFrame>(*mPrevious);
+	}
 }
 
 ThresholdingWorker::~ThresholdingWorker()
 {
-	delete mCameraThread; mCameraThread = NULL;
+	delete mPreviousThread; mPreviousThread = NULL;
 }
 
 bool ThresholdingWorker::computeNextResult(LightAndLineFrame & pRes)
 {
-	if(!mCameraThread->getNextFrame(pRes))
+	if(!mPreviousThread->getNextFrame(pRes))
 		return false;
-	
-	const cv::Mat lY =  pRes[LightAndLineFrame::Y];
+	if(!mPrevious)
 	{
-		pRes.setTimestamp(LightAndLineFrame::F_LightThresholdingStart);
+		const cv::Mat lY =  pRes[LightAndLineFrame::Y];
+		{
+			pRes.setTimestamp(LightAndLineFrame::F_LightThresholdingStart);
+			
+			const cv::Rect lLightRoi = mParameters.mLightSearchArea.getRoiRect(lY);
+			pRes.editLightSearchArea() = lLightRoi;
+			
+			if(mEnableLightDetection)
+			{
+				extractColorAreas(pRes,lLightRoi,mParameters.mRedLightParameter,mLightTmpMatArray,pRes[LightAndLineFrame::LC_Red]);
+				extractColorAreas(pRes,lLightRoi, mParameters.mYellowLightParameter,mLightTmpMatArray,pRes[LightAndLineFrame::LC_Yellow]);
+				extractColorAreas(pRes,lLightRoi, mParameters.mBlueLightParameter,mLightTmpMatArray,pRes[LightAndLineFrame::LC_Blue]);
+			}
+			pRes.setTimestamp(LightAndLineFrame::F_LightThresholdingDone);
+		}
 		
-		const cv::Rect lLightRoi = mParameters.mLightSearchArea.getRoiRect(lY);
-		pRes.editLightSearchArea() = lLightRoi;
+		{
+			const cv::Rect lLineRoi = mParameters.mLineSearchArea.getRoiRect(lY);
+			pRes.editLineSearchArea() = lLineRoi;
+			
+			pRes.setTimestamp(LightAndLineFrame::F_LineCanyFilterStart);
+			
+	#ifdef USE_HOUGH_LINE_DETECTION
+			// compute edges with a canny filter
+			const cv::Mat lSubY(pRes.editY(),lLineRoi);
+			cv::Canny(lSubY,pRes[LightAndLineFrame::CannyEdges],mParameters.mCannyThreshold,mParameters.mCannyThreshold*3,3);
+	#endif
+			pRes.setTimestamp(LightAndLineFrame::F_LineCanyFilterDone);
+			
+			
+		}
 		
-		extractColorAreas(pRes,lLightRoi,mParameters.mRedLightParameter,mLightTmpMatArray,pRes[LightAndLineFrame::LC_Red]);
-		extractColorAreas(pRes,lLightRoi, mParameters.mYellowLightParameter,mLightTmpMatArray,pRes[LightAndLineFrame::LC_Yellow]);
-		extractColorAreas(pRes,lLightRoi, mParameters.mBlueLightParameter,mLightTmpMatArray,pRes[LightAndLineFrame::LC_Blue]);
 
-		pRes.setTimestamp(LightAndLineFrame::F_LightThresholdingDone);
 	}
-	
+	else
 	{
-		const cv::Rect lLineRoi = mParameters.mLineSearchArea.getRoiRect(lY);
-		pRes.editLineSearchArea() = lLineRoi;
-		
-		pRes.setTimestamp(LightAndLineFrame::F_LineCanyFilterStart);
-		
-		// compute edges with a canny filter
-		const cv::Mat lSubY(pRes.editY(),lLineRoi);
-		cv::Canny(lSubY,pRes[LightAndLineFrame::CannyEdges],mParameters.mCannyThreshold,mParameters.mCannyThreshold*3,3);
-		
-		pRes.setTimestamp(LightAndLineFrame::F_LineCanyFilterDone);
-		
+		const cv::Rect & lLineRoi = pRes.editLineSearchArea();
+		pRes.setTimestamp(LightAndLineFrame::F_LineHoughFilterStart);
+	#ifdef USE_HOUGH_LINE_DETECTION
+		extractLines(mParameters.mRedLineColorParameter,mParameters.mRedLineHough,pRes,pRes[LightAndLineFrame::LT_Red]);
+		extractLines(mParameters.mGreenLineColorParameter,mParameters.mGreenLineHough,pRes,pRes[LightAndLineFrame::LT_Green]);
+	#else
+		extractColorAreas(pRes,lLineRoi,mParameters.mRedLineColorParameter,mLineTmpMatArray,pRes[LightAndLineFrame::LC_LineRed]);
+		extractColorAreas(pRes,lLineRoi, mParameters.mGreenLineColorParameter,mLineTmpMatArray,pRes[LightAndLineFrame::LC_LineGreen]);
+	#endif
+		pRes.setTimestamp(LightAndLineFrame::F_LineHoughFilterDone);
 		
 	}
-	
 	
 	return true;
 }
 
-void ThresholdingWorker::extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi,const LightColorAreaDefinition & pColorDef, cv::Mat * pTmpMatArray, LightAndLineFrame::tRects & pAreas)
+void ThresholdingWorker::extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi,const ColorAreaDefinition & pColorDef, cv::Mat * pTmpMatArray, LightAndLineFrame::tRects & pAreas)
 {
 	pAreas.clear();
-	if(!mEnableLightDetection)
-		return;
+	
 	
 	ComputeColorMask(pFrame,pLightSearchRoi,pColorDef.mColorFilter,pTmpMatArray);
 	// output is in TM_A
@@ -270,6 +350,45 @@ void ThresholdingWorker::ComputeColorMask(LightAndLineFrame & pFrame,const cv::R
 	else if(lAccumulationMat != TM_A)
 	{
 		cv::swap(pTmpMatArray[lAccumulationMat],pTmpMatArray[lNextAccumulationMat]);
+	}
+	
+	if(pColorDef.mDebugMask)
+	{
+		pFrame[LightAndLineFrame::Debug] = pTmpMatArray[TM_A].clone();
+	}
+	
+}
+
+void ThresholdingWorker::extractLines(const ColorAreaDefinition & pColorDef, const HoughParameters & pHoughParam, LightAndLineFrame & pRes,LightAndLineFrame::tLines & pLines)
+{
+	pLines.clear();
+	const cv::Rect & lLineRoi = pRes.getLineSearchArea();
+
+	// compute a mask based on line color
+	ThresholdingWorker::ComputeColorMask(pRes,lLineRoi,pColorDef.mColorFilter,mLineTmpMatArray);
+	
+	// dilate this mask
+	float lDilatePixel = 16.;
+	cv::resize(mLineTmpMatArray[TM_A],mLineTmpMatArray[TM_a],cv::Size(),1/lDilatePixel,1/lDilatePixel,cv::INTER_AREA);
+	cv::resize(mLineTmpMatArray[TM_a],mLineTmpMatArray[TM_A],mLineTmpMatArray[TM_A].size(),lDilatePixel,lDilatePixel,cv::INTER_AREA);
+	cv::threshold(mLineTmpMatArray[TM_A], mLineTmpMatArray[TM_B],10,255,cv::THRESH_BINARY);
+
+	// compose mask and edges
+	cv::bitwise_and(pRes[LightAndLineFrame::CannyEdges],mLineTmpMatArray[TM_B],mLineTmpMatArray[TM_A]);
+	
+	//pRes[LightAndLineFrame::Debug] = mLineTmpMatArray[TM_A].clone();
+	
+	
+	cv::HoughLinesP(mLineTmpMatArray[TM_A],pLines,1,2*CV_PI/180, pHoughParam.mHoughThreshold,pHoughParam.mMinLineLen,pHoughParam.mMaxLineGap);
+	LightAndLineFrame::tLines::iterator lIt = pLines.begin();
+	const LightAndLineFrame::tLines::iterator lItEnd = pLines.end();
+	for( ; lIt != lItEnd ; ++lIt)
+	{
+		cv::Vec4i & lLine = *lIt;
+		lLine[0] += lLineRoi.x;
+		lLine[1] += lLineRoi.y;
+		lLine[2] += lLineRoi.x;
+		lLine[3] += lLineRoi.y;
 	}
 	
 }

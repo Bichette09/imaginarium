@@ -4,6 +4,8 @@
 #include "image_common/frame_processor.h"
 #include "image_common/frame_provider_worker.h"
 
+//#define USE_HOUGH_LINE_DETECTION
+
 class ThresholdingWorker : public WorkerInterface<LightAndLineFrame>
 {
 public:
@@ -18,11 +20,12 @@ public:
 		int mVMax;
 		int mYMin;
 		int mYMax;
+		int mDebugMask;
 	};
 
-	struct LightColorAreaDefinition
+	struct ColorAreaDefinition
 	{
-		LightColorAreaDefinition();
+		ColorAreaDefinition();
 		
 		void setValuesFromString(const std::string & pString);
 		std::string getStringFromValues() const;
@@ -37,6 +40,19 @@ public:
 		int mPercentOfValidPixelPerArea;
 	};
 	
+	
+	struct HoughParameters
+	{
+		HoughParameters();
+		
+		void setValuesFromString(const std::string & pString);
+		std::string getStringFromValues() const;
+		
+		int						mHoughThreshold;
+		int						mMinLineLen;
+		int						mMaxLineGap;
+		
+	};
 	
 	
 	struct SearchArea
@@ -59,16 +75,22 @@ public:
 		Parameters();
 		
 		SearchArea					mLightSearchArea;
-		LightColorAreaDefinition	mRedLightParameter;
-		LightColorAreaDefinition	mYellowLightParameter;
-		LightColorAreaDefinition	mBlueLightParameter;
+		ColorAreaDefinition			mRedLightParameter;
+		ColorAreaDefinition			mYellowLightParameter;
+		ColorAreaDefinition			mBlueLightParameter;
 		
 		SearchArea					mLineSearchArea;
+		
+		ColorAreaDefinition			mRedLineColorParameter;
+		ColorAreaDefinition			mGreenLineColorParameter;
+		HoughParameters				mRedLineHough;
+		HoughParameters				mGreenLineHough;
 		
 		int32_t						mCannyThreshold;
 	};
 	
-	ThresholdingWorker(FrameProvider & pFrameProvider, const Parameters & pParameters, const bool & pEnableLightDetection);
+	
+	ThresholdingWorker(FrameProvider * pFrameProvider, ThresholdingWorker * pPrevious, const Parameters & pParameters, const bool & pEnableLightDetection);
 	virtual ~ThresholdingWorker();
 	
 	const Parameters &			mParameters;
@@ -80,13 +102,15 @@ protected:
 	virtual bool computeNextResult(LightAndLineFrame & pRes);
 private:
 
-	void extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi, const LightColorAreaDefinition & pColorDef, cv::Mat * pTmpMatArray, LightAndLineFrame::tRects & pAreas);
+	void extractColorAreas(LightAndLineFrame & pFrame,const cv::Rect & pLightSearchRoi, const ColorAreaDefinition & pColorDef, cv::Mat * pTmpMatArray, LightAndLineFrame::tRects & pAreas);
+	void extractLines(const ColorAreaDefinition & pColorDef, const HoughParameters & pHoughParam, LightAndLineFrame & pRes,LightAndLineFrame::tLines & pLines);
 
 	
-	const bool mEnableLightDetection;
+	const bool & mEnableLightDetection;
 	
-	FrameProviderWorker<LightAndLineFrame>	mFrameProviderWorker;
-	FrameProcessor<LightAndLineFrame> *		mCameraThread;
+	FrameProviderWorker<LightAndLineFrame> *	mFrameProviderWorker;
+	FrameProcessor<LightAndLineFrame> *			mPreviousThread;
+	ThresholdingWorker *						mPrevious;
 	
 	enum TmpMat
 	{
@@ -104,9 +128,12 @@ private:
 		TM_Count
 	};
 	
+	
 	cv::Mat mLightTmpMatArray[TM_Count];
+	cv::Mat mLineTmpMatArray[TM_Count];
 	
 	cv::Mat mMorphoKernel3x3;
 	cv::Mat mMorphoKernel5x5;
+	
 	
 };

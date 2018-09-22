@@ -22,12 +22,14 @@ void LightAndLineFrame::swap(LightAndLineFrame & pOther)
 	
 	for(int i = 0 ; i < LC_Count ; ++i)
 	{
-		mLightAreas[i].swap(pOther.mLightAreas[i]);
+		mColorAreas[i].swap(pOther.mColorAreas[i]);
 	}
 	std::swap(mLightSearchArea, pOther.mLightSearchArea);
 	std::swap(mLineSearchArea, pOther.mLineSearchArea);
-	mRedLines.swap(pOther.mRedLines);
-	mGreenLines.swap(pOther.mGreenLines);
+	for(int i = 0 ; i < LT_Count ; ++i)
+	{
+		mLines[i].swap(pOther.mLines[i]);
+	}
 }
 
 cv::Mat & LightAndLineFrame::operator[](Layer pLayer)
@@ -77,14 +79,24 @@ void LightAndLineFrame::setGrabTimestamp()
 	setTimestamp(LightAndLineFrame::F_GrabDone);
 }
 
-LightAndLineFrame::tRects & LightAndLineFrame::operator[](LightColor pLightColor)
+LightAndLineFrame::tRects & LightAndLineFrame::operator[](ColorAreas pType)
 {
-	return mLightAreas[pLightColor];
+	return mColorAreas[pType];
 }
 
-const LightAndLineFrame::tRects & LightAndLineFrame::operator[](LightColor pLightColor) const
+const LightAndLineFrame::tRects & LightAndLineFrame::operator[](ColorAreas pType) const
 {
-	return mLightAreas[pLightColor];
+	return mColorAreas[pType];
+}
+
+LightAndLineFrame::tLines & LightAndLineFrame::operator[](LinesType pType)
+{
+	return mLines[pType];
+}
+
+const LightAndLineFrame::tLines & LightAndLineFrame::operator[](LinesType pType) const
+{
+	return mLines[pType];
 }
 
 cv::Rect & LightAndLineFrame::editLightSearchArea()
@@ -97,25 +109,7 @@ const cv::Rect & LightAndLineFrame::getLightSearchArea() const
 	return mLightSearchArea;
 }
 
-LightAndLineFrame::tLines & LightAndLineFrame::editRedLines()
-{
-	return mRedLines;
-}
 
-const LightAndLineFrame::tLines & LightAndLineFrame::getRedLines() const
-{
-	return mRedLines;
-}
-
-LightAndLineFrame::tLines & LightAndLineFrame::editGreenLines()
-{
-	return mGreenLines;
-}
-
-const LightAndLineFrame::tLines & LightAndLineFrame::getGreenLines() const
-{
-	return mGreenLines;
-}
 cv::Rect & LightAndLineFrame::editLineSearchArea()
 {
 	return mLineSearchArea;

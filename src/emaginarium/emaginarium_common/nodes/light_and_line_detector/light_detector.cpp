@@ -33,7 +33,7 @@ void LightDetector::addNewFrame(const LightAndLineFrame & pFrame)
 	addDetectedAreas(pFrame[LightAndLineFrame::LC_Blue],LightAndLineFrame::LC_Blue);
 }
 
-void LightDetector::addDetectedAreas(const tRects & pAreas, LightAndLineFrame::LightColor pColor)
+void LightDetector::addDetectedAreas(const tRects & pAreas, LightAndLineFrame::ColorAreas pColor)
 {
 	tRects::const_iterator lIt = pAreas.begin();
 	const tRects::const_iterator lItEnd = pAreas.end();
@@ -77,6 +77,7 @@ void LightDetector::clearDetector()
 bool LightDetector::detectLightSequence(tTs pTimeWindowSec)
 {
 	const tTs lMinTsValue = mCurrentTs - pTimeWindowSec*1000;
+	const tTs lMinTimeBetweenTwoColors = 500;
 	int lTs[LightAndLineFrame::LC_Count];
 	for(int x = 0 ; x < mWidth ; ++x)
 	{
@@ -88,31 +89,37 @@ bool LightDetector::detectLightSequence(tTs pTimeWindowSec)
 		{
 			const DetectionCell & lCell = lColumn[y];
 			
+			const tTs & lCellRed = lCell.mTs[LightAndLineFrame::LC_Red];
+			const tTs & lCellYellow = lCell.mTs[LightAndLineFrame::LC_Yellow];
+			const tTs & lCellBlue = lCell.mTs[LightAndLineFrame::LC_Blue];
+			
+			
 			// check for red on this cell
-			if(lCell.mTs[LightAndLineFrame::LC_Red] > lMinTsValue)
+			if( (lCellRed > lMinTsValue) && (lCellRed > 0))
 			{
 				// got red ! update red ts and clear yellow and blue
-				lTs[LightAndLineFrame::LC_Red] = std::max(lTs[LightAndLineFrame::LC_Red],lCell.mTs[LightAndLineFrame::LC_Red]);
+				lTs[LightAndLineFrame::LC_Red] = std::max(lTs[LightAndLineFrame::LC_Red],lCellRed);
 				lTs[LightAndLineFrame::LC_Blue] = 0;
 				lTs[LightAndLineFrame::LC_Yellow] = 0;
 			}
 			
 			// check for yellow, it should be newer than red
-			if( (lCell.mTs[LightAndLineFrame::LC_Yellow] > lMinTsValue) && (lCell.mTs[LightAndLineFrame::LC_Yellow] > lCell.mTs[LightAndLineFrame::LC_Red]) && (lTs[LightAndLineFrame::LC_Red] > lMinTsValue))
+			if( (lCellYellow > lMinTsValue) && (lCellYellow > 0) && (lCell.mTs[LightAndLineFrame::LC_Yellow] > (lTs[LightAndLineFrame::LC_Red] + lMinTimeBetweenTwoColors)) && (lTs[LightAndLineFrame::LC_Red] > 0))
 			{
-				lTs[LightAndLineFrame::LC_Yellow] = std::max(lTs[LightAndLineFrame::LC_Yellow],lCell.mTs[LightAndLineFrame::LC_Yellow]);
+				lTs[LightAndLineFrame::LC_Yellow] = std::max(lTs[LightAndLineFrame::LC_Yellow],lCellYellow);
 				lTs[LightAndLineFrame::LC_Blue] = 0;
 			}
 			
 			// check for blue, it should be newer than yellow
-			if((lCell.mTs[LightAndLineFrame::LC_Blue] > lMinTsValue) && (lCell.mTs[LightAndLineFrame::LC_Blue] > lCell.mTs[LightAndLineFrame::LC_Yellow]) && (lTs[LightAndLineFrame::LC_Yellow] > lMinTsValue))
+			if((lCellBlue > lMinTsValue) && (lCellBlue > 0) && (lCell.mTs[LightAndLineFrame::LC_Blue] > (lTs[LightAndLineFrame::LC_Yellow] + lMinTimeBetweenTwoColors)) && (lTs[LightAndLineFrame::LC_Yellow] > 0))
 			{
 				// for blue we store 
-				lTs[LightAndLineFrame::LC_Blue] = std::max(lTs[LightAndLineFrame::LC_Blue],lCell.mTs[LightAndLineFrame::LC_Blue]);
+				lTs[LightAndLineFrame::LC_Blue] = std::max(lTs[LightAndLineFrame::LC_Blue],lCellBlue);
 				
 				// ensure that blue is litup since enough time
-				if( (mCurrentTs - lTs[LightAndLineFrame::LC_Yellow]) > 1000)
+				if( (mCurrentTs - lTs[LightAndLineFrame::LC_Yellow]) > 250)
 				{
+					//ROS_WARN_STREAM("youhou "<<lTs[LightAndLineFrame::LC_Red]<<" "<<lTs[LightAndLineFrame::LC_Yellow]<<" "<<lTs[LightAndLineFrame::LC_Blue]);
 					// GOGOGOGO
 					return true;
 				}
@@ -127,6 +134,7 @@ void LightDetector::createDebugImg(cv::Mat & pTarget,tTs pTimeWindowSec)
 	const tTs lMinTsValue = mCurrentTs - pTimeWindowSec*1000;
 	
 	pTarget = cv::Mat(mHeight,mWidth,CV_8UC3,cv::Scalar(0,0,0));
+	
 	for(int x = 0 ; x < mWidth ; ++x)
 	{
 		tCellVector & lColumn = mCellMatrix[x];
@@ -135,7 +143,7 @@ void LightDetector::createDebugImg(cv::Mat & pTarget,tTs pTimeWindowSec)
 			cv::Scalar lColor(0,0,0);
 			for(int c = 0 ; c < 3 ; ++c)
 			{
-				if(lColumn[y].mTs[c] < lMinTsValue)
+				if(lColumn[y].mTs[c] < lMinTsValue || lColumn[y].mTs[c] <= 0)
 					continue;
 				lColor[c] = 64 + ((lColumn[y].mTs[c] - lMinTsValue) * 192) / (pTimeWindowSec*1000); 
 			}

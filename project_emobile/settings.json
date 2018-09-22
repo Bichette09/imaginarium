@@ -59,25 +59,29 @@
         "description": "hardware state read interval", 
         "value": "1"
     }, 
+    "img/lightdetection": {
+        "description": "Enable light detection", 
+        "value": "true"
+    }, 
     "light/blue": {
         "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
-        "value": "60 255 170 210 110 140 | 6 20 "
+        "value": "210 255 125 135 115 124 | 0 | 6 20 "
     }, 
     "light/red": {
         "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
-        "value": "100 255 100 120 160 210 | 6 20 "
+        "value": "100 255 100 120 160 210 | 0 | 6 20 "
     }, 
     "light/searchareapercent": {
         "description": "area in percent were light should be searched [xmin xmax ymin ymax]", 
-        "value": "50 100 10 90 "
+        "value": "30 60 5 60"
     }, 
     "light/time_window": {
         "description": "max duration between red and blue light in sec", 
-        "value": "15"
+        "value": "10"
     }, 
     "light/yellow": {
         "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
-        "value": "120 255 50 70 160 185 | 6 20 "
+        "value": "140 255 80 120 135 150 | 0 | 6 20 "
     }, 
     "light_and_line_detector/debug_img_channels": {
         "description": "which channels should be published for debug ? yuvcodDL", 
@@ -88,15 +92,23 @@
         "value": "64"
     }, 
     "line/greencolor": {
-        "description": "Ymin Ymax Umin Umax Vmin Vmax | HoughTh minLineLen maxLineGab", 
-        "value": "90 115 95 115 150 170 | 30 25 40"
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "value": "70 150 110 130 90 120 | 1 | 6 5"
+    }, 
+    "line/greenhough": {
+        "description": "HoughTh minLineLen maxLineGab", 
+        "value": "30 15 50 "
     }, 
     "line/redcolor": {
-        "description": "Ymin Ymax Umin Umax Vmin Vmax | HoughTh minLineLen maxLineGab", 
-        "value": "40 80 120 140 150 180 | 30 25 40"
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "value": "70 150 115 140 140 180 | 0 | 6 5"
+    }, 
+    "line/redhough": {
+        "description": "HoughTh minLineLen maxLineGab", 
+        "value": "30 15 50 "
     }, 
     "line/searchareapercent": {
         "description": "area in percent were line should be searched [xmin xmax ymin ymax]", 
-        "value": "0 100 50 90"
+        "value": "5 100 55 100"
     }
 }

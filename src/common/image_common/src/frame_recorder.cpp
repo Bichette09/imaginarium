@@ -23,11 +23,11 @@ FrameRecorder::~FrameRecorder()
 
 void FrameRecorder::onGamepadButton(const std_msgs::String::ConstPtr& msg)
 {
-	if(msg->data.find("|Video_Start|") != std::string::npos)
+	if(msg->data.find("|VideoRec_Start|") != std::string::npos)
 	{
 		startRecording();
 	}
-	else if(msg->data.find("|Video_Stop|")  != std::string::npos)
+	else if(msg->data.find("|VideoRec_Stop|")  != std::string::npos)
 	{
 		endRecording();
 	}
