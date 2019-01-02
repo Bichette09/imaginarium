@@ -53,7 +53,7 @@
     }, 
     "grading_machine/filter_th_Y": {
         "description": "threshold on Y -1=>automatic", 
-        "value": "210"
+        "value": "251"
     }, 
     "hardware_monitor/update_period": {
         "description": "hardware state read interval", 
