@@ -57,7 +57,7 @@
     }, 
     "hardware_monitor/update_period": {
         "description": "hardware state read interval", 
-        "value": "0.5"
+        "value": "0.25"
     }, 
     "mouse/updateperiod": {
         "description": "minimum period in sec between two mouse update", 

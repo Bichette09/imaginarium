@@ -1,3 +1,3 @@
 #!/bin/bash
 source ../devel/setup.sh
-roslaunch gradingmachine.launch   
+roslaunch gradingmachine_master.launch   
