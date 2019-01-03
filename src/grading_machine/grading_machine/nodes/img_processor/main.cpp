@@ -163,6 +163,8 @@ int main(int argc, char ** argv)
 					lDetectionManager.computeDebugFrame(lTmp,lFrame);
 					lFrameDebugger.setImage('a',lTmp);
 				}
+				cv::Mat lMat(128,128, CV_8UC3, cv::Scalar(0,0,255));
+				lFrameDebugger.setImage('a',lMat);
 
 			}
 			
