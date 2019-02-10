@@ -11,6 +11,10 @@
         "description": "kTh", 
         "value": "0.15"
     }, 
+    "actuator/maxpower": {
+        "description": "max commanded power", 
+        "value": "0.2"
+    }, 
     "actuator/maxruntime": {
         "description": "max run time after start", 
         "value": "600"
@@ -32,7 +36,7 @@
         "value": "0.4"
     }, 
     "command/distLatMinmin": {
-        "description": "Lateral distance minimum avant contact", 
+        "description": "Lateral distance minimum before contact", 
         "value": "0.1"
     }, 
     "command/distMin": {
@@ -54,6 +58,18 @@
     "command/ratioSpeedMin": {
         "description": "Minimum Speed ratio in protected mode", 
         "value": "0.1"
+    }, 
+    "command/speedMax": {
+        "description": "Maximum Speed commanded", 
+        "value": "1"
+    }, 
+    "command/speedMin": {
+        "description": "Minimum Speed in protected mode", 
+        "value": "0.05"
+    }, 
+    "command/speedMoy": {
+        "description": "Medium speed commanded", 
+        "value": "0.2"
     }, 
     "hardware_monitor/update_period": {
         "description": "hardware state read interval", 

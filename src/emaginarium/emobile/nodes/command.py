@@ -24,8 +24,9 @@ class CommandSettings(settings_store_client.SettingsBase):
 		self.distMoy2= 1.40
 		self.distLatMin = 0.50
 		self.distLatMinMin = 0.30
-		self.ratioSpeed = 0.2
-		self.ratioSpeedMin = 0.05
+		self.speedMoy = 0.2			# Vitesse moyenne commandee en m/s
+		self.speedMin = 0.05		# Vitesse min commandee en m/s
+		self.speedMax =  1  		# Vitesse max commandee en m/s 
 		self.registerAttributes([
 			('L','command/L','Prediction distance'),
 			('D','command/D','Commanded distance from the side'),
@@ -33,9 +34,10 @@ class CommandSettings(settings_store_client.SettingsBase):
 			('distMoy','command/distMoy','Distance medium for slow speed'),
 			('distMoy2','command/distMoy2','Upper distance medium for slow speed'),
 			('distLatMin','command/distLatMin','Lateral distance minimum'),
-			('distLatMinMin','command/distLatMinmin','Lateral distance minimum avant contact'),
-			('ratioSpeed','command/ratioSpeed','Speed ratio in protected mode'),
-			('ratioSpeedMin','command/ratioSpeedMin','Minimum Speed ratio in protected mode')
+			('distLatMinMin','command/distLatMinmin','Lateral distance minimum before contact'),
+			('speedMoy','command/speedMoy','Medium speed commanded'),
+			('speedMin','command/speedMin','Minimum Speed in protected mode'),
+			('speedMax','command/speedMax','Maximum Speed commanded'),
 			])
 
 class ControlLaw():
@@ -65,11 +67,11 @@ class ControlLaw():
 		if lFrontMinDist < lSettings.distMin:
 			self.throttleGoal = 0.
 		elif lFrontCentralMinDist < 0. or lFrontCentralMinDist > lSettings.distMoy2:
-			self.throttleGoal = 1.
+			self.throttleGoal = lSettings.speedMax
 		elif lFrontCentralMinDist > lSettings.distMoy and lFrontCentralMinDist <= lSettings.distMoy2:
-			self.throttleGoal = lSettings.ratioSpeed
+			self.throttleGoal = lSettings.speedMoy
 		else:
-			self.throttleGoal = lSettings.ratioSpeedMin
+			self.throttleGoal = lSettings.speedMin
 		
 		sRosPublisherDebugMinDist.publish(std_msgs.msg.Float32(lFrontMinDist))
 		
