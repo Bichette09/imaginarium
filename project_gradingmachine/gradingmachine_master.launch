@@ -1,0 +1,25 @@
+﻿<launch>
+	<remap from="/raspicam_node/image/compressed" to="/raspicam_node/compressed"/>
+	<!-- settings server, a node to store dynamic settings -->
+	<include file="$(find settings_store)/launch/settings_store_server.launch" > 
+		<arg name="settingsfilename" value="$(env PWD)/settings.json"/>
+	</include>
+	
+	<!-- rosbridge interface to web front-end -->	
+	<!--<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" > 
+		<arg name="port" value="9090"/>
+	</include>-->
+	
+	<!-- hardware_monitor, a node to monitor cpu, memory and network -->
+	<node name="hardware_monitor" pkg="hardware_monitor" type="hardware_monitor" />
+	
+	<!-- oled display -->
+	<node name="oled_display" pkg="grading_machine" type="oled_display.py" />
+		
+	<!-- web_video_server, a node to stream image topic to web client -->	
+	<!--<node name="web_video_server" pkg="web_video_server" type="web_video_server">
+		<param name="port" value="8080"></param>
+		<param name="ros_threads" value="2"></param>
+	</node>-->
+	
+</launch> 

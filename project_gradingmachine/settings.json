@@ -1,7 +1,7 @@
 {
     "grading_machine/debug_img_channels": {
         "description": "which channels should be published for debug ? AYUVM", 
-        "value": "a"
+        "value": "ay"
     }, 
     "grading_machine/exclusion_percent_bottom": {
         "description": "percent (of height) of pixels ignore in bottom", 
@@ -53,7 +53,7 @@
     }, 
     "grading_machine/filter_th_Y": {
         "description": "threshold on Y -1=>automatic", 
-        "value": "210"
+        "value": "251"
     }, 
     "hardware_monitor/update_period": {
         "description": "hardware state read interval", 

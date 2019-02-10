@@ -36,6 +36,7 @@ struct HwMonitor
 	
 	HwMonitor()
 		: mPreviousThrottledFlags(0)
+		, mVcGenIsMissing(false)
 	{
 		readCpuTicks(mPreviousLoad,mPreviousIdle);
 		for(int i = 0 ; i < NI_Count ; ++i)
@@ -43,6 +44,14 @@ struct HwMonitor
 			readNetworkInterfaceBytes(i,mPreviousNetworkReceivedBytes[i],mPreviousNetworkSendBytes[i]);
 			mPreviousNetworkTs[i] = std::chrono::system_clock::now();
 		}
+		
+		std::string lTest = exec("vcgencmd commans");
+		if(lTest.empty())
+		{
+			mVcGenIsMissing = true;
+			ROS_ERROR_STREAM( "vcgencmd is missing");
+		}
+		
 	}
 	
 	enum NetworkInterface
@@ -81,7 +90,17 @@ struct HwMonitor
 	
 	int getCpuFreq()
 	{
+		if(mVcGenIsMissing)
+		{
+			return 0;
+		}
+		
 		std::string lFreqStr = exec("vcgencmd measure_clock arm");
+		if(lFreqStr.size() <= 14)
+		{
+			mVcGenIsMissing = true;
+			return 0;
+		}
 		// remove 'frequency(45)='
 		lFreqStr = lFreqStr.substr(14);
 		return strtol(lFreqStr.c_str(),NULL,10) / 1000000;
@@ -96,7 +115,18 @@ struct HwMonitor
 	// 18: throttling has occurred
 	void checkThrottledFlags(settings_store::StateDeclarator & pStateDeclarator)
 	{
+		if(mVcGenIsMissing)
+		{
+			return;
+		}
+		
 		std::string lFlags = exec("vcgencmd get_throttled");
+		if(lFlags.size() <= 12)
+		{
+			mVcGenIsMissing = true;
+			return;
+		}
+		
 		// remove 'throttled=0x'
 		int lNewFlags = (int)strtol( lFlags.substr(12).c_str(),NULL,16);
 		// keep only first four bits
@@ -236,6 +266,7 @@ private:
 	std::chrono::time_point<std::chrono::system_clock> mPreviousNetworkTs[NI_Count];
 	char		mSPrintfBuffer[64];
 	int			mPreviousThrottledFlags;
+	bool		mVcGenIsMissing;
 };
 
 const std::string HwMonitor::sNetworkInterfaceName[HwMonitor::NI_Count] = {"lo","eth0","wlan0"};
@@ -247,7 +278,7 @@ public:
 		: settings_store::SettingsBase(pNodeHandle)
 		, mUpdateIntervalSec(1.)
 	{
-		registerAttribute<float>("hardware_monitor/update_period",mUpdateIntervalSec,0.5,10,"hardware state read interval");
+		registerAttribute<float>("hardware_monitor/update_period",mUpdateIntervalSec,0.1,10,"hardware state read interval");
 		
 		declareAndRetrieveSettings();
 	}
@@ -274,7 +305,9 @@ int main(int argc, char ** argv)
 		lMsg.header.seq = 0;
 		ros::message_operations::Printer<hardware_monitor::HardwareInfo> lMsgPrinter;
 		
-		ros::Rate lLoopRate(4);
+		
+		std::unique_ptr<ros::Rate> lLoopRatePtr;
+		float lCurrentRatePeriodSec = -1.;
 		
 		//std::cout<<"Starting hardware_monitor..."<<std::endl;
 		HwMonitor lHwMonitor;
@@ -282,35 +315,35 @@ int main(int argc, char ** argv)
 		
 		HardwareMonitorSettings lSettings(n);
 		
-		std::chrono::time_point<std::chrono::system_clock> lTs = std::chrono::system_clock::now();
 		
 		std::cout<<"hardware_monitor ready !"<<std::endl;
 		while(ros::ok())
 		{
 			ros::spinOnce();
-			std::chrono::time_point<std::chrono::system_clock> lNewTs = std::chrono::system_clock::now();
-			if (std::chrono::duration<float>(lNewTs - lTs).count() >= lSettings.mUpdateIntervalSec)
-			{
-				lHwMonitor.checkThrottledFlags(lStateDeclarator);
-				
-				lTs = lNewTs;
-				++lMsg.header.seq;
-				lMsg.header.stamp = ros::Time::now();
-				lMsg.cpuload = lHwMonitor.getCpuLoad();
-				lMsg.cputemp = lHwMonitor.getCpuTemperature();
-				lMsg.memload = lHwMonitor.getMemLoad();
-				lMsg.wifi = lHwMonitor.getNetworkLoad(HwMonitor::NI_Wifi);
-				lMsg.eth = lHwMonitor.getNetworkLoad(HwMonitor::NI_Ethernet);
-				lMsg.lo = lHwMonitor.getNetworkLoad(HwMonitor::NI_Loopback);
-				lMsg.wifistrength = lHwMonitor.getWifiStrenght();
-				lMsg.cpufreq = lHwMonitor.getCpuFreq();
-				lMsgPublisher.publish(lMsg);
-				
-				//std::cout<<"####\n";
-				//lMsgPrinter.stream(std::cout," ",lMsg);
+			
+			lHwMonitor.checkThrottledFlags(lStateDeclarator);
+			
+			++lMsg.header.seq;
+			lMsg.header.stamp = ros::Time::now();
+			lMsg.cpuload = lHwMonitor.getCpuLoad();
+			lMsg.cputemp = lHwMonitor.getCpuTemperature();
+			lMsg.memload = lHwMonitor.getMemLoad();
+			lMsg.wifi = lHwMonitor.getNetworkLoad(HwMonitor::NI_Wifi);
+			lMsg.eth = lHwMonitor.getNetworkLoad(HwMonitor::NI_Ethernet);
+			lMsg.lo = lHwMonitor.getNetworkLoad(HwMonitor::NI_Loopback);
+			lMsg.wifistrength = lHwMonitor.getWifiStrenght();
+			lMsg.cpufreq = lHwMonitor.getCpuFreq();
+			lMsgPublisher.publish(lMsg);
+			
+			//std::cout<<"####\n";
+			//lMsgPrinter.stream(std::cout," ",lMsg);
 
+			if(lCurrentRatePeriodSec != lSettings.mUpdateIntervalSec)
+			{
+				lLoopRatePtr.reset(new ros::Rate(1./lSettings.mUpdateIntervalSec));
+				lCurrentRatePeriodSec = lSettings.mUpdateIntervalSec;
 			}
-			lLoopRate.sleep();
+			lLoopRatePtr->sleep();
 			
 		}
 	}
