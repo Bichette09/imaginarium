@@ -9,11 +9,11 @@
     }, 
     "actuator/kTh": {
         "description": "kTh", 
-        "value": "0.2"
+        "value": "0.15"
     }, 
     "actuator/maxruntime": {
         "description": "max run time after start", 
-        "value": "65"
+        "value": "600"
     }, 
     "actuator/mintimebetweenfinishline": {
         "description": "min duration between finish detection", 
@@ -61,7 +61,7 @@
     }, 
     "img/lightdetection": {
         "description": "Enable light detection", 
-        "value": "false"
+        "value": "true"
     }, 
     "img/linedetection": {
         "description": "Enable line detection", 

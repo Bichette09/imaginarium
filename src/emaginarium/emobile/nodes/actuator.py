@@ -47,6 +47,7 @@ class Actuator(object):
 		self.mRunTimer = None
 		
 		self.mIgnoreCommand = False
+		self.mGotLight = False
 		
 		self.__mGpio = None
 		self.__mLastSpeed = 0.
@@ -78,17 +79,19 @@ class Actuator(object):
 		self.updateThrottle()
 	
 	def onimgdetection(self, param):
-		if param.data != 'finish_line_detected':
-			return
-		lNow = time.time()
-		if self.mFinishLineTimer is None:
-			self.mFinishLineTimer = lNow
-		elif (lNow - self.mFinishLineTimer) > self.settings.mMinTimeBetweenFinishLine:
-			#self.__mPowerWatchdog.setPowerEnableMsg(False,'Finish line')
-			self.mFinishLineTimer=None
-			#self.mIgnoreCommand = True
-			rospy.logwarn('finish line')
-
+	
+		if param.data == 'finish_line_detected':
+			lNow = time.time()
+			if self.mFinishLineTimer is None:
+				self.mFinishLineTimer = lNow
+			elif (lNow - self.mFinishLineTimer) > self.settings.mMinTimeBetweenFinishLine:
+				#self.__mPowerWatchdog.setPowerEnableMsg(False,'Finish line')
+				self.mFinishLineTimer=None
+				#self.mIgnoreCommand = True
+				rospy.logwarn('finish line')
+		elif param.data == 'start_light_sequence_detected':
+			self.mGotLight = True
+			rospy.logwarn('got light')
 	
 	def updateThrottle(self):
 		self.mGoalThrottle = min(max(-1.,self.mGoalThrottle),1.)
@@ -97,14 +100,15 @@ class Actuator(object):
 		
 		lNow = time.time()
 		
-		if self.__mPowerWatchdog.isPowerEnable() and not self.mIgnoreCommand:
+		if self.__mPowerWatchdog.isPowerEnable() and not self.mIgnoreCommand and self.mGotLight:
 			if self.mRunTimer is None:
 				self.mFinishLineTimer = None
 				self.mRunTimer = lNow
 			lGoalThrottle = self.mGoalThrottle * self.settings.kTh
 		elif not self.__mPowerWatchdog.isPowerEnable():
 			self.mIgnoreCommand = False
-		
+			self.mGotLight = False
+			
 		if self.mRunTimer is not None:
 			if (lNow - self.mRunTimer) > self.settings.mMaxRunTimer:
 				#self.__mPowerWatchdog.setPowerEnableMsg(False,'time out')
