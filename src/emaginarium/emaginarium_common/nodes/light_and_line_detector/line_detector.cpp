@@ -29,7 +29,7 @@ LineDetector::~LineDetector()
 {
 }
 
-void LineDetector::addNewFrame(const LightAndLineFrame & pFrame,tTs pTimeWindowSec)
+void LineDetector::addNewFrame(const LightAndLineFrame & pFrame,tTs pTimeWindowMSec)
 {
 	if(mLineSearchRoi != pFrame.getLineSearchArea())
 	{
@@ -41,8 +41,8 @@ void LineDetector::addNewFrame(const LightAndLineFrame & pFrame,tTs pTimeWindowS
 	const std::chrono::time_point<std::chrono::system_clock> lNow(std::chrono::system_clock::now());
 	mCurrentTs = std::chrono::duration_cast<std::chrono::milliseconds>(lNow-mCreationTime).count();
 	
-	addLineColorAreas(pFrame,LightAndLineFrame::LC_LineGreen,LightAndLineFrame::LT_Green,pTimeWindowSec);
-	addLineColorAreas(pFrame,LightAndLineFrame::LC_LineRed,LightAndLineFrame::LT_Red,pTimeWindowSec);
+	addLineColorAreas(pFrame,LightAndLineFrame::LC_LineGreen,LightAndLineFrame::LT_Green,pTimeWindowMSec);
+	addLineColorAreas(pFrame,LightAndLineFrame::LC_LineRed,LightAndLineFrame::LT_Red,pTimeWindowMSec);
 }
 
 
@@ -57,11 +57,11 @@ void LineDetector::clearDetector()
 	mLineSearchRoi = cv::Rect();
 }
 
-void LineDetector::addLineColorAreas(const LightAndLineFrame & pFrame, LightAndLineFrame::ColorAreas pColorArea, LightAndLineFrame::LinesType pLineType,tTs pTimeWindowSec)
+void LineDetector::addLineColorAreas(const LightAndLineFrame & pFrame, LightAndLineFrame::ColorAreas pColorArea, LightAndLineFrame::LinesType pLineType,tTs pTimeWindowMSec)
 {
 	tDetectionCells & lCells = mDetectionCells[pLineType];
 	{
-		tTs lLimitTs = mCurrentTs - pTimeWindowSec*1000;
+		tTs lLimitTs = mCurrentTs - pTimeWindowMSec;
 		size_t lMaxEntriesInList = 250;
 		tDetectionCells::iterator lIt = lCells.begin();
 		tDetectionCells::iterator lItEnd = lCells.end();
@@ -130,12 +130,12 @@ bool LineDetector::detectLine(LightAndLineFrame::LinesType pLineType)
 		}
 	}
 	//ROS_WARN_STREAM(lCellOk<<" " <<lCellWithoutData<<" "<<lCellNotEmpty);
-	return lCellOk > (lCells.size() / 2);
+	return lCellOk > ((lCells.size() * 2 / 3));
 }
 
-void LineDetector::createDebugImg(cv::Mat & pTarget,tTs pTimeWindowSec)
+void LineDetector::createDebugImg(cv::Mat & pTarget,tTs pTimeWindowMSec)
 {
-	const tTs lMinTsValue = mCurrentTs - pTimeWindowSec*1000;
+	const tTs lMinTsValue = mCurrentTs - pTimeWindowMSec;
 	
 	
 	pTarget = cv::Mat(10,mWidth,CV_8UC3,cv::Scalar(0,0,0));

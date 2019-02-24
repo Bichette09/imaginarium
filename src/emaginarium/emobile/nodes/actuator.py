@@ -17,12 +17,18 @@ class ActuatorSettings(settings_store_client.SettingsBase):
 	def __init__(self):
 		settings_store_client.SettingsBase.__init__(self)
 		self.kTh=0.3
+		self.mMaxPower = 0.2
+		self.mMaxRunTimer = 48
+		self.mMinTimeBetweenFinishLine = 36
 		self.forwardStopThrottle = 1520
 		self.backwardStopThrottle = 1520
 		self.registerAttributes([
 			('kTh','actuator/kTh','kTh'),
 			('forwardStopThrottle','actuator/fwdStopThrottle','command applied to stop emobile when it was moving in forward direction default 1520'),
 			('backwardStopThrottle','actuator/bwdStopThrottle','command applied to stop emobile when it was moving in backward direction default 1520'),
+			('mMaxRunTimer','actuator/maxruntime','max run time after start'),
+			('mMaxPower','actuator/maxpower',0.,1.,'max commanded power'),
+			('mMinTimeBetweenFinishLine','actuator/mintimebetweenfinishline','min duration between finish detection'),
 			])
 
 class Actuator(object):
@@ -38,6 +44,12 @@ class Actuator(object):
 		self.mGoalSteering=0
 		self.mLastNonNullGoalThrottle = 0
 		self.mBrakeTimer = None
+		
+		self.mFinishLineTimer = None
+		self.mRunTimer = None
+		
+		self.mIgnoreCommand = False
+		self.mGotLight = False
 		
 		self.__mGpio = None
 		self.__mLastSpeed = 0.
@@ -63,24 +75,54 @@ class Actuator(object):
 		
 
 	def updateThrottleTarget(self, param):
-		self.mGoalThrottle = min(max(-1.,param.throttle),1.)
+		self.mGoalThrottle = min(max(-1.5,param.throttle),4.)
 		if self.mGoalThrottle != param.throttle:
 			rospy.logerr('Goal speed out of range %f' % (param.throttle))
 		self.updateThrottle()
-		
+	
+	def onimgdetection(self, param):
+	
+		if param.data == 'finish_line_detected':
+			lNow = time.time()
+			if self.mFinishLineTimer is None:
+				self.mFinishLineTimer = lNow
+			elif (lNow - self.mFinishLineTimer) > self.settings.mMinTimeBetweenFinishLine:
+				#self.__mPowerWatchdog.setPowerEnableMsg(False,'Finish line')
+				self.mFinishLineTimer=None
+				#self.mIgnoreCommand = True
+				rospy.logwarn('finish line')
+		elif param.data == 'start_light_sequence_detected':
+			self.mGotLight = True
+			rospy.logwarn('got light')
+	
 	def updateThrottle(self):
-		self.mGoalThrottle = min(max(-1.,self.mGoalThrottle),1.)
+		self.mGoalThrottle = min(max(-1.5,self.mGoalThrottle),4.)
 		
 		lGoalThrottle = 0.
 		
-		if self.__mPowerWatchdog.isPowerEnable():
-			lGoalThrottle = self.mGoalThrottle * self.settings.kTh
-			
+		lNow = time.time()
 		
+		if self.__mPowerWatchdog.isPowerEnable() and not self.mIgnoreCommand and self.mGotLight:
+			if self.mRunTimer is None:
+				self.mFinishLineTimer = None
+				self.mRunTimer = lNow
+			lGoalThrottle = (self.mGoalThrottle - self.__mLastSpeed)* self.kTh
+			lGoalThrottle = min(max(- self.settings1.mMaxPower,lGoalThrottle),self.settings1.mMaxPower)
+		elif not self.__mPowerWatchdog.isPowerEnable():
+			self.mIgnoreCommand = False
+			self.mGotLight = False
+			
+		if self.mRunTimer is not None:
+			if (lNow - self.mRunTimer) > self.settings.mMaxRunTimer:
+				#self.__mPowerWatchdog.setPowerEnableMsg(False,'time out')
+				self.mRunTimer=None
+				self.mIgnoreCommand = True
+				rospy.logwarn('time out')
+			
 		if abs(lGoalThrottle) > 0.01:
 			# MOVE
-			self.mLastNonNullGoalThrottle = lGoalThrottle
-			self.mBrakeTimer = time.time()
+			#self.mLastNonNullGoalThrottle = lGoalThrottle
+			#self.mBrakeTimer = time.time()
 			
 			if lGoalThrottle > 0.:
 				self.throttles = 1540
@@ -92,18 +134,18 @@ class Actuator(object):
 			# STOP
 			self.throttles = 1520
 			
-			if (self.mBrakeTimer is not None) and (time.time() - self.mBrakeTimer) < 2.5 and self.mLastNonNullGoalThrottle > 0.:
-				#rospy.logwarn('On freine')
-				if self.__mLastSpeed > 0.3:
-					# we need to brake if we are moving faster than 0.3 m/s
-					if self.mLastNonNullGoalThrottle > 0.01:
-						self.throttles = self.settings.forwardStopThrottle
-					elif self.mLastNonNullGoalThrottle < 0.01:
-						self.throttles = self.settings.backwardStopThrottle
-				else:
-					self.mBrakeTimer = None
-			else:
-				self.mBrakeTimer = None
+			# if (self.mBrakeTimer is not None) and (time.time() - self.mBrakeTimer) < 2.5 and self.mLastNonNullGoalThrottle > 0.:
+				##rospy.logwarn('On freine')
+				# if self.__mLastSpeed > 0.3:
+					##we need to brake if we are moving faster than 0.3 m/s
+					# if self.mLastNonNullGoalThrottle > 0.01:
+						# self.throttles = self.settings.forwardStopThrottle
+					# elif self.mLastNonNullGoalThrottle < 0.01:
+						# self.throttles = self.settings.backwardStopThrottle
+				# else:
+					# self.mBrakeTimer = None
+			# else:
+				# self.mBrakeTimer = None
 				
 				
 		# rospy.logwarn(self.throttles)
@@ -128,6 +170,7 @@ class Actuator(object):
 	
 	def updateSpeed(self,param):
 		self.__mLastSpeed = param.speed
+		self.updateThrottle()
 		
 if __name__ == "__main__":	
 	os.getcwd()
@@ -136,6 +179,7 @@ if __name__ == "__main__":
 	lActuator = Actuator(rospy.get_param('/actuator/pinT'),rospy.get_param('/actuator/pinS'))
 	sRosSuscriberThrottle = rospy.Subscriber('emobile/CommandThrottle', emobile.msg.CommandThrottle,lActuator.updateThrottleTarget)
 	sRosSuscriberSteering = rospy.Subscriber('emobile/CommandSteering', emobile.msg.CommandSteering,lActuator.updateSteeringTarget)
-	sRosSuscriberSteering = rospy.Subscriber('/speed', emobile.msg.Speed,lActuator.updateSpeed)
+	sRosSuscriberImg = rospy.Subscriber('/light_and_line_detector/event', std_msgs.msg.String,lActuator.onimgdetection)
+	sRosSuscriberSpeed = rospy.Subscriber('/speed', emobile.msg.Speed,lActuator.updateSpeed)
 	rospy.spin()
 	lActuator.updateThrottle()

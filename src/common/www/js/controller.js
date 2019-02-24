@@ -245,5 +245,5 @@ function sendHeartBeat()
 {
 	if(!sPower.mAllowHeartbeat)
 		return;
-	sRosCtx.writeMsg('/PowerHeartBeat','std_msgs/Int32',{data: sPower.mIsEnable ? 2 : 0});
+	// sRosCtx.writeMsg('/PowerHeartBeat','std_msgs/Int32',{data: sPower.mIsEnable ? 2 : 0});
 }

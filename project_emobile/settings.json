@@ -9,7 +9,19 @@
     }, 
     "actuator/kTh": {
         "description": "kTh", 
-        "value": "0.27"
+        "value": "0.15"
+    }, 
+    "actuator/maxpower": {
+        "description": "max commanded power", 
+        "value": "0.2"
+    }, 
+    "actuator/maxruntime": {
+        "description": "max run time after start", 
+        "value": "600"
+    }, 
+    "actuator/mintimebetweenfinishline": {
+        "description": "min duration between finish detection", 
+        "value": "36"
     }, 
     "command/D": {
         "description": "Commanded distance from the side", 
@@ -17,22 +29,14 @@
     }, 
     "command/L": {
         "description": "Prediction distance", 
-        "value": "3"
-    }, 
-    "command/distLatMax": {
-        "description": "Lateral distance maximum", 
-        "value": "0.75"
-    }, 
-    "command/distLatMaxMax": {
-        "description": "Lateral distance maximum du desespoir", 
-        "value": "1.0"
+        "value": "4"
     }, 
     "command/distLatMin": {
         "description": "Lateral distance minimum", 
         "value": "0.4"
     }, 
     "command/distLatMinmin": {
-        "description": "Lateral distance minimum avant contact", 
+        "description": "Lateral distance minimum before contact", 
         "value": "0.1"
     }, 
     "command/distMin": {
@@ -45,14 +49,26 @@
     }, 
     "command/distMoy2": {
         "description": "Upper distance medium for slow speed", 
-        "value": "1.5"
+        "value": "1.2"
     }, 
     "command/ratioSpeed": {
         "description": "Speed ratio in protected mode", 
-        "value": "0.3"
+        "value": "0.25"
     }, 
     "command/ratioSpeedMin": {
         "description": "Minimum Speed ratio in protected mode", 
+        "value": "0.1"
+    }, 
+    "command/speedMax": {
+        "description": "Maximum Speed commanded", 
+        "value": "1"
+    }, 
+    "command/speedMin": {
+        "description": "Minimum Speed in protected mode", 
+        "value": "0.05"
+    }, 
+    "command/speedMoy": {
+        "description": "Medium speed commanded", 
         "value": "0.2"
     }, 
     "hardware_monitor/update_period": {
@@ -63,12 +79,16 @@
         "description": "Enable light detection", 
         "value": "true"
     }, 
+    "img/linedetection": {
+        "description": "Enable line detection", 
+        "value": "true"
+    }, 
     "light/blue": {
-        "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | DebugMask | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
         "value": "210 255 125 135 115 124 | 0 | 6 20 "
     }, 
     "light/red": {
-        "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | DebugMask | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
         "value": "100 255 100 120 160 210 | 0 | 6 20 "
     }, 
     "light/searchareapercent": {
@@ -76,32 +96,32 @@
         "value": "30 60 5 60"
     }, 
     "light/time_window": {
-        "description": "max duration between red and blue light in sec", 
-        "value": "10"
+        "description": "max duration between red and blue light in msec", 
+        "value": "10000"
     }, 
     "light/yellow": {
-        "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | DebugMask | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
         "value": "140 255 80 120 135 150 | 0 | 6 20 "
     }, 
     "light_and_line_detector/debug_img_channels": {
         "description": "which channels should be published for debug ? yuvcodDL", 
-        "value": " yuvdoDL"
+        "value": "yuvcodDLl"
     }, 
     "line/cannyth": {
         "description": "Canny threshold", 
         "value": "64"
     }, 
     "line/greencolor": {
-        "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
-        "value": "70 150 110 130 90 120 | 1 | 6 5"
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | DebugMask | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "value": "70 150 110 130 90 120 | 0 | 6 5"
     }, 
     "line/greenhough": {
         "description": "HoughTh minLineLen maxLineGab", 
         "value": "30 15 50 "
     }, 
     "line/redcolor": {
-        "description": "Ymin Ymax Umin Umax Vmin Vmax | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
-        "value": "70 150 115 140 140 180 | 0 | 6 5"
+        "description": "Ymin Ymax Umin Umax Vmin Vmax | DebugMask | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
+        "value": "70 150 115 140 140 180 | 1 | 6 5"
     }, 
     "line/redhough": {
         "description": "HoughTh minLineLen maxLineGab", 
@@ -110,5 +130,9 @@
     "line/searchareapercent": {
         "description": "area in percent were line should be searched [xmin xmax ymin ymax]", 
         "value": "5 100 55 100"
+    }, 
+    "line/time_window": {
+        "description": "duration during which we keep info in detection buffer in msec", 
+        "value": "500"
     }
 }

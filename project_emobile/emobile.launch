@@ -31,6 +31,9 @@
 		<arg name="pinT" value="18"/>
 		<arg name="pinS" value="23"/>
 	</include>
+	<!-- img detection -->
+	<node name="light_and_line_detector" pkg="emaginarium_common" type="light_and_line_detector">
+	</node>	
 	<!-- web_video_server, a node to stream image topic to web client -->	
 	<node name="web_video_server" pkg="web_video_server" type="web_video_server">
 		<param name="port" value="8080"></param>

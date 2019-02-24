@@ -17,14 +17,14 @@ public:
 	LineDetector(int pWidthResolution);
 	virtual ~LineDetector();
 	
-	typedef int32_t tTs;
+	typedef int32_t tTs; 
 	
 	
 	void addNewFrame(const LightAndLineFrame & pFrame, tTs pTimeWindowSec);
 	void clearDetector();
 	bool detectLineSequence();
 	
-	void createDebugImg(cv::Mat & pTarget,tTs pTimeWindowSec);
+	void createDebugImg(cv::Mat & pTarget,tTs pTimeWindowMSec);
 	
 	bool detectLine(LightAndLineFrame::LinesType pLineType);
 	
