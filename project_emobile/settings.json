@@ -1,12 +1,4 @@
 {
-    "actuator/bwdStopThrottle": {
-        "description": "command applied to stop emobile when it was moving in backward direction default 1520", 
-        "value": "1780"
-    }, 
-    "actuator/fwdStopThrottle": {
-        "description": "command applied to stop emobile when it was moving in forward direction default 1520", 
-        "value": "1260"
-    }, 
     "actuator/kTh": {
         "description": "kTh", 
         "value": "0.15"
@@ -14,14 +6,6 @@
     "actuator/maxpower": {
         "description": "max commanded power", 
         "value": "0.2"
-    }, 
-    "actuator/maxruntime": {
-        "description": "max run time after start", 
-        "value": "600"
-    }, 
-    "actuator/mintimebetweenfinishline": {
-        "description": "min duration between finish detection", 
-        "value": "36"
     }, 
     "command/D": {
         "description": "Commanded distance from the side", 
@@ -50,14 +34,6 @@
     "command/distMoy2": {
         "description": "Upper distance medium for slow speed", 
         "value": "1.2"
-    }, 
-    "command/ratioSpeed": {
-        "description": "Speed ratio in protected mode", 
-        "value": "0.25"
-    }, 
-    "command/ratioSpeedMin": {
-        "description": "Minimum Speed ratio in protected mode", 
-        "value": "0.1"
     }, 
     "command/speedMax": {
         "description": "Maximum Speed commanded", 
