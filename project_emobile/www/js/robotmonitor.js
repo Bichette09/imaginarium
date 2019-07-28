@@ -139,7 +139,60 @@ function onload()
 				]
 			}
 		});
-	
+	sGraphs.addGraph(
+		{
+			"title":"gyro",
+			"y1":{
+				"unit":"°/sec",
+				"range":[-20,20],
+				"rostraces":[
+					{
+						"name":"rot X",
+						"topicname":"/emaginarium_common/Gyro",
+						"messagetype":"/emaginarium_common/Gyro",
+						"messagefield":"angular_speed",
+						"fieldindex":0
+					},{
+						"name":"rot Y",
+						"topicname":"/emaginarium_common/Gyro",
+						"messagetype":"/emaginarium_common/Gyro",
+						"messagefield":"angular_speed",
+						"fieldindex":1
+					},{
+						"name":"rot Z",
+						"topicname":"/emaginarium_common/Gyro",
+						"messagetype":"/emaginarium_common/Gyro",
+						"messagefield":"angular_speed",
+						"fieldindex":2
+					}
+				]
+			},
+			"y2":{
+				"unit":"m/s-2",
+				"range":[-5,5],
+				"rostraces":[
+					{
+						"name":"accel X",
+						"topicname":"/emaginarium_common/Gyro",
+						"messagetype":"/emaginarium_common/Gyro",
+						"messagefield":"acceleration",
+						"fieldindex":0
+					},{
+						"name":"accel Y",
+						"topicname":"/emaginarium_common/Gyro",
+						"messagetype":"/emaginarium_common/Gyro",
+						"messagefield":"acceleration",
+						"fieldindex":1
+					},{
+						"name":"accel Z",
+						"topicname":"/emaginarium_common/Gyro",
+						"messagetype":"/emaginarium_common/Gyro",
+						"messagefield":"acceleration",
+						"fieldindex":2
+					}
+				]
+			}
+		});
 	sGraphs.addGraph(
 		{
 			"title":"img",
