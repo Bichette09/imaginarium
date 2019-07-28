@@ -16,6 +16,10 @@
 // hardware_monitor
 #include <hardware_monitor/HardwareInfo.h>
 
+// opencv
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/ocl.hpp>
+
 std::string exec(const char* cmd) 
 {
 	std::array<char, 128> buffer;
@@ -290,6 +294,41 @@ public:
 	float mUpdateIntervalSec;
 };
 
+void detectOpenCLSupport()
+{
+	
+	std::stringstream lStream;
+	{
+		lStream<<"OpenCL : ";
+		if (!cv::ocl::haveOpenCL())
+		{
+			lStream << "NO support" << std::endl;
+			goto detectOpenCLSupportEnd;
+		}
+		cv::ocl::Context context;
+		if (!context.create(cv::ocl::Device::TYPE_ALL))
+		{
+			lStream << "Fail to create context" << std::endl;
+			goto detectOpenCLSupportEnd;
+		}
+
+		// In OpenCV 3.0.0 beta, only a single device is detected.
+		lStream << "supported on "<<context.ndevices() << " devices." << std::endl;
+		for (int i = 0; i < context.ndevices(); i++)
+		{
+			cv::ocl::Device device = context.device(i);
+			lStream << "####################"<<std::endl;
+			lStream << "\tname                 : " << device.name() << std::endl;
+			lStream << "\tavailable            : " << device.available() << std::endl;
+			lStream << "\timageSupport         : " << device.imageSupport() << std::endl;
+			lStream << "\tOpenCL_C_Version     : " << device.OpenCL_C_Version() << std::endl;
+			lStream << std::endl;
+		}
+	}
+detectOpenCLSupportEnd:
+	ROS_INFO_STREAM(lStream.str());
+}
+
 int main(int argc, char ** argv)
 {
 	ros::init(argc,argv,"hardware_monitor");
@@ -315,8 +354,8 @@ int main(int argc, char ** argv)
 		
 		HardwareMonitorSettings lSettings(n);
 		
-		
-		std::cout<<"hardware_monitor ready !"<<std::endl;
+		ROS_INFO_STREAM("hardware_monitor ready !");
+		detectOpenCLSupport();
 		while(ros::ok())
 		{
 			ros::spinOnce();
@@ -335,9 +374,6 @@ int main(int argc, char ** argv)
 			lMsg.cpufreq = lHwMonitor.getCpuFreq();
 			lMsgPublisher.publish(lMsg);
 			
-			//std::cout<<"####\n";
-			//lMsgPrinter.stream(std::cout," ",lMsg);
-
 			if(lCurrentRatePeriodSec != lSettings.mUpdateIntervalSec)
 			{
 				lLoopRatePtr.reset(new ros::Rate(1./lSettings.mUpdateIntervalSec));

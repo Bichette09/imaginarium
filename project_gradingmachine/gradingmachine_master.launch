@@ -6,15 +6,15 @@
 	</include>
 	
 	<!-- rosbridge interface to web front-end -->	
-	<!--<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" > 
+	<!--<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"  > 
 		<arg name="port" value="9090"/>
 	</include>-->
 	
 	<!-- hardware_monitor, a node to monitor cpu, memory and network -->
-	<node name="hardware_monitor" pkg="hardware_monitor" type="hardware_monitor" />
+	<node name="hardware_monitor" pkg="hardware_monitor" type="hardware_monitor" output="screen" />
 	
 	<!-- oled display -->
-	<node name="oled_display" pkg="grading_machine" type="oled_display.py" />
+	<node name="oled_display" pkg="grading_machine" type="oled_display.py" output="screen"/>
 		
 	<!-- web_video_server, a node to stream image topic to web client -->	
 	<!--<node name="web_video_server" pkg="web_video_server" type="web_video_server">

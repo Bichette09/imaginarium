@@ -17,6 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
 	settings_store
 )
 
+find_package( OpenCV REQUIRED )
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -122,6 +124,7 @@ catkin_package(
 include_directories(
 # include
 	${catkin_INCLUDE_DIRS}
+	${OpenCV_INCLUDE_DIRS}
 )
 
 # message(FATAL_ERROR "TEST ${catkin_INCLUDE_DIRS}")
@@ -142,7 +145,7 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/pimonitor_node.cpp)
 
 add_executable(hardware_monitor src/main.cpp)
-target_link_libraries(hardware_monitor ${catkin_LIBRARIES})
+target_link_libraries(hardware_monitor ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 add_dependencies(${PROJECT_NAME} "${PROJECT_NAME}_generate_messages_cpp" ${catkin_EXPORTED_TARGETS})
 
 ## Rename C++ executable without prefix

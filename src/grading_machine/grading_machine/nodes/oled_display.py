@@ -25,7 +25,7 @@ class OledDisplaySettings(settings_store_client.SettingsBase):
 class Display():
 	def __init__(self):
 		
-		parser = cmdline.create_parser(description='luma.examples arguments')
+		parser = cmdline.create_parser(description='')#description='luma.examples arguments'
 		args = parser.parse_args([])
 		self.__mStateDeclarator = settings_store_client.StateDeclarator()
 		
