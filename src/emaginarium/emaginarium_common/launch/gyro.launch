@@ -1,6 +1,8 @@
 <launch>
 	<arg name="i2cPort" default="1"/>
+	<arg name="sMpuAddress" default="104"/>
 	<node name="gyro" pkg="emaginarium_common" type="gyro.py">
 		<param name="i2cPort" value="$(arg i2cPort)"/>
+		<param name="sMpuAddress" value="$(arg sMpuAddress)"/>  <!-- 0x69 pour emaginarium, 0x68 pour emobile -->
 	</node>
 </launch>
