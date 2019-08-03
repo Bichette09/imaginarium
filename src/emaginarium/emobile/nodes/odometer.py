@@ -25,7 +25,7 @@ class Odometer(object):
 		tCount = self.lCount
 		self.lCount = 0
 		msg = Speed()
-		msg.speed = tCount*self.lKMetersByTick/(t-self.lLastTick)
+		msg.speed = tCount*self.lKMetersByTick/(t-self.lLastTick)  # m/s
 		self.lLastTick = t
 		self.lPub.publish(msg)
 

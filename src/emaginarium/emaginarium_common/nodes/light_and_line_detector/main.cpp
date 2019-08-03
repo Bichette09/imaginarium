@@ -35,6 +35,7 @@ public:
 		, mLineTimeWindowMSec(10000)
 		, mLightDetection(true)
 		, mLineDetection(true)
+		, mGlobalEnable(false)
 	{
 		mRedLightParameterString = mThresholdingParameters.mRedLightParameter.getStringFromValues();
 		mYellowLightParameterString = mThresholdingParameters.mYellowLightParameter.getStringFromValues();
@@ -66,6 +67,9 @@ public:
 		
 		registerAttribute<bool>("img/lightdetection",mLightDetection,"Enable light detection");
 		registerAttribute<bool>("img/linedetection",mLineDetection,"Enable line detection");
+
+		registerAttribute<std::string>("command/mode",mCommandMode,"Robot mode, nominal, manuel ou dlvv");
+
 
 		declareAndRetrieveSettings();
 	}
@@ -112,6 +116,10 @@ public:
 		{
 			mThresholdingParameters.mGreenLineHough.setValuesFromString(mGreenLineHoughParameterString);
 		}
+		else if(pSettingName.find("command/mode") != std::string::npos)
+		{
+			mGlobalEnable = mCommandMode == "dlvv";
+		}
 	}
 	
 	ThresholdingWorker::Parameters	mThresholdingParameters;
@@ -128,11 +136,14 @@ public:
 	std::string						mRedLineHoughParameterString;
 	std::string						mGreenLineHoughParameterString;
 	
+	std::string						mCommandMode;
+	
 	uint32_t						mLightTimeWindowMSec;
 	uint32_t						mLineTimeWindowMSec;
 	
 	bool							mLightDetection;
 	bool							mLineDetection;
+	bool							mGlobalEnable;
 };
 
 
@@ -156,7 +167,7 @@ int main(int argc, char ** argv)
 		
 		
 		settings_store::StateDeclarator lStateDeclarator(n);
-#define USE_CAM
+//#define USE_CAM
 #ifdef USE_CAM
 		CameraFrameProvider lFrameProvider(CameraFrameProvider::Parameters(320*2,240*2,12));
 		
@@ -171,7 +182,7 @@ int main(int argc, char ** argv)
 
 		ThresholdingWorker lThresholdingWorkerA(&lFrameProvider,NULL,lSettings.mThresholdingParameters,lEnableLightDetection);
 		ThresholdingWorker lThresholdingWorkerB(NULL,&lThresholdingWorkerA,lSettings.mThresholdingParameters,lEnableLightDetection);
-		FrameProcessor<LightAndLineFrame> lFinalThread(lThresholdingWorkerB);
+		FrameProcessor<LightAndLineFrame> lFinalThread(lThresholdingWorkerB,"final");
 		
 		
 		LightAndLineFrame lFrame;
@@ -185,17 +196,27 @@ int main(int argc, char ** argv)
 		emaginarium_common::LightAndLineDetectionStats lNextStat;
 		int lStatCptr = 0;
 		
-		
+		bool lSleep = false;
 		while(ros::ok())
 		{
+			lSleep = true;
 			// update light and line detection flag
-			lEnableLightDetection = lSettings.mLightDetection;
-			lEnableLineDetection = lSettings.mLineDetection;
+			lEnableLightDetection = lSettings.mLightDetection && lSettings.mGlobalEnable;
+			lEnableLineDetection = lSettings.mLineDetection && lSettings.mGlobalEnable;
+			
+			lFrameProvider.setEnabled(lSettings.mGlobalEnable);
 			
 			lStateDeclarator.setState<bool>("img/lightdetection",lEnableLightDetection);
 			lStateDeclarator.setState<bool>("img/linedetection",lEnableLineDetection);
 			
-			if(lFinalThread.getNextFrame(lFrame))
+			if(!lSettings.mGlobalEnable)
+				goto endLoop;
+			
+			if(!lFinalThread.getNextFrame(lFrame))
+				goto endLoop;
+			
+			lSleep = false;
+			
 			{
 				lFrame.setTimestamp(LightAndLineFrame::F_LightAnalyzeStart);
 				if(lEnableLightDetection)
@@ -334,6 +355,11 @@ int main(int argc, char ** argv)
 					}
 				}
 			}
+			
+			endLoop:
+			
+			if(lSleep)
+				usleep(250000);
 			
 			ros::spinOnce();
 

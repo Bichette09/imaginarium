@@ -26,7 +26,7 @@ class FrameProcessor : private ThreadInterface
 public:
 	
 	
-	FrameProcessor(WorkerInterface<FrameType> & pWorker);
+	FrameProcessor(WorkerInterface<FrameType> & pWorker, const std::string & pName);
 	virtual ~FrameProcessor();
 	
 	bool getNextFrame(FrameType & pFrame);
@@ -34,6 +34,7 @@ public:
 protected:
 	virtual void run();
 private:
+	const std::string 			mName;
 	WorkerInterface<FrameType> & mWorker;
 	std::mutex					mMutex;
 	std::condition_variable		mWaitCondition;

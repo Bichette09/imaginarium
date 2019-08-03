@@ -27,11 +27,16 @@ private:
 class FrameProvider
 {
 public:
-	virtual ~FrameProvider(){};
+	FrameProvider();
+	virtual ~FrameProvider();
 	
 	virtual int getFrameWidth() const = 0;
 	virtual int getFrameHeight() const = 0;
 	
 	virtual bool getNextFrame(FrameInterface & pFrame) = 0;
+	
+	void setEnabled(bool pEnable);
+	bool isEnabled() const;
 private:
+	bool	mIsEnable;
 };

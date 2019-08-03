@@ -1,7 +1,7 @@
 #pragma once
 
 // std
-
+#include <string>
 
 namespace std
 {
@@ -15,6 +15,7 @@ public:
 	ThreadInterface();
 	virtual ~ThreadInterface();
 	
+	std::string getThreadId() const;
 	
 protected:
 	void startThread();

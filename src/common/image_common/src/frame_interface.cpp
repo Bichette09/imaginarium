@@ -27,3 +27,22 @@ void FrameInterface::ensureSizeAndType(int pWidth, int pHeight)
 		lV = cv::Mat(pHeight,pWidth,CV_8UC1);
 	}
 }
+
+FrameProvider::FrameProvider()
+	: mIsEnable(false)
+{
+}
+
+FrameProvider::~FrameProvider()
+{
+}
+
+void FrameProvider::setEnabled(bool pEnable)
+{
+	mIsEnable = pEnable;
+}
+
+bool FrameProvider::isEnabled() const
+{
+	return mIsEnable;
+}

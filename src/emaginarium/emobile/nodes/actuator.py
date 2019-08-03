@@ -65,21 +65,6 @@ class Actuator(object):
 			rospy.logerr('Goal speed out of range %f' % (param.throttle))
 		self.updateThrottle()
 	
-	# def onimgdetection(self, param):
-	
-		# if param.data == 'finish_line_detected':
-			# lNow = time.time()
-			# if self.mFinishLineTimer is None:
-				# self.mFinishLineTimer = lNow
-			# elif (lNow - self.mFinishLineTimer) > self.settings.mMinTimeBetweenFinishLine:
-				# # self.__mPowerWatchdog.setPowerEnableMsg(False,'Finish line')
-				# self.mFinishLineTimer=None
-				# # self.mIgnoreCommand = True
-				# rospy.logwarn('finish line')
-		# elif param.data == 'start_light_sequence_detected':
-			# self.mGotLight = True
-			# rospy.logwarn('got light')
-	
 	def updateThrottle(self):
 		self.mGoalThrottle = min(max(-1.5,self.mGoalThrottle),4.)
 		
@@ -135,6 +120,5 @@ if __name__ == "__main__":
 	lActuator = Actuator(rospy.get_param('/actuator/pinT'),rospy.get_param('/actuator/pinS'))
 	sRosSuscriberThrottle = rospy.Subscriber('emobile/CommandThrottle', emobile.msg.CommandThrottle,lActuator.updateThrottleTarget)
 	sRosSuscriberSteering = rospy.Subscriber('emobile/CommandSteering', emobile.msg.CommandSteering,lActuator.updateSteeringTarget)
-	#sRosSuscriberImg = rospy.Subscriber('/light_and_line_detector/event', std_msgs.msg.String,lActuator.onimgdetection)
 	rospy.spin()
 	lActuator.updateThrottle()

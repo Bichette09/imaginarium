@@ -12,6 +12,12 @@ import time
 class Gyro(object):
 	def __init__(self, pIcPort, pMpuAddress):
 		self.__mMpuAddress = pMpuAddress
+		self.aXOffset = 0
+		self.aYOffset = 0
+		self.aZOffset = 0
+		self.gXOffset = 0
+		self.gYOffset = 0
+		self.gZOffset = 0
 		try:
 			self.__mI2cPort = smbus.SMBus(pIcPort)
 			# wake up device and init power management
@@ -24,10 +30,13 @@ class Gyro(object):
 			# configure gyro
 			self.__mI2cPort.write_byte_data(self.__mMpuAddress,0x1B,0x00) # range @ +/- 250°/s
 			self.__mAngularSpeedFactor = 250. * 1. / 32768.
-			
+					
 			# configure accelero
 			self.__mI2cPort.write_byte_data(self.__mMpuAddress,0x1C,0x00) # range +/- 2g (we are not in a jet fighter)
 			self.__mAccelFactor = 2. * 1. / 32768.
+
+			self.calibrationGyro()
+			
 		except:
 			self.__mI2cPort = None
 			rospy.logerr('Fail to initialize gyro on port %d @%x' % (pIcPort,self.__mMpuAddress))
@@ -48,7 +57,7 @@ class Gyro(object):
 		if lZAccel > 32767:
 			lZAccel -= 65536
 		lZAccel *= self.__mAccelFactor
-		return [lXAccel,lYAccel,lZAccel]
+		return [lXAccel + self.aXOffset,lYAccel + self.aYOffset,lZAccel + self.aZOffset]
 		
 	def readAngularSpeed(self):
 		if self.__mI2cPort is None:
@@ -66,8 +75,39 @@ class Gyro(object):
 		if lZGyro > 32767:
 			lZGyro -= 65536
 		lZGyro *= self.__mAngularSpeedFactor
-		return [lXGyro,lYGyro,lZGyro]
-
+		return [lXGyro + self.gXOffset, lYGyro + self.gYOffset, lZGyro + self.gZOffset]
+		
+	def calibrationGyro(self):
+		sumAccel = [0,0,0]
+		sumGyro = [0,0,0]
+		
+		# First 100 measures are discarded
+		for i in range(100):
+			self.readAccel()
+			self.readAngularSpeed()
+			time.sleep(0.01)
+		
+		# Then 100 measures are saved in buffer
+		for i in range(100):
+			tempAccel = self.readAccel()
+			sumAccel[0] = sumAccel[0] + tempAccel[0]
+			sumAccel[1] = sumAccel[1] + tempAccel[1]
+			sumAccel[2] = sumAccel[2] + tempAccel[2]
+			tempGyro = self.readAngularSpeed()
+			sumGyro[0] = sumGyro[0] + tempGyro[0]
+			sumGyro[1] = sumGyro[1] + tempGyro[1]
+			sumGyro[2] = sumGyro[2] + tempGyro[2]
+			time.sleep(0.01)
+		
+		# Compute 100 measures mean
+		self.aXOffset = - sumAccel[0] / 100
+		self.aYOffset = - sumAccel[1] / 100
+		self.aZOffset = 0.981 - (sumAccel[2] / 100)
+		self.gXOffset = - sumGyro[0] / 100
+		self.gYOffset = - sumGyro[1] / 100
+		self.gZOffset = - sumGyro[2] / 100
+		
+		
 
 if __name__ == "__main__":
 	

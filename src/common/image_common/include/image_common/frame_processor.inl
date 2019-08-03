@@ -12,10 +12,11 @@ WorkerInterface<FrameType>::~WorkerInterface()
 }
 
 template <typename FrameType>
-FrameProcessor<FrameType>::FrameProcessor(WorkerInterface<FrameType> & pWorker)
+FrameProcessor<FrameType>::FrameProcessor(WorkerInterface<FrameType> & pWorker, const std::string & pName)
 	: mQuit(false)
 	, mGotNewResult(false)
 	, mWorker(pWorker)
+	, mName(pName)
 {
 #ifdef USE_THREAD
 	startThread();
@@ -64,6 +65,7 @@ bool FrameProcessor<FrameType>::getNextFrame(FrameType & pFrame)
 template <typename FrameType>
 void FrameProcessor<FrameType>::run()
 {
+	ROS_WARN_STREAM("Start FrameProcessor thread "<<getThreadId()<<" "<<mName);
 	while(!mQuit)
 	{
 		if(mWorker.computeNextResult(mTmpFrame))

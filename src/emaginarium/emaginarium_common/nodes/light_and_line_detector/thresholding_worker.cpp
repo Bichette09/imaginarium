@@ -197,12 +197,12 @@ ThresholdingWorker::ThresholdingWorker(FrameProvider * pFrameProvider, Threshold
 	if(pFrameProvider)
 	{
 		mFrameProviderWorker = new FrameProviderWorker<LightAndLineFrame>(*pFrameProvider);
-		mPreviousThread = new FrameProcessor<LightAndLineFrame>(*mFrameProviderWorker);
+		mPreviousThread = new FrameProcessor<LightAndLineFrame>(*mFrameProviderWorker,"ThresholdingWorker_A");
 	}
 	else
 	{
 		mPrevious = pPrevious;
-		mPreviousThread = new FrameProcessor<LightAndLineFrame>(*mPrevious);
+		mPreviousThread = new FrameProcessor<LightAndLineFrame>(*mPrevious,"ThresholdingWorker_B");
 	}
 }
 
@@ -210,6 +210,7 @@ ThresholdingWorker::~ThresholdingWorker()
 {
 	delete mPreviousThread; mPreviousThread = NULL;
 }
+
 
 bool ThresholdingWorker::computeNextResult(LightAndLineFrame & pRes)
 {

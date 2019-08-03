@@ -1,6 +1,7 @@
 #include "thread_interface.h"
 
 #include <thread>
+#include <sstream>
 
 ThreadInterface::ThreadInterface()
 	: mThread(NULL)
@@ -32,5 +33,14 @@ void ThreadInterface::waitThread()
 void ThreadInterface::Run(ThreadInterface * pThread)
 {
 	pThread->run();
+}
+
+std::string ThreadInterface::getThreadId() const
+{
+	if(!mThread)
+		return "no-thread";
+	std::stringstream lSS;
+	lSS<<mThread->get_id();
+	return lSS.str();
 }
 

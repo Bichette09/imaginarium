@@ -27,6 +27,7 @@ class CommandSettings(settings_store_client.SettingsBase):
 		self.speedMoy = 0.2			# Vitesse moyenne commandee en m/s
 		self.speedMin = 0.05		# Vitesse min commandee en m/s
 		self.speedMax =  1  		# Vitesse max commandee en m/s 
+		self.mode = 'n'				# n mode normal, dlvv mode dans la vraie vie
 		self.registerAttributes([
 			('L','command/L','Prediction distance'),
 			('D','command/D','Commanded distance from the side'),
@@ -38,6 +39,7 @@ class CommandSettings(settings_store_client.SettingsBase):
 			('speedMoy','command/speedMoy','Medium speed commanded'),
 			('speedMin','command/speedMin','Minimum Speed in protected mode'),
 			('speedMax','command/speedMax','Maximum Speed commanded'),
+			('mode','command/mode','Robot mode, nominal, manuel ou dlvv'),
 			])
 
 class ControlLaw():
@@ -54,6 +56,7 @@ class ControlLaw():
 		self.coefBDroite = 0
 		self.pingLidarDist = 0
 		self.mFrontLedarPos = np.array([0.265 + 0.097,0.])
+		self.mGotLight = False
 
 	def getNonNullMinValue(self, pInput):
 		validdists = [d for d in pInput if d > 0.]
@@ -227,7 +230,13 @@ class ControlLaw():
 		
 		sRosPublisherDebugLineDist.publish(std_msgs.msg.Float32(minYO))
 		return (lXattractive,lYattractive,dist_mean)
-		
+	
+	def onimgdetection(self, param):
+	
+		if param.data == 'start_light_sequence_detected':
+			self.mGotLight = True
+			rospy.logwarn('got light')
+			
 if __name__ == "__main__":
 	
 	os.getcwd()
@@ -246,6 +255,8 @@ if __name__ == "__main__":
 	lControlLaw = ControlLaw()
 	sRosSuscriberLedar = rospy.Subscriber('/pointcloud', emobile.msg.PointCloud,lControlLaw.onNewLedar)
 	sRosSuscriberLidar = rospy.Subscriber('/emobile/PingLidarDist', std_msgs.msg.Float32,lControlLaw.pingLidar)
+	sRosSuscriberImg = rospy.Subscriber('/light_and_line_detector/event', std_msgs.msg.String,lControlLaw.onimgdetection)
+
 	
 	lWheelAnglec = 0.
 	
@@ -268,7 +279,10 @@ if __name__ == "__main__":
 
 		#Compute Speed goal
 		lControlLaw.computeThrottleObjective()
-
+		
+		# If light not detected in dlvv mode
+		if not lControlLaw.mGotLight and ( lSettings.mode == 'dlvv'):
+			lControlLaw.throttleGoal = 0
 
 		sRosPublisherThrottle.publish(emobile.msg.CommandThrottle(lControlLaw.throttleGoal))
 		sRosPublisherSteering.publish(emobile.msg.CommandSteering(lControlLaw.steeringGoal))

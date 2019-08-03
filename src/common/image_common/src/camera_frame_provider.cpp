@@ -81,7 +81,7 @@ void CameraFrameProvider::EnsureMatSizeAndType(FrameInterface & pFrame, const Pa
 bool CameraFrameProvider::getNextFrame(FrameInterface & pRes)
 {
 #ifdef USE_RASPICAM_LIB
-	if(mIsError)
+	if(mIsError || !isEnabled())
 		return false;
 	EnsureMatSizeAndType(pRes,mParameters);
 
