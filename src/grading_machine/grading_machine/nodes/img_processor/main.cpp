@@ -99,7 +99,7 @@ int main(int argc, char ** argv)
 		FrameDebugger lFrameDebugger(n,lSettings.mDebugImgChannels);
 		
 		
-		
+#if 0	
 		CameraFrameProvider lCameraFrameProvider(CameraFrameProvider::Parameters(640,480,12));
 		FilterWorker lFilterWorker(lCameraFrameProvider,lSettings.mFilterParameters);
 		ExtractWorker lExtractWorker(lFilterWorker,lSettings.mExtractParameters);
@@ -171,7 +171,7 @@ int main(int argc, char ** argv)
 			ros::spinOnce();
 
 		}
-		
+#endif		
 	}
 	
 	return 0;

@@ -39,7 +39,9 @@ class Gyro(object):
 			
 		except:
 			self.__mI2cPort = None
-			rospy.logerr('Fail to initialize gyro on port %d @%x' % (pIcPort,self.__mMpuAddress))
+			lError = 'Fail to initialize gyro on port %d @%x' % (pIcPort,self.__mMpuAddress)
+			rospy.logerr(lError)
+			raise Exception(lError)
 	
 	def readAccel(self):
 		if self.__mI2cPort is None:

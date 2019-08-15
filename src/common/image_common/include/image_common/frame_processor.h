@@ -26,7 +26,7 @@ class FrameProcessor : private ThreadInterface
 public:
 	
 	
-	FrameProcessor(WorkerInterface<FrameType> & pWorker, const std::string & pName);
+	FrameProcessor(WorkerInterface<FrameType> & pWorker, const std::string & pName = std::string("NoName"));
 	virtual ~FrameProcessor();
 	
 	bool getNextFrame(FrameType & pFrame);

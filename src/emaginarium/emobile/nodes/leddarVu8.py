@@ -31,17 +31,25 @@ lRate = rospy.Rate(30)
 # init serial connection
 lSerialPort = rospy.get_param('/leddarVu8/serialPort')
 m = None
+
+lAllIsOk = True
 try:
 	import minimalmodbus
 	minimalmodbus.BAUDRATE = 115200
+except:
+	rospy.logerr('Fail to import minimalmodbus')
+	lAllIsOk = False
 
+if lAllIsOk:
+	# try:
 	m = minimalmodbus.Instrument(lSerialPort,1,'rtu')
 	# necessary hardware pause
 	time.sleep(1)
-	lStateDeclarator.setState('init/vu8',True)
-except:
-	rospy.logerr('Fail to open com with vu8 or import minimalmodbus')
-	lStateDeclarator.setState('init/vu8',False)
+	# except:
+		# rospy.logerr('Fail to open com with vu8 on %s' % lSerialPort)
+		# lAllIsOk = False
+
+lStateDeclarator.setState('init/vu8',lAllIsOk)
 	
 t=rospy.Time.now()
 while not rospy.is_shutdown():
