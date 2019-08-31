@@ -1,0 +1,4 @@
+<launch>
+	<node name="actuatoresp32" pkg="emobile" type="actuatorESP32.py">
+	</node>
+</launch>

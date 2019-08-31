@@ -261,7 +261,6 @@ if __name__ == "__main__":
 	lWheelAnglec = 0.
 	
 	lRate = rospy.Rate(30)
-	
 	while not rospy.core.is_shutdown():
 		
 		lRate.sleep()
@@ -284,6 +283,7 @@ if __name__ == "__main__":
 		if not lControlLaw.mGotLight and ( lSettings.mode == 'dlvv'):
 			lControlLaw.throttleGoal = 0
 
+		#rospy.logwarn(lControlLaw.steeringGoal)
 		sRosPublisherThrottle.publish(emobile.msg.CommandThrottle(lControlLaw.throttleGoal))
 		sRosPublisherSteering.publish(emobile.msg.CommandSteering(lControlLaw.steeringGoal))
 		sRosPublisherDebug2dPrimitives.publish(emaginarium_common.msg.Debug2dPrimitive('sideline','line','red',[lControlLaw.coefADroite,lControlLaw.coefBDroite]))

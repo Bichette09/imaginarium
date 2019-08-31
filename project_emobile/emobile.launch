@@ -23,22 +23,13 @@
 	<!-- command -->
 	<include file="$(find emobile)/launch/command.launch" > 
 	</include>
-	<!-- odometer -->
-	<include file="$(find emobile)/launch/odometer.launch" >
-		<arg name="pin" value="26"/>
-	</include>
-	<!-- ping lidar -->
-	<include file="$(find emobile)/launch/pingLidar.launch" >
-	</include>
 	<!-- gyro -->
 	<include file="$(find emaginarium_common)/launch/gyro.launch" >
 		<arg name="i2cPort" value="1"/>
 		<arg name="sMpuAddress" value="104"/>
 	</include>
 	<!-- Actuator -->
-	<include file="$(find emobile)/launch/actuator.launch" > 
-		<arg name="pinT" value="18"/>
-		<arg name="pinS" value="23"/>
+	<include file="$(find emobile)/launch/actuatoresp32.launch" >
 	</include>
 	<!-- img detection -->
 	<!-- 
