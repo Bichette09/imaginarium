@@ -52,7 +52,7 @@ class Actuator(object):
 		self.__mSerialPort = None
 		
 		try:
-			self.__mSerialPort = serial.Serial('/dev/esp32', baudrate=115200,timeout=1)
+			self.__mSerialPort = serial.Serial('/dev/ttyTHS1', baudrate=115200,timeout=1)
 		except:
 			self.__mSerialPort = None
 		self.__mStateDeclarator.setState("actuator/enable","disable")
@@ -126,29 +126,28 @@ class Actuator(object):
 
 	def execute(self):
 		self.__mSerialPort.write('R\n')
-		rospy.sleep(0.1)
+		rospy.sleep(0.01)
 		odo = self.__mSerialPort.readline()
-		rospy.sleep(0.1)
+
 		spe = self.__mSerialPort.readline()
-		rospy.sleep(0.1)
+
 		lid = self.__mSerialPort.readline()
-		rospy.sleep(0.1)
+
 		rospy.logwarn(odo)
-		rospy.logwarn(spe)
-		rospy.logwarn(lid)
-		# if len(odo)>0:
-		# 	self.mRosPublisherOdometry.publish(std_msgs.msg.Float32(float(odo[1:-2])))
-		# if len(spe)>0:
-		# 	self.mRosPublisherSpeed.publish(std_msgs.msg.Float32(float(spe[1:-2])))
-		# if len(lid)>0:
-		# 	self.mRosPublisherPingLidardDist.publish(std_msgs.msg.Float32(float(lid[1:-2])/1000.0))
-		rospy.sleep(0.1)
+		#rospy.logwarn(spe)
+		#rospy.logwarn(lid)
+		if len(odo)>0:
+			self.mRosPublisherOdometry.publish(std_msgs.msg.Float32(float(odo[1:-2])))
+		if len(spe)>0:
+			self.mRosPublisherSpeed.publish(std_msgs.msg.Float32(float(spe[1:-2])))
+		if len(lid)>0:
+			self.mRosPublisherPingLidardDist.publish(std_msgs.msg.Float32(float(lid[1:-2])/1000.0))
+		rospy.sleep(0.01)
 		self.__mSerialPort.write("S"+str(int(self.steering*4915.0/1500.0))+"\n")
-		rospy.sleep(0.1)
 		self.__mSerialPort.write("T"+str(int(self.throttles*4915.0/1500.0))+"\n")
 
-		#rospy.logwarn("S"+str(int(self.steering*4915.0/1500.0))+"\n")
-		#rospy.logwarn(int(self.throttles*4915.0/1500.0))
+		#rospy.logwarn(self.steering*4915.0/1500.0)
+		#rospy.logwarn(self.throttles*4915.0/1500.0)
 
 		
 

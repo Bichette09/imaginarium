@@ -13,7 +13,7 @@
     }, 
     "actuator/maxpower": {
         "description": "max commanded power", 
-        "value": "0.2"
+        "value": "0.1"
     }, 
     "actuator/maxruntime": {
         "description": "max run time after start", 
