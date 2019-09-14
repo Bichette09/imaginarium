@@ -13,8 +13,11 @@ warnings.simplefilter('ignore', numpy.RankWarning)
 class PointCloudConverter():
 	
 	def __init__(self,pPublisher):
-		self.mVu8Pos = [0.265 + 0.097,0.]
-		self.mM16Pos = [0.09,0.134]
+		# l'origine est au centre de l'essieu AR
+		self.mVu8Pos = [0.30,0.]
+		self.mM16Pos = [0.175,0.095]
+		
+
 		
 		self.xVu8 = [0]*8
 		self.yVu8 = [0]*8

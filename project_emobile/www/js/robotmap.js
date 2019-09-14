@@ -58,7 +58,7 @@ function redraw()
 	sCanvasHelper.ctx = ctx;
 	
 	// clear canvas 
-	sCanvasHelper.clear(8000.,5000.,0.60);
+	sCanvasHelper.clear(5000.,6000.,0.70);
 	sCanvasHelper.drawGrid(250.,'rgba(0, 0, 0, 0.2)',2);
 	sCanvasHelper.drawGrid(1000.0,'rgba(0, 0, 0, 0.2)',2);
 	

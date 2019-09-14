@@ -133,7 +133,7 @@ class Actuator(object):
 
 		lid = self.__mSerialPort.readline()
 
-		rospy.logwarn(odo)
+		#rospy.logwarn(odo)
 		#rospy.logwarn(spe)
 		#rospy.logwarn(lid)
 		if len(odo)>0:
