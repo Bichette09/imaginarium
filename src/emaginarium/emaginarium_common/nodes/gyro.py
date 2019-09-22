@@ -18,6 +18,7 @@ class Gyro(object):
 		self.gXOffset = 0
 		self.gYOffset = 0
 		self.gZOffset = 0
+		self.mIsInitialized = False
 		try:
 			self.__mI2cPort = smbus.SMBus(pIcPort)
 			# wake up device and init power management
@@ -36,12 +37,11 @@ class Gyro(object):
 			self.__mAccelFactor = 2. * 1. / 32768.
 
 			self.calibrationGyro()
-			
+			self.mIsInitialized = True
 		except:
 			self.__mI2cPort = None
 			lError = 'Fail to initialize gyro on port %d @%x' % (pIcPort,self.__mMpuAddress)
 			rospy.logerr(lError)
-			raise Exception(lError)
 	
 	def readAccel(self):
 		if self.__mI2cPort is None:
@@ -120,7 +120,7 @@ if __name__ == "__main__":
 	sRosPublisher = rospy.Publisher('emaginarium_common/Gyro', emaginarium_common.msg.Gyro, queue_size=5)
 	lGyroReader = Gyro(rospy.get_param('/gyro/i2cPort'),rospy.get_param('/gyro/sMpuAddress'))
 
-	while not rospy.core.is_shutdown():
+	while not rospy.core.is_shutdown() and lGyroReader.mIsInitialized:
 	
 		lAccel = lGyroReader.readAccel()
 		lGyro = lGyroReader.readAngularSpeed()

@@ -48,6 +48,7 @@ class Actuator(object):
 		self.mGoalThrottle=0 #-1 pour marche arriere max 0 arret 1 marche avant max
 		self.mGoalSteering=0
 		self.mLastNonNullGoalThrottle = 0
+		self.mIsInitialized = False
 		
 		self.__mSerialPort = None
 		
@@ -64,6 +65,7 @@ class Actuator(object):
 		else:
 			self.__mStateDeclarator.setState("init/actuator",True)
 			rospy.logwarn('Powertrain is ready')
+			self.mIsInitialized  = True
 
 	def __del__(self):
 		if self.__mSerialPort is not None:
@@ -107,7 +109,6 @@ class Actuator(object):
 		# rospy.logwarn(self.throttles)
 		self.mRosPublisherThrottle.publish(std_msgs.msg.Float32(self.throttles))
 
-			
 
 	def updateSteeringTarget(self, param):
 		self.mGoalSteering = min(max(-1.,param.steering),1.)
@@ -164,9 +165,12 @@ if __name__ == "__main__":
 	sRosSuscriberThrottle = rospy.Subscriber('emobile/CommandThrottle', emobile.msg.CommandThrottle,lActuator.updateThrottleTarget)
 	sRosSuscriberSteering = rospy.Subscriber('emobile/CommandSteering', emobile.msg.CommandSteering,lActuator.updateSteeringTarget)
 
-	lRate = rospy.Rate(42)
-	while not rospy.is_shutdown():
-		lActuator.execute()
-		lRate.sleep()
+	if lActuator.mIsInitialized:
+		lRate = rospy.Rate(42)
+		while not rospy.is_shutdown():
+			lActuator.execute()
+			lRate.sleep()
+	sRosSuscriberThrottle.unregister();
+	sRosSuscriberSteering.unregister();
 	lActuator.updateThrottle()
 	lActuator.close()
