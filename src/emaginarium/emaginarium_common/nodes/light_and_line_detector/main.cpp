@@ -119,6 +119,14 @@ public:
 		else if(pSettingName.find("command/mode") != std::string::npos)
 		{
 			mGlobalEnable = mCommandMode == "dlvv";
+			if(!mGlobalEnable)
+			{
+				ROS_WARN_STREAM("Light detection disabled (command/mode != dlvv)");
+			}
+			else
+			{
+				ROS_WARN_STREAM("Light detection enabled (command/mode == dlvv)");
+			}
 		}
 	}
 	

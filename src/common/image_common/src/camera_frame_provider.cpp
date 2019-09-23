@@ -83,9 +83,10 @@ bool CameraFrameProvider::getNextFrame(FrameInterface & pRes)
 #ifdef USE_RASPICAM_LIB
 	if(mIsError || !isEnabled())
 		return false;
+	
 	EnsureMatSizeAndType(pRes,mParameters);
 
-
+	
 	mCameraHandle->grab();
 	mCameraHandle->retrieve ( mBuffer );
 

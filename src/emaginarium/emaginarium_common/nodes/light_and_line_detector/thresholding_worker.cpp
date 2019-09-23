@@ -3,7 +3,7 @@
 // ros
 #include "ros/ros.h"
 
-
+#define ENABLE_LINE_DETECTION
 
 ThresholdingWorker::ColorFilterParameter::ColorFilterParameter()
 	: mUMin(0)
@@ -216,6 +216,7 @@ bool ThresholdingWorker::computeNextResult(LightAndLineFrame & pRes)
 {
 	if(!mPreviousThread->getNextFrame(pRes))
 		return false;
+	
 	if(!mPrevious)
 	{
 		const cv::Mat lY =  pRes[LightAndLineFrame::Y];
@@ -239,12 +240,13 @@ bool ThresholdingWorker::computeNextResult(LightAndLineFrame & pRes)
 			pRes.editLineSearchArea() = lLineRoi;
 			
 			pRes.setTimestamp(LightAndLineFrame::F_LineCanyFilterStart);
-			
+#ifdef ENABLE_LINE_DETECTION
 	#ifdef USE_HOUGH_LINE_DETECTION
 			// compute edges with a canny filter
 			const cv::Mat lSubY(pRes.editY(),lLineRoi);
 			cv::Canny(lSubY,pRes[LightAndLineFrame::CannyEdges],mParameters.mCannyThreshold,mParameters.mCannyThreshold*3,3);
 	#endif
+#endif
 			pRes.setTimestamp(LightAndLineFrame::F_LineCanyFilterDone);
 			
 			
@@ -256,6 +258,7 @@ bool ThresholdingWorker::computeNextResult(LightAndLineFrame & pRes)
 	{
 		const cv::Rect & lLineRoi = pRes.editLineSearchArea();
 		pRes.setTimestamp(LightAndLineFrame::F_LineHoughFilterStart);
+#ifdef ENABLE_LINE_DETECTION
 	#ifdef USE_HOUGH_LINE_DETECTION
 		extractLines(mParameters.mRedLineColorParameter,mParameters.mRedLineHough,pRes,pRes[LightAndLineFrame::LT_Red]);
 		extractLines(mParameters.mGreenLineColorParameter,mParameters.mGreenLineHough,pRes,pRes[LightAndLineFrame::LT_Green]);
@@ -263,6 +266,7 @@ bool ThresholdingWorker::computeNextResult(LightAndLineFrame & pRes)
 		extractColorAreas(pRes,lLineRoi,mParameters.mRedLineColorParameter,mLineTmpMatArray,pRes[LightAndLineFrame::LC_LineRed]);
 		extractColorAreas(pRes,lLineRoi, mParameters.mGreenLineColorParameter,mLineTmpMatArray,pRes[LightAndLineFrame::LC_LineGreen]);
 	#endif
+#endif
 		pRes.setTimestamp(LightAndLineFrame::F_LineHoughFilterDone);
 		
 	}

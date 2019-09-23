@@ -25,9 +25,11 @@ if(EXISTS "/usr/local/lib/libraspicam.so")
 	set(RASPICAM_LIBS "-lraspicam" "-lmmal" "-lmmal_core")
 	add_definitions("-DUSE_RASPICAM_LIB")
 	link_directories("/opt/vc/lib/")
+	message("### Raspicam support enabled")
 else()
 	set(USE_RASPICAM_LIB OFF)
 	set(RASPICAM_LIBS )
+	message("### Raspicam support DISABLED")
 endif()
 
 ## Uncomment this if the package has a setup.py. This macro ensures

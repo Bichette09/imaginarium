@@ -3,6 +3,12 @@
 #include <thread>
 #include <sstream>
 
+// system
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <signal.h>
+
 ThreadInterface::ThreadInterface()
 	: mThread(NULL)
 {
@@ -40,7 +46,7 @@ std::string ThreadInterface::getThreadId() const
 	if(!mThread)
 		return "no-thread";
 	std::stringstream lSS;
-	lSS<<mThread->get_id();
+	lSS<<mThread->get_id()<<" "<<syscall(SYS_gettid);
 	return lSS.str();
 }
 

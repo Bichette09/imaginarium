@@ -43,11 +43,6 @@ bool FrameProcessor<FrameType>::getNextFrame(FrameType & pFrame)
 	std::unique_lock<std::mutex> lLock(mMutex);
 	if(!mGotNewResult)
 	{
-		mWaitCondition.wait_until(lLock,std::chrono::system_clock::now() + std::chrono::milliseconds(500));
-	}
-	if(!mGotNewResult)
-	{
-		ROS_WARN_STREAM("could not get next frame !!");
 		return false;
 	}
 	mNextResult.swap(pFrame);
@@ -65,19 +60,25 @@ bool FrameProcessor<FrameType>::getNextFrame(FrameType & pFrame)
 template <typename FrameType>
 void FrameProcessor<FrameType>::run()
 {
-	ROS_WARN_STREAM("Start FrameProcessor thread "<<getThreadId()<<" "<<mName);
+	ROS_WARN_STREAM("Start FrameProcessor thread "<<getThreadId() <<" "<<mName);
 	while(!mQuit)
 	{
-		if(mWorker.computeNextResult(mTmpFrame))
+		const bool lRes = mWorker.computeNextResult(mTmpFrame);
+		
+		std::unique_lock<std::mutex> lLock(mMutex);
+		if(mQuit)
+			continue;
+		if(lRes)
 		{
-			std::unique_lock<std::mutex> lLock(mMutex);
-			if(mQuit)
-				continue;
 			mTmpFrame.swap(mNextResult);
 			mGotNewResult = true;
 			mWaitCondition.notify_all();
 			// and wait until frame is consumed
 			mWaitCondition.wait(lLock);
+		}
+		else
+		{
+			mWaitCondition.wait_until(lLock,std::chrono::system_clock::now() + std::chrono::milliseconds(5));
 		}
 	}
 }
