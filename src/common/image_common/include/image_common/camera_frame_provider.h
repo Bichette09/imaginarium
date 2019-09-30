@@ -54,6 +54,12 @@ public:
 	virtual int getFrameHeight() const;
 	
 private:
+#ifdef USE_JETSON_CAM
+	cv::Mat					mRgbTmp;
+	cv::Mat					mYuvTmp;
+	std::vector<cv::Mat> 	mTmpCvtArray;
+#endif
+	
 	raspicam::RaspiCam *	mCameraHandle;
 	unsigned char *			mBuffer;
 	cv::Mat 				mFullY;

@@ -18,6 +18,7 @@ CameraFrameProvider::Parameters::Parameters(int pRequestedWidth, int pRequestedH
 	, mFps(std::max(1,std::min(pFps,50)))
 	
 {
+	
 }
 
 CameraFrameProvider::Parameters::~Parameters()
@@ -56,8 +57,12 @@ CameraFrameProvider::CameraFrameProvider(Parameters pParams)
 		ROS_INFO_STREAM("CameraThread capture Y["<<mParameters.mCaptureWidth<<"x"<<mParameters.mCaptureHeight<<"] UV["<<mParameters.mHalfWidth<<"x"<<mParameters.mHalfHeight<<"] @"<<mParameters.mFps<<"fps, output resolution ["<<mParameters.mHalfWidth<<"x"<<mParameters.mHalfHeight<<"]");
 	}
 #else
-	ROS_ERROR_STREAM("CameraThread not build with libraspicam support");
+#ifdef USE_JETSON_CAM
+	mTmpCvtArray.resize(3);
+#else
+	ROS_ERROR_STREAM("CameraThread support not build");
 	mIsError = true;
+#endif
 #endif
 	
 	mFullY = cv::Mat(mParameters.mCaptureHeight,mParameters.mCaptureWidth,CV_8UC1);
@@ -98,8 +103,19 @@ bool CameraFrameProvider::getNextFrame(FrameInterface & pRes)
 	
 	return true;
 #else
+#ifdef USE_JETSON_CAM
+	cvtColor(mRgbTmp, mYuvTmp, cv::COLOR_BGR2YUV);
+	// mYuvFrame = mRgbFrame;
+	cv::split(mTmpA,mTmpCvtArray);
+	pRes.editY() = mTmpCvtArray[0];
+	pRes.editU() = mTmpCvtArray[1];
+	pRes.editV() = mTmpCvtArray[2];
+	pRes.setGrabTimestamp();
+#else
+
 	return false;
-#endif	
+#endif
+#endif
 }
 
 int CameraFrameProvider::getFrameWidth() const

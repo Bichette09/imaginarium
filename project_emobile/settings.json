@@ -53,7 +53,7 @@
     }, 
     "command/mode": {
         "description": "Robot mode, nominal, manuel ou dlvv", 
-        "value": "n"
+        "value": "dlvv"
     }, 
     "command/speedMax": {
         "description": "Maximum Speed commanded", 
@@ -85,7 +85,7 @@
     }, 
     "light/red": {
         "description": "Ymin Ymax Umin Umax Vmin Vmax | DebugMask | DownscaleFactor MinPixCountPercentPerDownscaleArea", 
-        "value": "100 255 100 120 160 210 | 0 | 6 20 "
+        "value": "220 255 125 140 125 140 | 0 | 6 20 "
     }, 
     "light/searchareapercent": {
         "description": "area in percent were light should be searched [xmin xmax ymin ymax]", 

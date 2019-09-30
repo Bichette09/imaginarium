@@ -40,6 +40,7 @@ public:
 	virtual int getFrameHeight() const;
 	
 private:
+	std::vector<cv::Mat> 	mTmpCvtArray;
 	std::chrono::time_point<std::chrono::system_clock>	mLastGrab;
 	cv::VideoCapture * mCaptureHandle;
 	cv::Mat mTmpA;

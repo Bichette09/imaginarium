@@ -29,7 +29,7 @@ VideoFrameProvider::VideoFrameProvider(Parameters pParams)
 	, mIsError(false)
 	, mCaptureHandle(NULL)
 {
-
+	mTmpCvtArray.resize(3);
 }
 
 VideoFrameProvider::~VideoFrameProvider()
@@ -77,11 +77,10 @@ bool VideoFrameProvider::getNextFrame(FrameInterface & pRes)
 	cvtColor(mTmpB, mTmpA, cv::COLOR_BGR2YUV);
 	
 	// mYuvFrame = mRgbFrame;
-	std::vector<cv::Mat> lOutputArray(3);
-	cv::split(mTmpA,lOutputArray);
-	pRes.editY() = lOutputArray[0];
-	pRes.editU() = lOutputArray[1];
-	pRes.editV() = lOutputArray[2];
+	cv::split(mTmpA,mTmpCvtArray);
+	pRes.editY() = mTmpCvtArray[0];
+	pRes.editU() = mTmpCvtArray[1];
+	pRes.editV() = mTmpCvtArray[2];
 	
 	pRes.setGrabTimestamp();
 	
